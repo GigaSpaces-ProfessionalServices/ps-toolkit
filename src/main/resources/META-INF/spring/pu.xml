@@ -19,8 +19,6 @@
     <!--
         The Data feeder bean, writing new Data objects to the space in a constant interval.
     -->
-    <bean id="dataFeeder" class="com.gigaspaces.gigapro.monitoring.Rebalancing">
-        <property name="configFile" value="${MONITORING_CONFIG_FILE}" />
-    </bean>
+    <bean id="dataFeeder" class="com.gigaspaces.gigapro.monitoring.Rebalancing" />
     
 </beans>

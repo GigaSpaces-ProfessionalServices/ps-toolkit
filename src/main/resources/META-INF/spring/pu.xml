@@ -6,19 +6,8 @@
        http://www.openspaces.org/schema/core http://www.openspaces.org/schema/9.6/core/openspaces-core.xsd">
 
     <!--
-        Spring property configurer which allows us to use system properties (such as user.name).
-    -->
-    <bean id="propertiesConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-    </bean>
-
-    <!--
-        Enables the usage of @GigaSpaceContext annotation based injection.
-    -->
-    <os-core:giga-space-context/>
-
-    <!--
         The Data feeder bean, writing new Data objects to the space in a constant interval.
     -->
-    <bean id="dataFeeder" class="com.gigaspaces.gigapro.monitoring.SitaRebalancing" />
+    <bean id="rebalancer" class="com.gigaspaces.gigapro.monitoring.GridRebalancer" />
     
 </beans>

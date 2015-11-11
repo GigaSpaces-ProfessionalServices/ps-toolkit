@@ -61,6 +61,44 @@ public class ProcessingUnitRebalancer {
             return;
         }
 
+        boolean moved = quickSwapRestart(lowPrimaries, highPrimaries);
+
+        if (!moved){
+            moved = moveBackupToLowPrimaryGSARestart(emptyContainersMap, instancesPerAgent, highPrimaries);
+        }
+
+        if (!moved){
+            System.out.println("rebalance failed for PU " + puName);
+        }
+    }
+
+    private boolean moveBackupToLowPrimaryGSARestart(Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap, int instancesPerAgent, Map<GridServiceAgent, Integer> highPrimaries) {
+        boolean moved = false;
+        for (GridServiceAgent gsa : highPrimaries.keySet()){
+            List<ProcessingUnitInstance> processingUnitInstances = listPrimariesOnGSA(gsa);
+            for (ProcessingUnitInstance pui : processingUnitInstances){
+                Map<GridServiceAgent, GridServiceContainer> emptyContainersOnLowPrimaries = findEmptyContainersOnLowPrimaries(emptyContainersMap, pui, instancesPerAgent);
+                if (MapUtils.isEmpty(emptyContainersOnLowPrimaries)){
+                    System.out.println();
+                    continue;
+                }
+
+                GridServiceAgent targetGSA = emptyContainersOnLowPrimaries.keySet().iterator().next();
+                String currentBackupGSA = pui.getSpaceInstance().getPartition().getBackup().getMachine().getHostName();
+                System.out.println(String.format("moving backup id=%d from %s to %s",
+                        pui.getInstanceId(), currentBackupGSA, targetGSA.getMachine().getHostName()));
+                findBackupInstanceForPrimary(pui).relocateAndWait(emptyContainersOnLowPrimaries.get(targetGSA));
+                System.out.println(String.format("backup on %s restarting primary", targetGSA.getMachine().getHostName()));
+                pui.restartAndWait();
+                moved = true;
+                break;
+            }
+            if (moved) break;
+        }
+        return moved;
+    }
+
+    private boolean quickSwapRestart(Map<GridServiceAgent, Integer> lowPrimaries, Map<GridServiceAgent, Integer> highPrimaries) {
         boolean moved = false;
         for (GridServiceAgent gsa : highPrimaries.keySet()){
             List<ProcessingUnitInstance> processingUnitInstances = listPrimariesOnGSA(gsa);
@@ -80,32 +118,7 @@ public class ProcessingUnitRebalancer {
             }
             if (moved) break;
         }
-
-        for (GridServiceAgent gsa : highPrimaries.keySet()){
-            List<ProcessingUnitInstance> processingUnitInstances = listPrimariesOnGSA(gsa);
-            for (ProcessingUnitInstance pui : processingUnitInstances){
-                Map<GridServiceAgent, GridServiceContainer> emptyContainersOnLowPrimaries = findEmptyContainersOnLowPrimaries(emptyContainersMap, pui, instancesPerAgent);
-                if (MapUtils.isEmpty(emptyContainersMap)){
-                    System.out.println();
-                    continue;
-                }
-
-                GridServiceAgent targetGSA = emptyContainersOnLowPrimaries.keySet().iterator().next();
-                String currentBackupGSA = pui.getSpaceInstance().getPartition().getBackup().getMachine().getHostName();
-                System.out.println(String.format("moving backup id=%d from %s to %s",
-                        pui.getInstanceId(), currentBackupGSA, targetGSA.getMachine().getHostName()));
-                findBackupInstanceForPrimary(pui).relocateAndWait(emptyContainersOnLowPrimaries.get(targetGSA));
-                System.out.println(String.format("backup on %s restarting primary", targetGSA.getMachine().getHostName()));
-                pui.restartAndWait();
-                moved = true;
-                break;
-            }
-            if (moved) break;
-        }
-
-        if (!moved){
-            System.out.println("rebalance failed for PU " + puName);
-        }
+        return moved;
     }
 
     private boolean backupIsOnLowPrimaryGSA(ProcessingUnitInstance pui, GridServiceAgent lowPrimaryGSA) {

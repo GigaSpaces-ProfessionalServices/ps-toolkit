@@ -1,26 +1,31 @@
 package com.gigaspaces.gigapro.monitoring.listener;
 
-import com.gigaspaces.gigapro.monitoring.GridRebalancer;
+import com.gigaspaces.gigapro.monitoring.RebalancingTask;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.gsa.events.GridServiceAgentAddedEventListener;
 import org.openspaces.admin.gsa.events.GridServiceAgentRemovedEventListener;
 
+import java.util.concurrent.Executor;
+
 public class GridServiceEventListener implements GridServiceAgentAddedEventListener, GridServiceAgentRemovedEventListener{
 
     private Admin admin;
 
-    public GridServiceEventListener(Admin admin) {
+    private Executor executor;
+
+    public GridServiceEventListener(Admin admin, Executor executor) {
         this.admin = admin;
+        this.executor = executor;
     }
 
     @Override
     public void gridServiceAgentAdded(GridServiceAgent gridServiceAgent) {
-        new GridRebalancer(admin).rebalanceGrid();
+        executor.execute(new RebalancingTask(admin));
     }
 
     @Override
     public void gridServiceAgentRemoved(GridServiceAgent gridServiceAgent) {
-        new GridRebalancer(admin).rebalanceGrid();
+        executor.execute(new RebalancingTask(admin));
     }
 }

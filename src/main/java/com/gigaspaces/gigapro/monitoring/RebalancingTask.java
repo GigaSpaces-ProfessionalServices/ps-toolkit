@@ -3,6 +3,7 @@ package com.gigaspaces.gigapro.monitoring;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.pu.ProcessingUnit;
+import org.openspaces.admin.pu.ProcessingUnitType;
 import org.openspaces.admin.pu.ProcessingUnits;
 
 public class RebalancingTask implements Runnable{
@@ -15,10 +16,13 @@ public class RebalancingTask implements Runnable{
 
     @Override
     public void run() {
-        checkGridState();
         ProcessingUnits processingUnits = admin.getProcessingUnits();
+        checkGridState();
         for (ProcessingUnit processingUnit : processingUnits){
-            new ProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance();
+            ProcessingUnitType puType = processingUnit.getType();
+            if (puType == ProcessingUnitType.STATEFUL){
+                new StatefulProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance();
+            }
         }
     }
 
@@ -27,10 +31,11 @@ public class RebalancingTask implements Runnable{
     }
 
     private void checkTwoGSAsArentDeployedOnOneMachine() {
+        admin.getGridServiceAgents().waitForAtLeastOne();
         for (GridServiceAgent gsa : admin.getGridServiceAgents()){
             if (singleZoneGSA(gsa)){
                 for (GridServiceAgent gsaOnTheSameMachine : gsa.getMachine().getGridServiceAgents()){
-                    if (singleZoneGSA(gsaOnTheSameMachine)){
+                    if (notTheSameGSA(gsa, gsaOnTheSameMachine) && singleZoneGSA(gsaOnTheSameMachine)){
                         if (gsaOnTheSameMachine.getExactZones().isSatisfiedBy(gsa.getExactZones())){
                             throw new RuntimeException("Two GSAs with the same zone are running on one machine");
                         }
@@ -38,6 +43,10 @@ public class RebalancingTask implements Runnable{
                 }
             }
         }
+    }
+
+    private boolean notTheSameGSA(GridServiceAgent gsa, GridServiceAgent gsaOnTheSameMachine) {
+        return !gsa.getUid().equals(gsaOnTheSameMachine.getUid());
     }
 
     private boolean singleZoneGSA(GridServiceAgent gsa) {

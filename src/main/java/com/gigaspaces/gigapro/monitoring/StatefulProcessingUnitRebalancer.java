@@ -6,18 +6,22 @@ import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.gsa.GridServiceAgents;
 import org.openspaces.admin.gsc.GridServiceContainer;
+import org.openspaces.admin.gsc.GridServiceContainers;
 import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnitInstance;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
-public class ProcessingUnitRebalancer {
+public class StatefulProcessingUnitRebalancer {
+
+    private int MAX_REBALANCING_COUNT = 10;
 
     private Admin admin;
 
     private String puName;
 
-    public ProcessingUnitRebalancer(Admin admin, String puName) {
+    public StatefulProcessingUnitRebalancer(Admin admin, String puName) {
         this.admin = admin;
         this.puName = puName;
     }
@@ -29,46 +33,48 @@ public class ProcessingUnitRebalancer {
         // get GSAa with zone
         List<GridServiceAgent> gsas = getGridServiceAgents(processingUnit.getRequiredContainerZones().getZones());
 
-        //get empty containers
-        Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap = buildEmptyContainersMap(gsas);
+        for (int i = 0; i < MAX_REBALANCING_COUNT; i++){
+            //get empty containers
+            Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap = buildEmptyContainersMap(gsas);
 
-        // check PU is deployed
-        checkProcessingUnitDeployment(processingUnit);
+            // check PU is deployed
+            checkProcessingUnitDeployment(processingUnit);
 
-        //how many unbalanced nodes can be?
-        int instancesPerAgent = processingUnit.getInstances().length / gsas.size();
-        int unbalancedNodes = processingUnit.getInstances().length % gsas.size();
+            //how many unbalanced nodes can be?
+            int instancesPerAgent = processingUnit.getPartitions().length / gsas.size();
+            int unbalancedNodes = processingUnit.getPartitions().length % gsas.size();
 
-        //check primaries
-        Map<GridServiceAgent, Integer> lowPrimaries = new HashMap<>();
-        Map<GridServiceAgent, Integer> highPrimaries = new HashMap<>();
-        boolean unbalanced = false;
-        for (GridServiceAgent gsa : gsas){
-            int primaries = listPrimariesOnGSA(gsa).size();
-            if (primaries > instancesPerAgent){
-                highPrimaries.put(gsa, primaries);
+            //check primaries
+            Map<GridServiceAgent, Integer> lowPrimaries = new HashMap<>();
+            Map<GridServiceAgent, Integer> highPrimaries = new HashMap<>();
+            boolean unbalanced = false;
+            for (GridServiceAgent gsa : gsas){
+                int primaries = listPrimariesOnGSA(gsa).size();
+                if (primaries > instancesPerAgent){
+                    highPrimaries.put(gsa, primaries);
+                }
+                if (primaries > instancesPerAgent + 1){
+                    unbalanced = true;
+                }
+                if (primaries < instancesPerAgent){
+                    lowPrimaries.put(gsa, primaries);
+                }
             }
-            if (primaries > instancesPerAgent + 1){
-                unbalanced = true;
+
+            if (!unbalanced && highPrimaries.size() == unbalancedNodes){
+                System.out.println(puName + " is balanced");
+                return;
             }
-            if (primaries < instancesPerAgent){
-                lowPrimaries.put(gsa, primaries);
+
+            boolean moved = quickSwapRestart(lowPrimaries, highPrimaries);
+
+            if (!moved){
+                moved = moveBackupToLowPrimaryGSARestart(emptyContainersMap, instancesPerAgent, highPrimaries);
             }
-        }
 
-        if (!unbalanced && highPrimaries.size() == unbalancedNodes){
-            System.out.println(puName + " is balanced");
-            return;
-        }
-
-        boolean moved = quickSwapRestart(lowPrimaries, highPrimaries);
-
-        if (!moved){
-            moved = moveBackupToLowPrimaryGSARestart(emptyContainersMap, instancesPerAgent, highPrimaries);
-        }
-
-        if (!moved){
-            System.out.println("rebalance failed for PU " + puName);
+            if (!moved){
+                System.out.println("rebalance failed for PU " + puName);
+            }
         }
     }
 
@@ -127,7 +133,9 @@ public class ProcessingUnitRebalancer {
 
     private List<ProcessingUnitInstance> listPrimariesOnGSA(GridServiceAgent gsa) {
         List<ProcessingUnitInstance> primaries = new ArrayList<>();
-        for (GridServiceContainer gsc : gsa.getGridServiceContainers().getContainers()){
+        GridServiceContainers gscs = gsa.getGridServiceContainers();
+        gscs.waitFor(1, 2, TimeUnit.SECONDS);
+        for (GridServiceContainer gsc : gscs.getContainers()){
             for (ProcessingUnitInstance pui : gsc.getProcessingUnitInstances(puName)){
                 if (pui.getSpaceInstance().getMode() == SpaceMode.PRIMARY){
                     primaries.add(pui);
@@ -149,7 +157,6 @@ public class ProcessingUnitRebalancer {
         Map<GridServiceAgent, List<GridServiceContainer>> result = new HashMap<>();
         for (GridServiceAgent gsa : gsas){
             for (GridServiceContainer gsc : gsa.getGridServiceContainers()){
-                // TODO add zones check
                 if (gsc.getProcessingUnitInstances().length == 0){
                     GridServiceAgent gridServiceAgent = gsc.getGridServiceAgent();
                     List<GridServiceContainer> emptyContainers = result.get(gridServiceAgent);
@@ -191,11 +198,11 @@ public class ProcessingUnitRebalancer {
     }
 
     private boolean notTheSameAgentAsBackup(GridServiceContainer gsc, ProcessingUnitInstance primary) {
-        return !primary.getSpaceInstance().getPartition().getBackup().getVirtualMachine().getGridServiceAgent().getUid().equals(gsc.getGridServiceAgent().getUid());
+        return !primary.getSpaceInstance().getPartition().getBackup().getMachine().getHostAddress().equals(gsc.getMachine().getHostAddress());
     }
 
     private boolean notTheSameAgentAsPrimary(GridServiceContainer gsc, ProcessingUnitInstance primary) {
-        return !gsc.getGridServiceAgent().getUid().equals(primary.getGridServiceContainer().getGridServiceAgent().getUid());
+        return !gsc.getMachine().getHostAddress().equals(primary.getMachine().getHostAddress());
     }
 
     private boolean lowPrimaryAgent(GridServiceContainer gsc, int instancesPerAgent) {
@@ -204,7 +211,6 @@ public class ProcessingUnitRebalancer {
 
     private List<GridServiceAgent> getGridServiceAgents(Set<String> zones) {
         List<GridServiceAgent> result = new ArrayList<>();
-        //how to wait?
         GridServiceAgents gridServiceAgents = admin.getGridServiceAgents();
         gridServiceAgents.waitFor(1);
         for (GridServiceAgent gsa : gridServiceAgents){

@@ -12,8 +12,11 @@ public class GridRebalancer implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        System.out.println("Rebalancing: creating admin");
         Admin admin = new AdminFactory().createAdmin();
+        System.out.println("Rebalancing: admin created");
         admin.getMachines().waitFor(1);
+        System.out.println("Rebalancing: one machine appeared");
 
         // rebalance grid first time
         Executor executor = Executors.newSingleThreadExecutor();

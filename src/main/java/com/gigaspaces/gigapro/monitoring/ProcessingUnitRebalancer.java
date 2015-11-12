@@ -36,7 +36,7 @@ public abstract class ProcessingUnitRebalancer {
     protected Map<GridServiceAgent, List<GridServiceContainer>> buildEmptyContainersMap(List<GridServiceAgent> gsas){
         Map<GridServiceAgent, List<GridServiceContainer>> result = new HashMap<>();
         for (GridServiceAgent gsa : gsas){
-            for (GridServiceContainer gsc : gsa.getGridServiceContainers()){
+            for (GridServiceContainer gsc : gsa.getMachine().getGridServiceContainers()){
                 if (gsc.getProcessingUnitInstances().length == 0){
                     GridServiceAgent gridServiceAgent = gsc.getGridServiceAgent();
                     List<GridServiceContainer> emptyContainers = result.get(gridServiceAgent);

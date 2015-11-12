@@ -1,4 +1,4 @@
-package com.gigaspaces.gigapro.monitoring;
+package com.gigaspaces.gigapro.rebalancing;
 
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;

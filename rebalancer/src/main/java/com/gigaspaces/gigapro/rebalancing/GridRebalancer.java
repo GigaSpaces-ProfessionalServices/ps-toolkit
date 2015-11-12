@@ -3,19 +3,20 @@ package com.gigaspaces.gigapro.rebalancing;
 import com.gigaspaces.gigapro.rebalancing.listener.GridServiceEventListener;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.AdminFactory;
+import org.openspaces.core.space.mode.PostPrimary;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.stereotype.Component;
 
+//import javax.annotation.PostConstruct;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-public class GridRebalancer implements InitializingBean {
+public class GridRebalancer {
 
     private static Logger logger = LoggerFactory.getLogger(GridRebalancer.class);
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
+    public void init() throws Exception {
         logger.error("Rebalancing: creating admin");
         System.out.println("Rebalancing: creating admin");
         Admin admin = new AdminFactory().createAdmin();

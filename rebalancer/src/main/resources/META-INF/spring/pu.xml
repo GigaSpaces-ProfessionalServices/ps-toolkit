@@ -7,11 +7,8 @@
        http://www.openspaces.org/schema/core http://www.openspaces.org/schema/9.5/core/openspaces-core.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 
-    <bean id="propertiesConfigure"
-          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>
+    <!--<bean id="propertiesConfigure"-->
+          <!--class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"/>-->
 
-    <os-core:annotation-support />
-
-    <bean id="rebalancer" class="com.gigaspaces.gigapro.rebalancing.GridRebalancer" />
-    
+    <bean id="balancerContainer" class="com.gigaspaces.gigapro.rebalancing.GridRebalancer" init-method="init" />
 </beans>

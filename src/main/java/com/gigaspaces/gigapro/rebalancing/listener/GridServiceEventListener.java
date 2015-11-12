@@ -1,6 +1,6 @@
-package com.gigaspaces.gigapro.monitoring.listener;
+package com.gigaspaces.gigapro.rebalancing.listener;
 
-import com.gigaspaces.gigapro.monitoring.RebalancingTask;
+import com.gigaspaces.gigapro.rebalancing.RebalancingTask;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.gsa.events.GridServiceAgentAddedEventListener;

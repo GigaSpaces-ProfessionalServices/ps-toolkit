@@ -1,6 +1,6 @@
-package com.gigaspaces.gigapro.monitoring;
+package com.gigaspaces.gigapro.rebalancing;
 
-import com.gigaspaces.gigapro.monitoring.listener.GridServiceEventListener;
+import com.gigaspaces.gigapro.rebalancing.listener.GridServiceEventListener;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.AdminFactory;
 import org.slf4j.Logger;

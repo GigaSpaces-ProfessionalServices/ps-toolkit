@@ -1,4 +1,4 @@
-package com.gigaspaces.gigapro.monitoring;
+package com.gigaspaces.gigapro.rebalancing;
 
 import com.gigaspaces.cluster.activeelection.SpaceMode;
 import org.openspaces.admin.Admin;

@@ -1,7 +1,6 @@
 package com.gigaspaces.gigapro.monitoring;
 
 import com.gigaspaces.cluster.activeelection.SpaceMode;
-import org.apache.commons.collections.MapUtils;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.gsc.GridServiceContainer;
@@ -70,7 +69,7 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             List<ProcessingUnitInstance> processingUnitInstances = listPrimariesOnGSA(gsa);
             for (ProcessingUnitInstance pui : processingUnitInstances){
                 Map<GridServiceAgent, GridServiceContainer> emptyContainersOnLowPrimaries = findEmptyContainersOnLowPrimaries(emptyContainersMap, pui, instancesPerAgent);
-                if (MapUtils.isEmpty(emptyContainersOnLowPrimaries)){
+                if (emptyContainersOnLowPrimaries.isEmpty()){
                     System.out.println();
                     continue;
                 }
@@ -118,7 +117,7 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 
     private List<ProcessingUnitInstance> listPrimariesOnGSA(GridServiceAgent gsa) {
         List<ProcessingUnitInstance> primaries = new ArrayList<>();
-        GridServiceContainers gscs = gsa.getGridServiceContainers();
+        GridServiceContainers gscs = gsa.getMachine().getGridServiceContainers();
         gscs.waitFor(1, 2, TimeUnit.SECONDS);
         for (GridServiceContainer gsc : gscs.getContainers()){
             for (ProcessingUnitInstance pui : gsc.getProcessingUnitInstances(puName)){

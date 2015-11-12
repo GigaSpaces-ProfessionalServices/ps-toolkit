@@ -42,7 +42,7 @@
 
     </dependencies>
     <build>
-        <finalName>sita-rebalancing</finalName>
+        <finalName>grid-rebalancing</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>

@@ -16,12 +16,18 @@ public class RebalancingTask implements Runnable{
 
     @Override
     public void run() {
+        System.out.println("Rebalancing started");
         ProcessingUnits processingUnits = admin.getProcessingUnits();
         checkGridState();
+        System.out.println("Rebalancing: " + processingUnits.getSize() + " PUs found");
         for (ProcessingUnit processingUnit : processingUnits){
             ProcessingUnitType puType = processingUnit.getType();
-            if (puType == ProcessingUnitType.STATEFUL){
-                new StatefulProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance();
+            if (processingUnit.getInstances().length > 1){
+                if (puType == ProcessingUnitType.STATEFUL){
+                    new StatefulProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance();
+                }   else {
+                    new StatelessProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance();
+                }
             }
         }
     }
@@ -35,14 +41,16 @@ public class RebalancingTask implements Runnable{
         for (GridServiceAgent gsa : admin.getGridServiceAgents()){
             if (singleZoneGSA(gsa)){
                 for (GridServiceAgent gsaOnTheSameMachine : gsa.getMachine().getGridServiceAgents()){
-                    if (notTheSameGSA(gsa, gsaOnTheSameMachine) && singleZoneGSA(gsaOnTheSameMachine)){
-                        if (gsaOnTheSameMachine.getExactZones().isSatisfiedBy(gsa.getExactZones())){
+                    if (twoSingleZoneGSAsOnTheSameMachine(gsa, gsaOnTheSameMachine)){
                             throw new RuntimeException("Two GSAs with the same zone are running on one machine");
-                        }
                     }
                 }
             }
         }
+    }
+
+    private boolean twoSingleZoneGSAsOnTheSameMachine(GridServiceAgent gsa, GridServiceAgent gsaOnTheSameMachine) {
+        return notTheSameGSA(gsa, gsaOnTheSameMachine) && singleZoneGSA(gsaOnTheSameMachine) && gsaOnTheSameMachine.getExactZones().isSatisfiedBy(gsa.getExactZones());
     }
 
     private boolean notTheSameGSA(GridServiceAgent gsa, GridServiceAgent gsaOnTheSameMachine) {

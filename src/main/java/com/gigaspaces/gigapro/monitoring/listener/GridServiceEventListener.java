@@ -21,11 +21,13 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
 
     @Override
     public void gridServiceAgentAdded(GridServiceAgent gridServiceAgent) {
+        System.out.println("GSA added, starting rebalancing...");
         executor.execute(new RebalancingTask(admin));
     }
 
     @Override
     public void gridServiceAgentRemoved(GridServiceAgent gridServiceAgent) {
+        System.out.println("GSA removed, starting rebalancing...");
         executor.execute(new RebalancingTask(admin));
     }
 }

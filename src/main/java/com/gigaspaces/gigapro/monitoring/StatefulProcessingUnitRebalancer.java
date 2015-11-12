@@ -4,7 +4,6 @@ import com.gigaspaces.cluster.activeelection.SpaceMode;
 import org.apache.commons.collections.MapUtils;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
-import org.openspaces.admin.gsa.GridServiceAgents;
 import org.openspaces.admin.gsc.GridServiceContainer;
 import org.openspaces.admin.gsc.GridServiceContainers;
 import org.openspaces.admin.pu.ProcessingUnit;
@@ -13,26 +12,13 @@ import org.openspaces.admin.pu.ProcessingUnitInstance;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class StatefulProcessingUnitRebalancer {
-
-    private int MAX_REBALANCING_COUNT = 10;
-
-    private Admin admin;
-
-    private String puName;
+public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 
     public StatefulProcessingUnitRebalancer(Admin admin, String puName) {
-        this.admin = admin;
-        this.puName = puName;
+        super(admin, puName);
     }
 
-    public void rebalance(){
-        //get PU
-        ProcessingUnit processingUnit = getProcessingUnit(puName);
-
-        // get GSAa with zone
-        List<GridServiceAgent> gsas = getGridServiceAgents(processingUnit.getRequiredContainerZones().getZones());
-
+    protected void doRebalancing(ProcessingUnit processingUnit, List<GridServiceAgent> gsas) {
         for (int i = 0; i < MAX_REBALANCING_COUNT; i++){
             //get empty containers
             Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap = buildEmptyContainersMap(gsas);
@@ -88,7 +74,6 @@ public class StatefulProcessingUnitRebalancer {
                     System.out.println();
                     continue;
                 }
-
                 GridServiceAgent targetGSA = emptyContainersOnLowPrimaries.keySet().iterator().next();
                 String currentBackupGSA = pui.getSpaceInstance().getPartition().getBackup().getMachine().getHostName();
                 System.out.println(String.format("moving backup id=%d from %s to %s",
@@ -153,24 +138,6 @@ public class StatefulProcessingUnitRebalancer {
         }
     }
 
-    private Map<GridServiceAgent, List<GridServiceContainer>> buildEmptyContainersMap(List<GridServiceAgent> gsas){
-        Map<GridServiceAgent, List<GridServiceContainer>> result = new HashMap<>();
-        for (GridServiceAgent gsa : gsas){
-            for (GridServiceContainer gsc : gsa.getGridServiceContainers()){
-                if (gsc.getProcessingUnitInstances().length == 0){
-                    GridServiceAgent gridServiceAgent = gsc.getGridServiceAgent();
-                    List<GridServiceContainer> emptyContainers = result.get(gridServiceAgent);
-                    if (emptyContainers == null){
-                        emptyContainers = new ArrayList<>();
-                        result.put(gridServiceAgent, emptyContainers);
-                    }
-                    emptyContainers.add(gsc);
-                }
-            }
-        }
-        return result;
-    }
-
     private Map<GridServiceAgent, GridServiceContainer> findEmptyContainersOnLowPrimaries(
             Map<GridServiceAgent, List<GridServiceContainer>> emptyContainers, ProcessingUnitInstance primary, int instancesPerAgent){
         Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
@@ -207,26 +174,6 @@ public class StatefulProcessingUnitRebalancer {
 
     private boolean lowPrimaryAgent(GridServiceContainer gsc, int instancesPerAgent) {
         return listPrimariesOnGSA(gsc.getGridServiceAgent()).size() < instancesPerAgent;
-    }
-
-    private List<GridServiceAgent> getGridServiceAgents(Set<String> zones) {
-        List<GridServiceAgent> result = new ArrayList<>();
-        GridServiceAgents gridServiceAgents = admin.getGridServiceAgents();
-        gridServiceAgents.waitFor(1);
-        for (GridServiceAgent gsa : gridServiceAgents){
-            Set<String> gsaZones = gsa.getExactZones().getZones();
-            for (String zone : zones){
-                if (gsaZones.contains(zone)){
-                    result.add(gsa);
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    private ProcessingUnit getProcessingUnit(String puName) {
-        return admin.getProcessingUnits().getProcessingUnit(puName);
     }
 
 }

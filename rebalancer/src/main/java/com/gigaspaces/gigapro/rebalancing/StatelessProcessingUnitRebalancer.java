@@ -6,11 +6,15 @@ import org.openspaces.admin.gsc.GridServiceContainer;
 import org.openspaces.admin.gsc.GridServiceContainers;
 import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnitInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class StatelessProcessingUnitRebalancer extends ProcessingUnitRebalancer{
+
+    private static Logger logger = LoggerFactory.getLogger(StatelessProcessingUnitRebalancer.class);
 
     public StatelessProcessingUnitRebalancer(Admin admin, String puName) {
         super(admin, puName);
@@ -44,14 +48,14 @@ public class StatelessProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             }
 
             if (!unbalanced && highinstances.size() == unbalancedNodes){
-                System.out.println(puName + " is balanced");
+                logger.info(puName + " is balanced");
                 return;
             }
 
             boolean moved = quickSwapRestart(lowInstances, highinstances, emptyContainersMap);
 
             if (!moved){
-                System.out.println("rebalance failed for PU " + puName);
+                logger.info("rebalance failed for PU " + puName);
             }
         }
     }

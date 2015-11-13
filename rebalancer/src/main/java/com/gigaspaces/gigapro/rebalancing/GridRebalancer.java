@@ -17,15 +17,14 @@ public class GridRebalancer {
     private static Logger logger = LoggerFactory.getLogger(GridRebalancer.class);
 
     public void init() throws Exception {
-        logger.error("Rebalancing: creating admin");
-        System.out.println("Rebalancing: creating admin");
+        logger.info("Rebalancing: creating admin");
         Admin admin = new AdminFactory().createAdmin();
-        logger.error("Rebalancing: admin created");
-        System.out.println("Rebalancing: admin created");
+        logger.info("Rebalancing: admin created");
         admin.getMachines().waitFor(1);
-        System.out.println("Rebalancing: one machine appeared");
+        logger.info("Rebalancing: one machine appeared");
 
         // rebalance grid first time
+        logger.info("Rebalancing: going to rebalance grid first time");
         Executor executor = Executors.newSingleThreadExecutor();
         executor.execute(new RebalancingTask(admin));
 

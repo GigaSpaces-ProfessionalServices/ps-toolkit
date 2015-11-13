@@ -5,8 +5,12 @@ import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnitType;
 import org.openspaces.admin.pu.ProcessingUnits;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RebalancingTask implements Runnable{
+
+    private static Logger logger = LoggerFactory.getLogger(RebalancingTask.class);
 
     private Admin admin;
 
@@ -16,10 +20,10 @@ public class RebalancingTask implements Runnable{
 
     @Override
     public void run() {
-        System.out.println("Rebalancing started");
+        logger.info("Rebalancing started");
         ProcessingUnits processingUnits = admin.getProcessingUnits();
         checkGridState();
-        System.out.println("Rebalancing: " + processingUnits.getSize() + " PUs found");
+        logger.info("Rebalancing: " + processingUnits.getSize() + " PUs found");
         for (ProcessingUnit processingUnit : processingUnits){
             ProcessingUnitType puType = processingUnit.getType();
             if (processingUnit.getInstances().length > 1){
@@ -28,6 +32,8 @@ public class RebalancingTask implements Runnable{
                 }   else {
                     new StatelessProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance();
                 }
+            }   else {
+                logger.info(String.format("ProcessingUnit %s has one instance and can't be rebalanced", processingUnit.getName()));
             }
         }
     }
@@ -42,7 +48,8 @@ public class RebalancingTask implements Runnable{
             if (singleZoneGSA(gsa)){
                 for (GridServiceAgent gsaOnTheSameMachine : gsa.getMachine().getGridServiceAgents()){
                     if (twoSingleZoneGSAsOnTheSameMachine(gsa, gsaOnTheSameMachine)){
-                            throw new RuntimeException("Two GSAs with the same zone are running on one machine");
+                            throw new RuntimeException(String.format("Two GSAs with the same zone are running on one machine. Zone %s. UID-1 %s, UID-2 %s",
+                                                        gsa.getExactZones().getZones().iterator().next(), gsa.getUid(), gsaOnTheSameMachine.getUid()));
                     }
                 }
             }

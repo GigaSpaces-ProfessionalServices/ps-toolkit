@@ -7,11 +7,15 @@ import org.openspaces.admin.gsc.GridServiceContainer;
 import org.openspaces.admin.gsc.GridServiceContainers;
 import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnitInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
+
+    private static Logger logger = LoggerFactory.getLogger(StatefulProcessingUnitRebalancer.class);
 
     public StatefulProcessingUnitRebalancer(Admin admin, String puName) {
         super(admin, puName);
@@ -21,9 +25,6 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         for (int i = 0; i < MAX_REBALANCING_COUNT; i++){
             //get empty containers
             Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap = buildEmptyContainersMap(gsas);
-
-            // check PU is deployed
-            checkProcessingUnitDeployment(processingUnit);
 
             //how many unbalanced nodes can be?
             int instancesPerAgent = processingUnit.getPartitions().length / gsas.size();
@@ -47,7 +48,7 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             }
 
             if (!unbalanced && highPrimaries.size() == unbalancedNodes){
-                System.out.println(puName + " is balanced");
+                logger.info(puName + " is balanced");
                 return;
             }
 
@@ -58,7 +59,7 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             }
 
             if (!moved){
-                System.out.println("rebalance failed for PU " + puName);
+                logger.error("rebalance failed for PU " + puName);
             }
         }
     }
@@ -70,15 +71,14 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             for (ProcessingUnitInstance pui : processingUnitInstances){
                 Map<GridServiceAgent, GridServiceContainer> emptyContainersOnLowPrimaries = findEmptyContainersOnLowPrimaries(emptyContainersMap, pui, instancesPerAgent);
                 if (emptyContainersOnLowPrimaries.isEmpty()){
-                    System.out.println();
                     continue;
                 }
                 GridServiceAgent targetGSA = emptyContainersOnLowPrimaries.keySet().iterator().next();
                 String currentBackupGSA = pui.getSpaceInstance().getPartition().getBackup().getMachine().getHostName();
-                System.out.println(String.format("moving backup id=%d from %s to %s",
+                logger.info(String.format("moving backup id=%d from %s to %s",
                         pui.getInstanceId(), currentBackupGSA, targetGSA.getMachine().getHostName()));
                 findBackupInstanceForPrimary(pui).relocateAndWait(emptyContainersOnLowPrimaries.get(targetGSA));
-                System.out.println(String.format("backup on %s restarting primary", targetGSA.getMachine().getHostName()));
+                logger.info(String.format("backup on %s restarting primary", targetGSA.getMachine().getHostName()));
                 pui.restartAndWait();
                 moved = true;
                 break;
@@ -96,12 +96,12 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 //                Look for a quick swap -- if backup on low primary machine, restart primary
                 for (GridServiceAgent lowPrimaryGSA : lowPrimaries.keySet()){
                     if (backupIsOnLowPrimaryGSA(pui, lowPrimaryGSA)){
-                        System.out.println(String.format("restarting %s primary at machine %s", pui.getName(), pui.getMachine().getHostName()));
+                        logger.info(String.format("restarting %s primary at machine %s", pui.getName(), pui.getMachine().getHostName()));
                         pui.restartAndWait();
                         moved = true;
                         break;
                     }   else {
-                        System.out.println(String.format("backup for %s is not found on low-primary GSA", pui.getName()));
+                        logger.info(String.format("backup for %s is not found on low-primary GSA", pui.getName()));
                     }
                 }
                 if (moved) break;
@@ -129,14 +129,6 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         return primaries;
     }
 
-    private void checkProcessingUnitDeployment(ProcessingUnit processingUnit) {
-        ProcessingUnitInstance[] instances = processingUnit.getInstances();
-        if (instances.length < processingUnit.getPlannedNumberOfInstances()){
-            //TODO what to do?
-            System.out.println("PU is not deployed");
-        }
-    }
-
     private Map<GridServiceAgent, GridServiceContainer> findEmptyContainersOnLowPrimaries(
             Map<GridServiceAgent, List<GridServiceContainer>> emptyContainers, ProcessingUnitInstance primary, int instancesPerAgent){
         Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
@@ -144,9 +136,9 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             GridServiceContainer container = gsaToGsc.getValue().get(0);
             if (isEmptyContainerEligible(container, primary, instancesPerAgent)){
                 result.put(gsaToGsc.getKey(), container);
-                System.out.println(String.format("added %s at %s machine as primary target", container.getUid(), container.getMachine().getHostName()));
-                System.out.println("primary hostname " + primary.getMachine().getHostName());
-                System.out.println("primary backup hostname " + primary.getSpaceInstance().getPartition().getBackup().getMachine().getHostName());
+                logger.info(String.format("added %s at %s machine as primary target", container.getUid(), container.getMachine().getHostName()));
+                logger.info("primary hostname " + primary.getMachine().getHostName());
+                logger.info("primary backup hostname " + primary.getSpaceInstance().getPartition().getBackup().getMachine().getHostName());
             }
         }
         return result;

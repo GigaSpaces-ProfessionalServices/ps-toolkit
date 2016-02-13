@@ -76,7 +76,7 @@
         </plugins>
     </build>
 
-    <repositories>
+    <!-- <repositories>
         <repository>
             <id>org.openspaces</id>
             <url>http://maven-repository.openspaces.org</url>
@@ -88,6 +88,6 @@
             <id>org.openspaces</id>
             <url>http://maven-repository.openspaces.org</url>
         </pluginRepository>
-    </pluginRepositories>
+    </pluginRepositories> -->
 
 </project>

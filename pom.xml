@@ -50,6 +50,10 @@
 
     <repositories>
         <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
             <id>org.openspaces</id>
             <url>http://maven-repository.openspaces.org</url>
         </repository>
@@ -57,9 +61,12 @@
 
     <pluginRepositories>
         <pluginRepository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </pluginRepository>
+        <pluginRepository>
             <id>org.openspaces</id>
             <url>http://maven-repository.openspaces.org</url>
         </pluginRepository>
     </pluginRepositories>
-
 </project>

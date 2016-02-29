@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>XAP config</title>
+<link rel="stylesheet" href="./bower_components/bootstrap-css-only/css/bootstrap.min.css" />
+</head>
+<body ng-app="xapConfigApp">
+    <div class="container" ng-controller="MainController">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <label class="col-md-2" for="javaHome">Java Home: </label>
+                <div class="col-md-3"> 
+                    <input id="javaHome" class="form-control" type="text" ng-model="options.javaHome" />
+                </div>
+                <label class="col-md-2 col-md-offset-2" for="maxProcessesNumber">Acceptable Ulimit -u: </label>
+                <div class="col-md-3">
+                    <input id="maxProcessesNumber" class="form-control" type="text" ng-model="options.maxProcessesNumber" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-md-2" for="xapHome">XAP Home: </label>
+                <div class="col-md-3"> 
+                    <input id="xapHome" class="form-control" type="text" ng-model="options.xapHome" />
+                </div>
+                <label class="col-md-2 col-md-offset-2" for="maxOpenFileDescriptorsNumber">Acceptable Ulimit -n: </label>
+                <div class="col-md-3">
+                    <input id="maxOpenFileDescriptorsNumber" class="form-control" type="text" ng-model="options.maxOpenFileDescriptorsNumber" />
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-1"><input id="unicast" type="checkbox" ng-model="options.isUnicast"/></div>
+                <label class="col-md-1" for="unicast"> Unicast</label>
+                <div class="col-md-2 col-md-offset-1"><input class="form-control" type="text" msd-placeholder="UNI-PORT" ng-model="options.discoveryPort" /></div>
+                <div class="col-md-3"><input class="form-control" type="text" msd-placeholder="LUS_HOSTS" ng-model="options.lookupLocators" /></div>
+                <div class="col-md-2"><input class="form-control" type="text" msd-placeholder="GROUP" ng-model="options.lookupGroups" /></div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-4"><input type="submit" ng-click="update(options)" value="Generate" />
+                <input type="button" ng-click="reset()" value="Reset" /></div>
+            </div>
+        </form>
+    </div>
+    <script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
+    <script type="text/javascript" src="./bower_components/angular-resource/angular-resource.min.js"></script>
+    <script type="text/javascript" src="./bower_components/angular-placeholder/placeholder.js"></script>
+    <script type="text/javascript" src="./app/app.js"></script>
+    <script type="text/javascript" src="./app/controller.js"></script>
+    <script type="text/javascript" src="./app/service.js"></script>
+</body>
+</html>

@@ -1,12 +1,13 @@
 package com.gigaspaces.gigapro.web.listener;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.util.Assert;
 
-import java.awt.Desktop;
+import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,6 +20,7 @@ import java.util.Locale;
 public class BrowserLauncher implements ApplicationListener<ApplicationReadyEvent> {
 
     private final String url;
+
     private static final Logger LOG = LoggerFactory.getLogger(BrowserLauncher.class);
     
     private static final String OS_NAME_KEY = "os.name";
@@ -32,12 +34,12 @@ public class BrowserLauncher implements ApplicationListener<ApplicationReadyEven
         if (Desktop.isDesktopSupported()) {
             runDefaultBrowser();
         } else {
-            String osName = System.getProperty(OS_NAME_KEY, "").toLowerCase(Locale.ENGLISH);
-            if (osName.indexOf("nux") != -1) {
+            if (SystemUtils.IS_OS_UNIX) {
                 runDefaultBrowserOnUnix();
-            } else if (osName.indexOf("win") != -1) {
+            } else if (SystemUtils.IS_OS_WINDOWS) {
                 runDefaultBrowserOnWindows();
             } else {
+                String osName = System.getProperty(OS_NAME_KEY, "").toLowerCase(Locale.ENGLISH);
                 LOG.warn("Unsupported OS name: " + osName + ". Failed to launch user default browser."); 
             }
         }

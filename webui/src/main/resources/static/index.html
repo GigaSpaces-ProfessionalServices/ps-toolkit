@@ -1,50 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>XAP config</title>
-<link rel="stylesheet" href="./bower_components/bootstrap-css-only/css/bootstrap.min.css" />
+    <title>XAP config</title>
+    <link rel="stylesheet" href="./bower_components/bootstrap-css-only/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="./css/additional.css"/>
 </head>
 <body ng-app="xapConfigApp">
-    <div class="container" ng-controller="MainController">
-        <form class="form-horizontal">
-            <div class="form-group">
-                <label class="col-md-2" for="javaHome">Java Home: </label>
-                <div class="col-md-3"> 
-                    <input id="javaHome" class="form-control" type="text" ng-model="options.javaHome" />
-                </div>
-                <label class="col-md-2 col-md-offset-2" for="maxProcessesNumber">Acceptable Ulimit -u: </label>
-                <div class="col-md-3">
-                    <input id="maxProcessesNumber" class="form-control" type="text" ng-model="options.maxProcessesNumber" />
-                </div>
+<div class="container" ng-controller="MainController">
+    <form name="xapConfigForm" class="form-horizontal voffset6" novalidate>
+        <div class="form-group">
+            <label class="col-md-2 col-md-offset-2" for="javaHome">Java Home:
+                <span class="asteriskField">*</span>
+            </label>
+            <div class="col-md-3">
+                <input id="javaHome" name="javaHome" class="form-control input-md" type="text"
+                       msd-placeholder="/usr/bin/java/" required
+                       ng-model="options.javaHome"/>
+                <span style="color:red" ng-show="xapConfigForm.javaHome.$touched && xapConfigForm.javaHome.$invalid">Java Home is required.</span>
             </div>
-            <div class="form-group">
-                <label class="col-md-2" for="xapHome">XAP Home: </label>
-                <div class="col-md-3"> 
-                    <input id="xapHome" class="form-control" type="text" ng-model="options.xapHome" />
-                </div>
-                <label class="col-md-2 col-md-offset-2" for="maxOpenFileDescriptorsNumber">Acceptable Ulimit -n: </label>
-                <div class="col-md-3">
-                    <input id="maxOpenFileDescriptorsNumber" class="form-control" type="text" ng-model="options.maxOpenFileDescriptorsNumber" />
-                </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-2 col-md-offset-2" for="xapHome">XAP Home:
+                <span class="asteriskField">*</span>
+            </label>
+            <div class="col-md-3">
+                <input id="xapHome" name="xapHome" class="form-control" type="text" msd-placeholder="/opt/giga-10-ga/"
+                       required
+                       ng-model="options.xapHome"/>
+                <span style="color:red" ng-show="xapConfigForm.xapHome.$touched && xapConfigForm.xapHome.$invalid">XAP Home is required.</span>
             </div>
-            <div class="form-group">
-                <div class="col-md-1"><input id="unicast" type="checkbox" ng-model="options.isUnicast"/></div>
-                <label class="col-md-1" for="unicast"> Unicast</label>
-                <div class="col-md-2 col-md-offset-1"><input class="form-control" type="text" msd-placeholder="UNI-PORT" ng-model="options.discoveryPort" /></div>
-                <div class="col-md-3"><input class="form-control" type="text" msd-placeholder="LUS_HOSTS" ng-model="options.lookupLocators" /></div>
-                <div class="col-md-2"><input class="form-control" type="text" msd-placeholder="GROUP" ng-model="options.lookupGroups" /></div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-2 col-md-offset-2" for="maxProcessesNumber">Acceptable Ulimit -u: </label>
+            <div class="col-md-3">
+                <input id="maxProcessesNumber" class="form-control" type="text" ng-model="options.maxProcessesNumber"/>
             </div>
-            <div class="form-group">
-                <div class="col-md-4"><input type="submit" ng-click="update(options)" value="Generate" />
-                <input type="button" ng-click="reset()" value="Reset" /></div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-2 col-md-offset-2" for="maxOpenFileDescriptorsNumber">Acceptable Ulimit -n: </label>
+            <div class="col-md-3">
+                <input id="maxOpenFileDescriptorsNumber" class="form-control" type="text"
+                       ng-model="options.maxOpenFileDescriptorsNumber"/>
             </div>
-        </form>
-    </div>
-    <script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
-    <script type="text/javascript" src="./bower_components/angular-resource/angular-resource.min.js"></script>
-    <script type="text/javascript" src="./bower_components/angular-placeholder/placeholder.js"></script>
-    <script type="text/javascript" src="./app/app.js"></script>
-    <script type="text/javascript" src="./app/controller.js"></script>
-    <script type="text/javascript" src="./app/service.js"></script>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-1 col-md-offset-2" for="unicast">Unicast:</label>
+            <div class="col-md-1 ">
+                <input name="unicast" id="unicast" type="checkbox" ng-model="options.isUnicast"/>
+            </div>
+            <div class="col-md-2">
+                <input name="uniport" class="form-control" type="text" msd-placeholder="UNI-PORT"
+                       ng-model="options.discoveryPort" ng-required="options.isUnicast == true" />
+                <span style="color:red" ng-show="xapConfigForm.unicast.$touched && xapConfigForm.uniport.$touched && xapConfigForm.uniport.$invalid">UNI-PORT is required.</span>
+            </div>
+            <div class="col-md-3">
+                <input name="hosts" class="form-control" type="text" msd-placeholder="LUS_HOSTS"
+                       ng-model="options.lookupLocators" ng-required="options.isUnicast == true" />
+                <span style="color:red" ng-show="xapConfigForm.unicast.$touched && xapConfigForm.hosts.$touched && xapConfigForm.hosts.$invalid">LUS_HOSTS is required.</span>
+            </div>
+            <div class="col-md-2">
+                <input name="group" class="form-control" type="text" msd-placeholder="GROUP" required
+                       ng-model="options.lookupGroups" />
+                <span style="color:red" ng-show="xapConfigForm.group.$touched && xapConfigForm.group.$invalid">Lookup group is required.</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-4 col-md-offset-2">
+                <input type="submit" class="btn btn-primary" ng-click="update(options)" value="Generate"
+                       ng-disabled="xapConfigForm.javaHome.$invalid || xapConfigForm.xapHome.$invalid || xapConfigForm.group.$invalid ||
+                                    xapConfigForm.hosts.$invalid || xapConfigForm.uniport.$invalid"/>
+
+                <input type="button" class="btn btn-default" ng-click="reset(xapConfigForm)" value="Reset"/>
+            </div>
+        </div>
+    </form>
+</div>
+<script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
+<script type="text/javascript" src="./bower_components/angular-resource/angular-resource.min.js"></script>
+<script type="text/javascript" src="./bower_components/angular-placeholder/placeholder.js"></script>
+<script type="text/javascript" src="./app/app.js"></script>
+<script type="text/javascript" src="./app/controller.js"></script>
+<script type="text/javascript" src="./app/service.js"></script>
 </body>
 </html>

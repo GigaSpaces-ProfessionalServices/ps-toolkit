@@ -10,7 +10,8 @@ import java.nio.file.Path;
 
 import static java.nio.file.Files.*;
 import static java.nio.file.Paths.get;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.SystemUtils.IS_OS_UNIX;
 
 @Service
@@ -21,7 +22,7 @@ public class JavaHomeValidationService implements ValidationService {
     @Override
     public ValidationResponse validate(ValidationRequest request) {
         ValidationResponse response = new ValidationResponse();
-        if (request == null || isEmpty(request.getValue())) {
+        if (request == null || isBlank(request.getValue())) {
             response.setValue("Invalid value: " + request);
             return response;
         }
@@ -34,7 +35,7 @@ public class JavaHomeValidationService implements ValidationService {
             } else {
                 response.setValue("JDK cannot be found by this path: " + request.getValue());
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             response.setValue("Error: " + e.getMessage());
         }
         return response;
@@ -49,7 +50,7 @@ public class JavaHomeValidationService implements ValidationService {
     }
 
     private boolean isEqualToJavaHome(Path pathToValidate) throws IOException {
-        Path javaHome = get(System.getenv("JAVA_HOME"));
-        return isSameFile(javaHome, pathToValidate);
+        String javaHomePath = System.getenv("JAVA_HOME");
+        return isNotBlank(javaHomePath) && isSameFile(get(javaHomePath), pathToValidate);
     }
 }

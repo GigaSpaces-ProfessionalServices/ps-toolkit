@@ -12,3 +12,17 @@
 .asteriskField {
     color: red;
 }
+
+.message {
+    color: #337ab7;
+    font-family: Consolas,"courier new";
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.error-message {
+    color: red;
+    font-family: Consolas,"courier new";
+    font-size: 14px;
+    line-height: 1.4;
+}

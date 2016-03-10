@@ -14,7 +14,7 @@
             </label>
             <div class="col-md-3">
                 <input id="javaHome" name="javaHome" class="form-control input-md" type="text" required
-                       msd-placeholder="/usr/bin/java/" ng-model="options.javaHome" ng-remote-validate="/validjavahome" />
+                       msd-placeholder="/usr/lib/java/" ng-model="options.javaHome" ng-remote-validate="/validjavahome" />
                 <span class="error-message" ng-show="xapConfigForm.javaHome.$touched && xapConfigForm.javaHome.$error.required">Java Home is required.</span>
                 <span class="error-message" ng-show="xapConfigForm.javaHome.$error.ngRemoteValidate">JDK cannot be found by this path.</span>
                 <span class="message" ng-show="xapConfigForm.javaHome.$pending">Validating JAVA_HOME...</span>

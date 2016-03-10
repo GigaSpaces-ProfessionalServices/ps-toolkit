@@ -19,6 +19,7 @@
         <spring.boot.version>1.3.3.RELEASE</spring.boot.version>
         <lombock.version>1.16.8</lombock.version>
         <apache.commons.version>3.4</apache.commons.version>
+        <jackson-annotations-version>2.7.0</jackson-annotations-version>
     </properties>
 
     <dependencyManagement>
@@ -68,6 +69,11 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${apache.commons.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson-annotations-version}</version>
         </dependency>
     </dependencies>
 

@@ -72,7 +72,7 @@
 
         <div class="form-group">
             <div class="col-md-4 col-md-offset-2">
-                <input type="submit" class="btn btn-primary" ng-click="update(options)" value="Generate"
+                <input type="submit" class="btn btn-primary" ng-click="download(options)" value="Generate"
                        ng-disabled="xapConfigForm.$invalid || myForm.$pending"/>
 
                 <input type="button" class="btn btn-default" ng-click="reset(xapConfigForm)" value="Reset"/>
@@ -84,8 +84,8 @@
 <script type="text/javascript" src="./bower_components/angular-resource/angular-resource.min.js"></script>
 <script type="text/javascript" src="./bower_components/angular-placeholder/placeholder.js"></script>
 <script type="text/javascript" src="./bower_components/ng-remote-validate/release/ngRemoteValidate.js"></script>
+<script type="text/javascript" src="./bower_components/angular-file-saver/dist/angular-file-saver.bundle.js"></script>
 <script type="text/javascript" src="./app/app.js"></script>
 <script type="text/javascript" src="./app/controller.js"></script>
-<script type="text/javascript" src="./app/service.js"></script>
 </body>
 </html>

@@ -16,4 +16,5 @@ public class XapConfigOptions {
     private Integer discoveryPort;
     private String lookupLocators;
     private String lookupGroups;
+    private XAPConfigScriptType scriptType;
 }

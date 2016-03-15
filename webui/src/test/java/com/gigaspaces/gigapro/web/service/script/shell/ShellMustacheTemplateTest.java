@@ -14,8 +14,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 
-import static com.gigaspaces.gigapro.web.service.script.shell.XAPTestOptions.getOptionsUnicastFalse;
-import static com.gigaspaces.gigapro.web.service.script.shell.XAPTestOptions.getOptionsUnicastTrue;
+import static com.gigaspaces.gigapro.web.XAPTestOptions.*;
 import static org.apache.commons.lang3.StringUtils.wrap;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -28,6 +27,7 @@ public class ShellMustacheTemplateTest {
 
     private static XapConfigOptions optionsUnicastTrue = getOptionsUnicastTrue();
     private static XapConfigOptions optionsUnicastFalse = getOptionsUnicastFalse();
+    private static XapConfigOptions optionsManyLocators = getOptionsManyLocators();
 
     @Resource(name = "shellMustache")
     private Mustache shellMustache;
@@ -46,7 +46,7 @@ public class ShellMustacheTemplateTest {
                 containsString("DISCOVERY_PORT=" + wrap(optionsUnicastTrue.getDiscoveryPort().toString(), '"')),
                 containsString("LOOKUPGROUPS=" + wrap(optionsUnicastTrue.getLookupGroups(), '"')),
                 containsString("LOOKUPLOCATORS=" + wrap(optionsUnicastTrue.getLookupLocators() + ":" + optionsUnicastTrue.getDiscoveryPort(), '"')),
-                containsString("-Dcom.gs.multicast.enabled=" + optionsUnicastTrue.getIsUnicast()),
+                containsString("-Dcom.gs.multicast.enabled=" + !optionsUnicastTrue.getIsUnicast()),
                 containsString("uname -u < " + optionsUnicastTrue.getMaxProcessesNumber()),
                 containsString("uname -n < " + optionsUnicastTrue.getMaxOpenFileDescriptorsNumber())
         ));
@@ -66,9 +66,20 @@ public class ShellMustacheTemplateTest {
                 containsString("DISCOVERY_PORT=" + wrap(optionsUnicastFalse.getDiscoveryPort().toString(), '"')),
                 containsString("LOOKUPGROUPS=" + wrap(optionsUnicastFalse.getLookupGroups(), '"')),
                 containsString("LOOKUPLOCATORS=" + wrap(optionsUnicastFalse.getLookupLocators() + ":" + optionsUnicastTrue.getDiscoveryPort(), '"')),
-                containsString("-Dcom.gs.multicast.enabled=" + optionsUnicastFalse.getIsUnicast()),
+                containsString("-Dcom.gs.multicast.enabled=" + !optionsUnicastFalse.getIsUnicast()),
                 containsString("uname -u < " + optionsUnicastFalse.getMaxProcessesNumber()),
                 containsString("uname -n < " + optionsUnicastFalse.getMaxOpenFileDescriptorsNumber())
         ));
+    }
+
+    @Test
+    public void manyLookupLocatorsTest() throws IOException {
+        String result;
+        try (Writer writer = new StringWriter()) {
+            shellMustache.execute(writer, optionsManyLocators).flush();
+            result = writer.toString();
+        }
+
+        assertThat(result, containsString("LOOKUPLOCATORS=" + wrap(optionsManyLocators.getLookupLocatorsWithPort(), '"')));
     }
 }

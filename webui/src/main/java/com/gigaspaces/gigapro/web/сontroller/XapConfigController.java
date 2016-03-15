@@ -2,9 +2,9 @@ package com.gigaspaces.gigapro.web.сontroller;
 
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import com.gigaspaces.gigapro.web.service.ZippedConfigCreator;
-import com.gigaspaces.gigapro.web.validation.model.ValidationRequest;
-import com.gigaspaces.gigapro.web.validation.model.ValidationResponse;
-import com.gigaspaces.gigapro.web.validation.service.ValidationService;
+import com.gigaspaces.gigapro.web.model.ValidationRequest;
+import com.gigaspaces.gigapro.web.model.ValidationResponse;
+import com.gigaspaces.gigapro.web.service.validation.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package com.gigaspaces.gigapro.web.validation.model;
+package com.gigaspaces.gigapro.web.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

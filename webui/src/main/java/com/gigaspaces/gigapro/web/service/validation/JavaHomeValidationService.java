@@ -1,7 +1,7 @@
-package com.gigaspaces.gigapro.web.validation.service;
+package com.gigaspaces.gigapro.web.service.validation;
 
-import com.gigaspaces.gigapro.web.validation.model.ValidationRequest;
-import com.gigaspaces.gigapro.web.validation.model.ValidationResponse;
+import com.gigaspaces.gigapro.web.model.ValidationRequest;
+import com.gigaspaces.gigapro.web.model.ValidationResponse;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;

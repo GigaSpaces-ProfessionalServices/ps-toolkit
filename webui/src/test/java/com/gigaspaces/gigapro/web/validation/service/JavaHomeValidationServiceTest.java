@@ -1,7 +1,8 @@
 package com.gigaspaces.gigapro.web.validation.service;
 
-import com.gigaspaces.gigapro.web.validation.model.ValidationRequest;
-import com.gigaspaces.gigapro.web.validation.model.ValidationResponse;
+import com.gigaspaces.gigapro.web.model.ValidationRequest;
+import com.gigaspaces.gigapro.web.model.ValidationResponse;
+import com.gigaspaces.gigapro.web.service.validation.JavaHomeValidationService;
 import org.junit.Assert;
 import org.junit.Test;
 

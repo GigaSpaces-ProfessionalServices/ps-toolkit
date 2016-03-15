@@ -18,13 +18,13 @@ export INSTALL_LOGS_DIR="$SCRIPT_INSTALL/logs"
 
 export LOOKUPGROUPS="{{lookupGroups}}"
 export DISCOVERY_PORT="{{discoveryPort}}"
-export LOOKUPLOCATORS="{{lookupLocators}}:{{discoveryPort}}"
+export LOOKUPLOCATORS="{{getLookupLocatorsWithPort}}"
 
 {{#isUnicast}}
-export UNICAST_OPTIONS="-Dcom.gs.multicast.enabled=true -Dcom.gs.multicast.discoveryPort=$DISCOVERY_PORT -Dcom.sun.jini.reggie.initialUnicastDiscoveryPort=$DISCOVERY_PORT -Dcom.gs.jini_lus.unicast_discovery.enabled=true"
+export UNICAST_OPTIONS="-Dcom.gs.multicast.enabled=false -Dcom.gs.multicast.discoveryPort=$DISCOVERY_PORT -Dcom.sun.jini.reggie.initialUnicastDiscoveryPort=$DISCOVERY_PORT -Dcom.gs.jini_lus.unicast_discovery.enabled=true"
 {{/isUnicast}}
 {{^isUnicast}}
-export UNICAST_OPTIONS="-Dcom.gs.multicast.enabled=false -Dcom.gs.multicast.discoveryPort=$DISCOVERY_PORT -Dcom.sun.jini.reggie.initialUnicastDiscoveryPort=$DISCOVERY_PORT -Dcom.gs.jini_lus.unicast_discovery.enabled=true"
+export UNICAST_OPTIONS="-Dcom.gs.multicast.enabled=true -Dcom.gs.multicast.discoveryPort=$DISCOVERY_PORT -Dcom.sun.jini.reggie.initialUnicastDiscoveryPort=$DISCOVERY_PORT -Dcom.gs.jini_lus.unicast_discovery.enabled=true"
 {{/isUnicast}}
 
 export LRMI_PORT_OPTIONS="-Dcom.gs.transport_protocol.lrmi.bind-port=4600-4699 -Dcom.gigaspaces.system.registryPort=10198"

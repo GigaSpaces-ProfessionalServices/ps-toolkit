@@ -19,8 +19,8 @@ import java.io.Writer;
 import java.nio.file.Path;
 
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
-import static com.gigaspaces.gigapro.web.service.script.shell.XAPTestOptions.getOptionsUnicastFalse;
-import static com.gigaspaces.gigapro.web.service.script.shell.XAPTestOptions.getOptionsUnicastTrue;
+import static com.gigaspaces.gigapro.web.XAPTestOptions.getOptionsUnicastFalse;
+import static com.gigaspaces.gigapro.web.XAPTestOptions.getOptionsUnicastTrue;
 import static java.nio.file.Files.readAllBytes;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;

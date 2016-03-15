@@ -2,8 +2,8 @@ package com.gigaspaces.gigapro.web.controller;
 
 import com.gigaspaces.gigapro.web.Application;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
-import com.gigaspaces.gigapro.web.validation.model.ValidationRequest;
-import com.gigaspaces.gigapro.web.validation.model.ValidationResponse;
+import com.gigaspaces.gigapro.web.model.ValidationRequest;
+import com.gigaspaces.gigapro.web.model.ValidationResponse;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;

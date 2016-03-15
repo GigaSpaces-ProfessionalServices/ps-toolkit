@@ -21,6 +21,7 @@
         <apache.commons.version>3.4</apache.commons.version>
         <apache.commons.io.version>2.4</apache.commons.io.version>
         <jackson-annotations-version>2.7.0</jackson-annotations-version>
+        <mustache-version>0.9.1</mustache-version>
     </properties>
 
     <dependencyManagement>
@@ -76,11 +77,15 @@
             <artifactId>commons-io</artifactId>
             <version>${apache.commons.io.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
             <version>${jackson-annotations-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.spullara.mustache.java</groupId>
+            <artifactId>compiler</artifactId>
+            <version>${mustache-version}</version>
         </dependency>
     </dependencies>
 

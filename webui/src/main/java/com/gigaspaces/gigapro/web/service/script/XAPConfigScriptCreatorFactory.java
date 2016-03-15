@@ -3,14 +3,17 @@ package com.gigaspaces.gigapro.web.service.script;
 import com.gigaspaces.gigapro.web.model.XAPConfigScriptType;
 import com.gigaspaces.gigapro.web.service.script.bat.XAPConfigBatScriptCreator;
 import com.gigaspaces.gigapro.web.service.script.shell.XAPConfigShellScriptCreator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class XAPConfigScriptCreatorFactory {
 
-    private XAPConfigBatScriptCreator batScriptCreator = new XAPConfigBatScriptCreator();
+    @Autowired
+    private XAPConfigBatScriptCreator batScriptCreator;
 
-    private XAPConfigShellScriptCreator shellScriptCreator = new XAPConfigShellScriptCreator();
+    @Autowired
+    private XAPConfigShellScriptCreator shellScriptCreator;
 
     public XAPConfigScriptCreator getXAPConfigScriptCreator(XAPConfigScriptType scriptType) {
         switch (scriptType) {

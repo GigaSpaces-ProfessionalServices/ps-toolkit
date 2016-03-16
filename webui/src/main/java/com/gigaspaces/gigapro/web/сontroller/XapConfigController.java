@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
@@ -34,7 +35,7 @@ public class XapConfigController {
     private ZippedConfigCreator zippedConfigCreator;
 
     @RequestMapping(value = "/generate", method = POST, consumes = APPLICATION_JSON_VALUE)
-    public ResponseEntity generate(@RequestBody XapConfigOptions xapConfigOptions) throws IOException {
+    public ResponseEntity generate(@RequestBody XapConfigOptions xapConfigOptions) throws IOException, URISyntaxException {
         xapConfigOptions.setScriptType(SHELL);  // SHELL script type is set manually until another script types are implemented
 
         LOG.info("Generating script using options: " + xapConfigOptions);

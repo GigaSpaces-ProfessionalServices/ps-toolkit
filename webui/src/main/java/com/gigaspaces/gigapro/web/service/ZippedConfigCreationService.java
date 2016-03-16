@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -24,14 +25,18 @@ public class ZippedConfigCreationService implements ZippedConfigCreator {
     @Autowired
     private XAPConfigScriptCreatorFactory scriptCreatorFactory;
 
-    @Value("${app.zipped.config.name}")
+    @Value("${app.zipped-config.name}")
     private String zipConfigName;
 
     @Override
-    public Path createZippedConfig(XapConfigOptions xapConfigOptions) throws IOException {
+    public Path createZippedConfig(XapConfigOptions xapConfigOptions) throws IOException, URISyntaxException {
         XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(xapConfigOptions.getScriptType());
-        Path script = scriptCreator.createScript(xapConfigOptions);
-        List<Path> filesToZip = asList(createTempDir("config"), createTempDir("lib"), createTempDir("local"), createTempDir("logs"), createTempDir("work"), createTempDir("deploy"), script);
+        Path setAppEnvScript = scriptCreator.createSetAppEnvScript(xapConfigOptions);
+        Path webuiScript = scriptCreator.getWebuiScript();
+        Path cliScript = scriptCreator.getCliScript();
+        List<Path> filesToZip = asList(
+                createTempDir("config"), createTempDir("lib"), createTempDir("local"), createTempDir("logs"), createTempDir("work"), createTempDir("deploy"),
+                setAppEnvScript, webuiScript, cliScript);
         return zipFileCreator.createZipFile(zipConfigName, filesToZip);
     }
 }

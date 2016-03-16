@@ -29,14 +29,14 @@ public class ShellMustacheTemplateTest {
     private static XapConfigOptions optionsUnicastFalse = getOptionsUnicastFalse();
     private static XapConfigOptions optionsManyLocators = getOptionsManyLocators();
 
-    @Resource(name = "shellMustache")
-    private Mustache shellMustache;
+    @Resource(name = "setAppEnvShellMustache")
+    private Mustache setAppEnvShellMustache;
 
     @Test
     public void unicastIsTrueTest() throws IOException {
         String result;
         try (Writer writer = new StringWriter()) {
-            shellMustache.execute(writer, optionsUnicastTrue).flush();
+            setAppEnvShellMustache.execute(writer, optionsUnicastTrue).flush();
             result = writer.toString();
         }
 
@@ -56,7 +56,7 @@ public class ShellMustacheTemplateTest {
     public void unicastIsFalseTest() throws IOException {
         String result;
         try (Writer writer = new StringWriter()) {
-            shellMustache.execute(writer, optionsUnicastFalse).flush();
+            setAppEnvShellMustache.execute(writer, optionsUnicastFalse).flush();
             result = writer.toString();
         }
 
@@ -76,7 +76,7 @@ public class ShellMustacheTemplateTest {
     public void manyLookupLocatorsTest() throws IOException {
         String result;
         try (Writer writer = new StringWriter()) {
-            shellMustache.execute(writer, optionsManyLocators).flush();
+            setAppEnvShellMustache.execute(writer, optionsManyLocators).flush();
             result = writer.toString();
         }
 

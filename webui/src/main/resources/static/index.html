@@ -34,17 +34,23 @@
         </div>
 
         <div class="form-group">
-            <label class="col-md-2 col-md-offset-2" for="maxProcessesNumber">Acceptable Ulimit -u: </label>
+            <label class="col-md-2 col-md-offset-2" for="maxProcessesNumber">Acceptable Ulimit -u:
+                <span class="asteriskField">*</span>
+            </label>
             <div class="col-md-3">
-                <input id="maxProcessesNumber" class="form-control" type="number" ng-model="options.maxProcessesNumber" msd-placeholder="8192"/>
+                <input name="ulimitU" id="maxProcessesNumber" class="form-control" type="number" ng-model="options.maxProcessesNumber" msd-placeholder="8192" required />
+                <span class="error-message" ng-show="xapConfigForm.ulimitU.$touched && xapConfigForm.ulimitU.$invalid">ulimit -u is required.</span>
             </div>
         </div>
 
         <div class="form-group">
-            <label class="col-md-2 col-md-offset-2" for="maxOpenFileDescriptorsNumber">Acceptable Ulimit -n: </label>
+            <label class="col-md-2 col-md-offset-2" for="maxOpenFileDescriptorsNumber">Acceptable Ulimit -n:
+                <span class="asteriskField">*</span>
+            </label>
             <div class="col-md-3">
-                <input id="maxOpenFileDescriptorsNumber" class="form-control" type="number" msd-placeholder="32000"
+                <input name="ulimitN" id="maxOpenFileDescriptorsNumber" class="form-control" type="number" msd-placeholder="32000" required
                        ng-model="options.maxOpenFileDescriptorsNumber"/>
+                <span class="error-message" ng-show="xapConfigForm.ulimitN.$touched && xapConfigForm.ulimitN.$invalid">ulimit -n is required.</span>
             </div>
         </div>
 

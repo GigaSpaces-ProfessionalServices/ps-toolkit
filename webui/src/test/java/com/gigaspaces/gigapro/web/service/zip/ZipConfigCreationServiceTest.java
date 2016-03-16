@@ -7,11 +7,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -28,13 +30,25 @@ import static org.junit.Assert.assertThat;
 public class ZipConfigCreationServiceTest {
     private static boolean setUpIsDone = false;
 
+    @Value("${app.scripts.extension.shell}")
+    private String sh;
+
+    @Value("${app.scripts.set-app-env.name}")
+    private String setAppEnvScriptName;
+
+    @Value("${app.scripts.web-ui.name}")
+    private String webuiScriptName;
+
+    @Value("${app.scripts.cli.name}")
+    private String cliScriptName;
+
     @Autowired
     private ZippedConfigCreator configCreationService;
 
     private static Path zippedConfig;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, URISyntaxException {
         if (setUpIsDone) {
             return;
         }
@@ -56,12 +70,15 @@ public class ZipConfigCreationServiceTest {
         ZipFile zipFile = new ZipFile(zippedConfig.toString());
         long entriesCount = zipFile.size();
 
-        assertThat(entriesCount, is(7L));
+        assertThat(entriesCount, is(9L));
     }
 
     @Test
-    public void zippedConfigEntriesNamesTest() throws IOException {
+    public void zippedConfigEntriesNamesShellTest() throws IOException {
         ZipFile zipFile = new ZipFile(zippedConfig.toString());
-        assertThat(zipFile.stream().map(ZipEntry::getName).collect(toList()), hasItems("config/", "lib/", "local/", "logs/", "work/", "deploy/", "setAppEnv.sh"));
+        assertThat(zipFile.stream().map(ZipEntry::getName).collect(toList()), hasItems("config/", "lib/", "local/", "logs/", "work/", "deploy/",
+                setAppEnvScriptName + sh,
+                webuiScriptName + sh,
+                cliScriptName + sh));
     }
 }

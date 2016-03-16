@@ -5,22 +5,26 @@ import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import com.gigaspaces.gigapro.web.service.script.XAPConfigScriptCreator;
 import com.gigaspaces.gigapro.web.service.script.XAPConfigScriptCreatorFactory;
 import com.github.mustachejava.Mustache;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 
-import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
 import static com.gigaspaces.gigapro.web.XAPTestOptions.getOptionsUnicastFalse;
 import static com.gigaspaces.gigapro.web.XAPTestOptions.getOptionsUnicastTrue;
+import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
 import static java.nio.file.Files.readAllBytes;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -34,22 +38,34 @@ public class XAPConfigShellScriptCreatorTest {
     @Autowired
     private XAPConfigScriptCreatorFactory scriptCreatorFactory;
 
-    @Resource(name = "shellMustache")
-    private Mustache shellMustache;
+    @Resource(name = "setAppEnvShellMustache")
+    private Mustache setAppEnvShellMustache;
+
+    @Value("${app.scripts.static-scripts.path}")
+    private String staticScriptsPath;
+
+    @Value("${app.scripts.extension.shell}")
+    private String fileExtension;
+
+    @Value("${app.scripts.web-ui.name}")
+    private String webuiScriptName;
+
+    @Value("${app.scripts.cli.name}")
+    private String cliScriptName;
 
     private static XapConfigOptions optionsUnicastTrue = getOptionsUnicastTrue();
     private static XapConfigOptions optionsUnicastFalse = getOptionsUnicastFalse();
 
     @Test
-    public void createShellScriptUnicastFalseTest() throws IOException {
+    public void createSetAppEnvScriptUnicastFalseTest() throws IOException {
         XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(SHELL);
 
-        Path script = scriptCreator.createScript(optionsUnicastFalse);
+        Path script = scriptCreator.createSetAppEnvScript(optionsUnicastFalse);
         String actual = new String(readAllBytes(script));
 
         String expected;
         try (Writer writer = new StringWriter()) {
-            shellMustache.execute(writer, optionsUnicastFalse).flush();
+            setAppEnvShellMustache.execute(writer, optionsUnicastFalse).flush();
             expected = writer.toString();
         }
 
@@ -57,17 +73,43 @@ public class XAPConfigShellScriptCreatorTest {
     }
 
     @Test
-    public void createShellScriptUnicastTrueTest() throws IOException {
+    public void createSetAppEnvScriptUnicastTrueTest() throws IOException {
         XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(SHELL);
 
-        Path script = scriptCreator.createScript(optionsUnicastTrue);
+        Path script = scriptCreator.createSetAppEnvScript(optionsUnicastTrue);
         String actual = new String(readAllBytes(script));
 
         String expected;
         try (Writer writer = new StringWriter()) {
-            shellMustache.execute(writer, optionsUnicastTrue).flush();
+            setAppEnvShellMustache.execute(writer, optionsUnicastTrue).flush();
             expected = writer.toString();
         }
+
+        assertThat(actual, is(expected));
+    }
+
+    @Test
+    public void createWebuiScriptTest() throws IOException, URISyntaxException {
+        XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(SHELL);
+
+        Path script = scriptCreator.getWebuiScript();
+        String actual = new String(readAllBytes(script));
+
+        File file = new File(getClass().getClassLoader().getResource(staticScriptsPath + webuiScriptName + fileExtension).getFile());
+        String expected = FileUtils.readFileToString(file);
+
+        assertThat(actual, is(expected));
+    }
+
+    @Test
+    public void createCliScriptTest() throws IOException, URISyntaxException {
+        XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(SHELL);
+
+        Path script = scriptCreator.getCliScript();
+        String actual = new String(readAllBytes(script));
+
+        File file = new File(getClass().getClassLoader().getResource(staticScriptsPath + cliScriptName + fileExtension).getFile());
+        String expected = FileUtils.readFileToString(file);
 
         assertThat(actual, is(expected));
     }

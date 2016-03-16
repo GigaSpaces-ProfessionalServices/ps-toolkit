@@ -80,17 +80,32 @@
             <div class="col-md-4 col-md-offset-2">
                 <input type="submit" class="btn btn-primary" ng-click="download(options)" value="Generate"
                        ng-disabled="xapConfigForm.$invalid || myForm.$pending"/>
-
                 <input type="button" class="btn btn-default" ng-click="reset(xapConfigForm)" value="Reset"/>
             </div>
         </div>
     </form>
+
+    <script type="text/ng-template" id="myModalContent.html">
+        <div class="modal-header">
+            <h3 class="modal-title">Error message:</h3>
+        </div>
+        <div class="modal-body">
+            <h4><b>Status Code:</b> {{ data.statusCode }}</h4><br/>
+            <h4><b>Error message:</b> {{ data.message }}</h4><br/>
+            <h4><b>Detailed message:</b> {{ data.detailedMessage }}</h4>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
 </div>
+
 <script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
 <script type="text/javascript" src="./bower_components/angular-resource/angular-resource.min.js"></script>
 <script type="text/javascript" src="./bower_components/angular-placeholder/placeholder.js"></script>
 <script type="text/javascript" src="./bower_components/ng-remote-validate/release/ngRemoteValidate.js"></script>
-<script type="text/javascript" src="./bower_components/angular-file-saver/dist/angular-file-saver.bundle.js"></script>
+<script type="text/javascript" src="./bower_components/angular-file-saver/dist/angular-file-saver.bundle.min.js"></script>
+<script type="text/javascript" src="./bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
 <script type="text/javascript" src="./app/app.js"></script>
 <script type="text/javascript" src="./app/controller.js"></script>
 </body>

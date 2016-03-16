@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -29,7 +27,7 @@ public class ZippedConfigCreationService implements ZippedConfigCreator {
     private String zipConfigName;
 
     @Override
-    public Path createZippedConfig(XapConfigOptions xapConfigOptions) throws IOException, URISyntaxException {
+    public Path createZippedConfig(XapConfigOptions xapConfigOptions) {
         XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(xapConfigOptions.getScriptType());
         Path setAppEnvScript = scriptCreator.createSetAppEnvScript(xapConfigOptions);
         Path webuiScript = scriptCreator.getWebuiScript();

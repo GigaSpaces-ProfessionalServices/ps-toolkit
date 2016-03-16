@@ -6,6 +6,7 @@
     "bootstrap-css-only": "~3.2.0",
     "angular-placeholder": "~1.1.0",
     "ng-remote-validate": "0.6.1",
-    "angular-file-saver": "1.1.0"
+    "angular-file-saver": "1.1.0",
+    "angular-bootstrap": "1.2.4"
   }
 }

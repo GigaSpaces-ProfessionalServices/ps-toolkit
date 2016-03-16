@@ -13,7 +13,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -48,7 +47,7 @@ public class ZipConfigCreationServiceTest {
     private static Path zippedConfig;
 
     @Before
-    public void setUp() throws IOException, URISyntaxException {
+    public void setUp() {
         if (setUpIsDone) {
             return;
         }
@@ -61,7 +60,7 @@ public class ZipConfigCreationServiceTest {
     }
 
     @Test
-    public void zippedConfigExistsTest() throws IOException {
+    public void zippedConfigExistsTest() {
         assertThat(zippedConfig.toFile().exists(), is(true));
     }
 

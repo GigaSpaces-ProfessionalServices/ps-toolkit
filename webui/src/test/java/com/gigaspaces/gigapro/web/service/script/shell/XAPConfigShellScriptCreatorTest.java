@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 
 import static com.gigaspaces.gigapro.web.XAPTestOptions.getOptionsUnicastFalse;
@@ -89,7 +88,7 @@ public class XAPConfigShellScriptCreatorTest {
     }
 
     @Test
-    public void createWebuiScriptTest() throws IOException, URISyntaxException {
+    public void createWebuiScriptTest() throws IOException {
         XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(SHELL);
 
         Path script = scriptCreator.getWebuiScript();
@@ -102,7 +101,7 @@ public class XAPConfigShellScriptCreatorTest {
     }
 
     @Test
-    public void createCliScriptTest() throws IOException, URISyntaxException {
+    public void createCliScriptTest() throws IOException {
         XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(SHELL);
 
         Path script = scriptCreator.getCliScript();

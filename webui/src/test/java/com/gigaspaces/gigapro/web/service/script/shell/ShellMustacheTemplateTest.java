@@ -63,9 +63,9 @@ public class ShellMustacheTemplateTest {
         assertThat(result, allOf(
                 containsString("JAVA_HOME=" + wrap(optionsUnicastFalse.getJavaHome(), '"')),
                 containsString("JSHOMEDIR=" + wrap(optionsUnicastFalse.getXapHome(), '"')),
-                containsString("DISCOVERY_PORT=" + wrap(optionsUnicastFalse.getDiscoveryPort().toString(), '"')),
+                containsString("DISCOVERY_PORT=" + wrap("4174", '"')),
                 containsString("LOOKUPGROUPS=" + wrap(optionsUnicastFalse.getLookupGroups(), '"')),
-                containsString("LOOKUPLOCATORS=" + wrap(optionsUnicastFalse.getLookupLocators() + ":" + optionsUnicastTrue.getDiscoveryPort(), '"')),
+                containsString("LOOKUPLOCATORS=" + "\"\""),
                 containsString("-Dcom.gs.multicast.enabled=" + !optionsUnicastFalse.getIsUnicast()),
                 containsString("uname -u < " + optionsUnicastFalse.getMaxProcessesNumber()),
                 containsString("uname -n < " + optionsUnicastFalse.getMaxOpenFileDescriptorsNumber())

@@ -34,11 +34,9 @@ export LRMI_PORT_OPTIONS="-Dcom.gs.transport_protocol.lrmi.bind-port=4600-4699 -
 export RMI_OPTIONS="-Djava.rmi.server.hostname=$NIC_ADDR"
 
 ### Ulimit validation
-### pseudo-code
-
-### if uname -u < {{maxProcessesNumber}} || uname -n < {{maxOpenFileDescriptorsNumber}} then
-###    WARN that the ULIMIT is less than desired.
-### end if
+if [[ $(ulimit -u) -lt {{maxProcessesNumber}} || $(ulimit -n) -lt {{maxOpenFileDescriptorsNumber}} ]]; then
+    echo "ULIMIT is less than desired"
+fi
 
 # XAP Directory Options
 export XAP_DIRECTORY_OPTIONS="-Dcom.gs.work=$INSTALL_LOCAL_DIR/work -Dcom.gs.deploy=$INSTALL_LOCAL_DIR/deploy"

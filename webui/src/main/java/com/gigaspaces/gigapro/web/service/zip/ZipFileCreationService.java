@@ -28,7 +28,7 @@ public class ZipFileCreationService implements ZipFileCreator {
     private static final String ZIP_FILE_TYPE = ".zip";
 
     @Override
-    public Path createZipFile(String name, List<Path> filesToAdd) throws IOException {
+    public Path createZipFile(String name, List<Path> filesToAdd) {
         final Path tempZipFile = createTempFile(name, ZIP_FILE_TYPE);
         String generatedZipPath;
 
@@ -42,8 +42,14 @@ public class ZipFileCreationService implements ZipFileCreator {
                 }
             }
             generatedZipPath = zipFileSystem.toString();
+        } catch (IOException e) {
+            throw new RuntimeException("Error occurred generating zip archive " + name + ZIP_FILE_TYPE, e);
         }
-        replaceTempZipFile(tempZipFile, get(generatedZipPath));
+        try {
+            replaceTempZipFile(tempZipFile, get(generatedZipPath));
+        } catch (IOException e) {
+            throw new RuntimeException("Error occurred generating zip archive " + name + ZIP_FILE_TYPE, e);
+        }
         return tempZipFile;
     }
 

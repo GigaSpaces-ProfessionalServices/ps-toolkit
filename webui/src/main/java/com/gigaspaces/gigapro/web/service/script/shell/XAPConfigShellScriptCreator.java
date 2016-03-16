@@ -40,24 +40,34 @@ public class XAPConfigShellScriptCreator implements XAPConfigScriptCreator {
     private String cliScriptName;
 
     @Override
-    public Path createSetAppEnvScript(XapConfigOptions options) throws IOException {
+    public Path createSetAppEnvScript(XapConfigOptions options) {
         Path script = createTempFile(setAppEnvScriptName, fileExtension);
 
         try (BufferedWriter writer = newBufferedWriter(script, WRITE)) {
             setAppEnvShellMustache.execute(writer, options).flush();
             return script;
+        } catch (IOException e) {
+            throw new RuntimeException("Error occurred generating script " + setAppEnvScriptName + fileExtension, e);
         }
     }
 
     @Override
-    public Path getWebuiScript() throws IOException, URISyntaxException {
-        String scriptPath = staticScriptsPath + webuiScriptName + fileExtension;
-        return get(getSystemResource(scriptPath).toURI());
+    public Path getWebuiScript() {
+        try {
+            String scriptPath = staticScriptsPath + webuiScriptName + fileExtension;
+            return get(getSystemResource(scriptPath).toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Error occurred generating script " + webuiScriptName + fileExtension, e);
+        }
     }
 
     @Override
-    public Path getCliScript() throws IOException, URISyntaxException {
-        String scriptPath = staticScriptsPath + cliScriptName + fileExtension;
-        return get(getSystemResource(scriptPath).toURI());
+    public Path getCliScript() {
+        try {
+            String scriptPath = staticScriptsPath + cliScriptName + fileExtension;
+            return get(getSystemResource(scriptPath).toURI());
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Error occurred generating script " + cliScriptName + fileExtension, e);
+        }
     }
 }

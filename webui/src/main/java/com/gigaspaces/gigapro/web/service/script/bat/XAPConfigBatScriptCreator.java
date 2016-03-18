@@ -5,6 +5,7 @@ import com.gigaspaces.gigapro.web.service.script.XAPConfigScriptCreator;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
+import java.util.List;
 
 @Service
 public class XAPConfigBatScriptCreator implements XAPConfigScriptCreator {
@@ -21,5 +22,10 @@ public class XAPConfigBatScriptCreator implements XAPConfigScriptCreator {
     @Override
     public Path getCliScript() {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public List<Path> createStartGridScripts(XapConfigOptions options) {
+        return null;
     }
 }

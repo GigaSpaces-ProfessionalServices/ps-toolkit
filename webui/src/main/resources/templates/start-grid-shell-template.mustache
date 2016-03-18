@@ -1,0 +1,16 @@
+#!/bin/bash
+
+GRID_INSTALL="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )/.."
+source $GRID_INSTALL/setAppEnv.sh
+
+export OTHER_GSC_OPTIONS="{{otherOptions}}"
+{{#zoneName}}
+export ZONES="-Dcom.gs.zones={{zoneName}}"
+export GSA_JAVA_OPTIONS="${GSA_JAVA_OPTIONS} ${ZONES}"
+export GSC_JAVA_OPTIONS="${GSC_JAVA_OPTIONS} ${ZONES} -Xmx{{xmx}} -Xms{{xms}} -Xmn{{xmn}}"
+{{/zoneName}}
+{{^zoneName}}
+export GSA_JAVA_OPTIONS="${GSA_JAVA_OPTIONS}"
+export GSC_JAVA_OPTIONS="${GSC_JAVA_OPTIONS} -Xmx{{xmx}} -Xms{{xms}} -Xmn{{xmn}}"
+{{/zoneName}}
+nohup $GS_HOME/bin/gs-agent.sh gsa.gsc {{gscNum}} gsa.gsm {{gsmNum}} gsa.lus {{lusNum}} gsa.global.lus 0 gsa.global.gsm 0 > /dev/null 2>&1 & # Set from UI

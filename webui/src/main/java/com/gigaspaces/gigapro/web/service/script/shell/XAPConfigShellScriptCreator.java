@@ -1,6 +1,7 @@
 package com.gigaspaces.gigapro.web.service.script.shell;
 
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
+import com.gigaspaces.gigapro.web.model.ZoneConfig;
 import com.gigaspaces.gigapro.web.service.script.XAPConfigScriptCreator;
 import com.github.mustachejava.Mustache;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,18 +12,24 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.gigaspaces.gigapro.web.util.FileUtils.createTempFile;
 import static java.lang.ClassLoader.getSystemResource;
 import static java.nio.file.Files.newBufferedWriter;
 import static java.nio.file.Paths.get;
 import static java.nio.file.StandardOpenOption.WRITE;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 public class XAPConfigShellScriptCreator implements XAPConfigScriptCreator {
 
     @Resource(name = "setAppEnvShellMustache")
     private Mustache setAppEnvShellMustache;
+
+    @Resource(name = "startGridShellMustache")
+    private Mustache startGridShellMustache;
 
     @Value("${app.scripts.static-scripts.path}")
     private String staticScriptsPath;
@@ -38,6 +45,9 @@ public class XAPConfigShellScriptCreator implements XAPConfigScriptCreator {
 
     @Value("${app.scripts.cli.name}")
     private String cliScriptName;
+
+    @Value("${app.scripts.start-grid.name}")
+    private String startGridScriptName;
 
     @Override
     public Path createSetAppEnvScript(XapConfigOptions options) {
@@ -69,5 +79,21 @@ public class XAPConfigShellScriptCreator implements XAPConfigScriptCreator {
         } catch (URISyntaxException e) {
             throw new RuntimeException("Error occurred generating script " + cliScriptName + fileExtension, e);
         }
+    }
+
+    @Override
+    public List<Path> createStartGridScripts(XapConfigOptions options) {
+        List<Path> startGridScripts = new ArrayList<>();
+        for (ZoneConfig zone: options.getZoneOptions()) {
+            String scriptName = isNotBlank(zone.getZoneName()) ? "start-" + zone.getZoneName() + "-services" : startGridScriptName;
+            Path script = createTempFile(scriptName, fileExtension);
+            try (BufferedWriter writer = newBufferedWriter(script, WRITE)) {
+                startGridShellMustache.execute(writer, zone).flush();
+            } catch (IOException e) {
+                throw new RuntimeException("Error occurred generating script " + scriptName + fileExtension, e);
+            }
+            startGridScripts.add(script);
+        }
+        return startGridScripts;
     }
 }

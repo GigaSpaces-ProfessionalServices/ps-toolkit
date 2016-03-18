@@ -17,6 +17,8 @@ import java.nio.file.Path;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static com.gigaspaces.gigapro.web.XAPTestOptions.getManyZonesOptions;
+import static com.gigaspaces.gigapro.web.XAPTestOptions.getNamedZone;
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
 import static java.util.stream.Collectors.toList;
 import static org.hamcrest.CoreMatchers.hasItems;
@@ -41,6 +43,9 @@ public class ZipConfigCreationServiceTest {
     @Value("${app.scripts.cli.name}")
     private String cliScriptName;
 
+    @Value("${app.scripts.start-grid.name}")
+    private String startGridScriptName;
+
     @Autowired
     private ZippedConfigCreator configCreationService;
 
@@ -51,7 +56,7 @@ public class ZipConfigCreationServiceTest {
         if (setUpIsDone) {
             return;
         }
-        XapConfigOptions xapConfigOptions = new XapConfigOptions();
+        XapConfigOptions xapConfigOptions = getManyZonesOptions();
         xapConfigOptions.setScriptType(SHELL);
 
         zippedConfig = configCreationService.createZippedConfig(xapConfigOptions);
@@ -69,15 +74,18 @@ public class ZipConfigCreationServiceTest {
         ZipFile zipFile = new ZipFile(zippedConfig.toString());
         long entriesCount = zipFile.size();
 
-        assertThat(entriesCount, is(9L));
+        assertThat(entriesCount, is(12L));
     }
 
     @Test
     public void zippedConfigEntriesNamesShellTest() throws IOException {
         ZipFile zipFile = new ZipFile(zippedConfig.toString());
-        assertThat(zipFile.stream().map(ZipEntry::getName).collect(toList()), hasItems("config/", "lib/", "local/", "logs/", "work/", "deploy/",
+
+        assertThat(zipFile.stream().map(ZipEntry::getName).collect(toList()), hasItems("config/", "lib/", "local/", "logs/", "work/", "deploy/", "grid/",
                 setAppEnvScriptName + sh,
                 webuiScriptName + sh,
-                cliScriptName + sh));
+                cliScriptName + sh,
+                "grid/" + "start-" + getNamedZone().getZoneName() + "-services" + sh,
+                "grid/" + startGridScriptName + sh));
     }
 }

@@ -23,7 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
 @ActiveProfiles("test")
-public class ShellMustacheTemplateTest {
+public class SetAppEnvShellMustacheTemplateTest {
 
     private static XapConfigOptions optionsUnicastTrue = getOptionsUnicastTrue();
     private static XapConfigOptions optionsUnicastFalse = getOptionsUnicastFalse();

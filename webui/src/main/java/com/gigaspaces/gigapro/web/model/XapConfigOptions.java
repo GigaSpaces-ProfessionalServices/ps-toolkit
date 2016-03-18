@@ -24,6 +24,7 @@ public class XapConfigOptions {
     private String lookupLocators;
     private String lookupGroups;
     private XAPConfigScriptType scriptType;
+    private List<ZoneConfig> zoneOptions;
 
     /**
      * This method returns lookupLocators as list.
@@ -55,29 +56,40 @@ public class XapConfigOptions {
     public void validate() {
         String errorMessage = "";
         if (isBlank(javaHome)) {
-            errorMessage += "javaHome cannot be null or empty!\n";
+            errorMessage += "javaHome cannot be null or empty!<br/>";
         }
         if (isBlank(xapHome)) {
-            errorMessage += "xapHome cannot be null or empty!\n";
+            errorMessage += "xapHome cannot be null or empty!<br/>";
         }
         if (isBlank(lookupGroups)) {
-            errorMessage += "lookupGroups cannot be null or empty!\n";
+            errorMessage += "lookupGroups cannot be null or empty!<br/>";
         }
         if (maxProcessesNumber == null) {
-            errorMessage += "maxProcessesNumber cannot be null!\n";
+            errorMessage += "maxProcessesNumber cannot be null!<br/>";
         }
         if (maxOpenFileDescriptorsNumber == null) {
-            errorMessage += "maxOpenFileDescriptorsNumber cannot be null!\n";
+            errorMessage += "maxOpenFileDescriptorsNumber cannot be null!<br/>";
         }
         if (scriptType == null) {
-            errorMessage += "scriptType cannot be null!\n";
+            errorMessage += "scriptType cannot be null!<br/>";
         }
         if (isTrue(isUnicast)) {
             if (discoveryPort == null) {
-                errorMessage += "discoveryPort cannot be null!\n";
+                errorMessage += "discoveryPort cannot be null!<br/>";
             }
             if (isBlank(lookupLocators))
-                errorMessage += "lookupLocators cannot be null or empty!\n";
+                errorMessage += "lookupLocators cannot be null or empty!<br/>";
+        }
+        if (zoneOptions != null) {
+            for (ZoneConfig zone : zoneOptions) {
+                try {
+                    zone.validate();
+                } catch (RuntimeException e) {
+                    errorMessage += e.getMessage();
+                }
+            }
+        } else {
+            errorMessage += "zoneOptions cannot be null or empty!<br/>";
         }
         if (StringUtils.isNotEmpty(errorMessage)) {
             throw new ValidationException(errorMessage);

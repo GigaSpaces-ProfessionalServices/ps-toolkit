@@ -19,12 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.http.MediaType.parseMediaType;
+import static org.springframework.http.MediaType.*;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
@@ -40,10 +39,10 @@ public class XapConfigController {
 
     @RequestMapping(value = "/generate", method = POST, consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity generate(@RequestBody XapConfigOptions xapConfigOptions) throws IOException {
-        xapConfigOptions.validate();
         // SHELL script type is set manually until another script types are implemented
         xapConfigOptions.setScriptType(SHELL);
 
+        xapConfigOptions.validate();
         LOG.info("Generating script using options: " + xapConfigOptions);
         Path zippedConfig = zippedConfigCreator.createZippedConfig(xapConfigOptions);
         FileSystemResource body = new FileSystemResource(zippedConfig.toFile());
@@ -64,8 +63,10 @@ public class XapConfigController {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity handleError(Exception exception) {
-        String detailedMessage = exception.getCause() != null ? exception.getCause().getMessage() : exception.getMessage();
-        RestError restError = new RestError(INTERNAL_SERVER_ERROR.value(), exception.getMessage(), detailedMessage);
+        String message = Optional.ofNullable(exception.getMessage()).orElse("Ooops! Something bad has happened!");
+        String detailedMessage = exception.getCause() != null ? exception.getCause().toString() : exception.toString();
+        RestError restError = new RestError(INTERNAL_SERVER_ERROR.value(), message, detailedMessage);
+        LOG.error(message, exception);
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).contentType(APPLICATION_JSON).body(restError);
     }
 

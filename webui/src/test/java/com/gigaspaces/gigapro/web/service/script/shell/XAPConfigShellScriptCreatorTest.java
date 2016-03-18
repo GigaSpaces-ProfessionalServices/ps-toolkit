@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.file.Path;
+import java.util.List;
 
-import static com.gigaspaces.gigapro.web.XAPTestOptions.getOptionsUnicastFalse;
-import static com.gigaspaces.gigapro.web.XAPTestOptions.getOptionsUnicastTrue;
+import static com.gigaspaces.gigapro.web.XAPTestOptions.*;
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
 import static java.nio.file.Files.readAllBytes;
 import static org.hamcrest.CoreMatchers.is;
@@ -40,6 +40,9 @@ public class XAPConfigShellScriptCreatorTest {
     @Resource(name = "setAppEnvShellMustache")
     private Mustache setAppEnvShellMustache;
 
+    @Resource(name = "startGridShellMustache")
+    private Mustache startGridShellMustache;
+
     @Value("${app.scripts.static-scripts.path}")
     private String staticScriptsPath;
 
@@ -54,6 +57,9 @@ public class XAPConfigShellScriptCreatorTest {
 
     private static XapConfigOptions optionsUnicastTrue = getOptionsUnicastTrue();
     private static XapConfigOptions optionsUnicastFalse = getOptionsUnicastFalse();
+    private static XapConfigOptions optionsUnnamedZone = getUnnamedZoneOptions();
+    private static XapConfigOptions optionsNamedZone = getNamedZoneOptions();
+    private static XapConfigOptions optionsManyZones = getManyZonesOptions();
 
     @Test
     public void createSetAppEnvScriptUnicastFalseTest() throws IOException {
@@ -93,7 +99,6 @@ public class XAPConfigShellScriptCreatorTest {
 
         Path script = scriptCreator.getWebuiScript();
         String actual = new String(readAllBytes(script));
-
         File file = new File(getClass().getClassLoader().getResource(staticScriptsPath + webuiScriptName + fileExtension).getFile());
         String expected = FileUtils.readFileToString(file);
 
@@ -111,5 +116,59 @@ public class XAPConfigShellScriptCreatorTest {
         String expected = FileUtils.readFileToString(file);
 
         assertThat(actual, is(expected));
+    }
+
+    @Test
+    public void createStartGridUnnamedZoneScriptTest() throws IOException {
+        XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(SHELL);
+
+        List<Path> scripts = scriptCreator.createStartGridScripts(optionsUnnamedZone);
+        for (int i = 0; i < scripts.size(); i++) {
+            Path script = scripts.get(i);
+            String actual = new String(readAllBytes(script));
+
+            String expected;
+            try (Writer writer = new StringWriter()) {
+                startGridShellMustache.execute(writer, optionsUnnamedZone.getZoneOptions().get(i)).flush();
+                expected = writer.toString();
+            }
+            assertThat(actual, is(expected));
+        }
+    }
+
+    @Test
+    public void createStartGridNamedZoneScriptTest() throws IOException {
+        XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(SHELL);
+
+        List<Path> scripts = scriptCreator.createStartGridScripts(optionsNamedZone);
+        for (int i = 0; i < scripts.size(); i++) {
+            Path script = scripts.get(i);
+            String actual = new String(readAllBytes(script));
+
+            String expected;
+            try (Writer writer = new StringWriter()) {
+                startGridShellMustache.execute(writer, optionsNamedZone.getZoneOptions().get(i)).flush();
+                expected = writer.toString();
+            }
+            assertThat(actual, is(expected));
+        }
+    }
+
+    @Test
+    public void createStartGridManyZonesScriptTest() throws IOException {
+        XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(SHELL);
+
+        List<Path> scripts = scriptCreator.createStartGridScripts(optionsManyZones);
+        for (int i = 0; i < scripts.size(); i++) {
+            Path script = scripts.get(i);
+            String actual = new String(readAllBytes(script));
+
+            String expected;
+            try (Writer writer = new StringWriter()) {
+                startGridShellMustache.execute(writer, optionsManyZones.getZoneOptions().get(i)).flush();
+                expected = writer.toString();
+            }
+            assertThat(actual, is(expected));
+        }
     }
 }

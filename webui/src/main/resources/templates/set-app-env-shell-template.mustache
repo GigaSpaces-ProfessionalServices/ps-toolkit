@@ -18,11 +18,11 @@ export INSTALL_LOGS_DIR="$SCRIPT_INSTALL/logs"
 
 export LOOKUPGROUPS="{{lookupGroups}}"
 {{#isUnicast}}
-{{/isUnicast}}
 export DISCOVERY_PORT="{{discoveryPort}}"
 export LOOKUPLOCATORS="{{getLookupLocatorsWithPort}}"
 
 export UNICAST_OPTIONS="-Dcom.gs.multicast.enabled=false -Dcom.gs.multicast.discoveryPort=$DISCOVERY_PORT -Dcom.sun.jini.reggie.initialUnicastDiscoveryPort=$DISCOVERY_PORT -Dcom.gs.jini_lus.unicast_discovery.enabled=true -Dcom.gs.jini_lus.locators=$LOOKUPLOCATORS"
+{{/isUnicast}}
 {{^isUnicast}}
 export DISCOVERY_PORT="4174"
 export LOOKUPLOCATORS=""

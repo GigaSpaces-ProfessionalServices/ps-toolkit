@@ -40,4 +40,9 @@ public class TestConfig extends WebMvcConfigurerAdapter {
     public Mustache setAppEnvShellMustache() {
         return mustacheFactory().compile("set-app-env-shell-template.mustache");
     }
+
+    @Bean
+    public Mustache startGridShellMustache() {
+        return mustacheFactory().compile("start-grid-shell-template.mustache");
+    }
 }

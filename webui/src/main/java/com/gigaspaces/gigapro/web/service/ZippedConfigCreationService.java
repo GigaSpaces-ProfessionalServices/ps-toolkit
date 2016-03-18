@@ -9,9 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.gigaspaces.gigapro.web.util.FileUtils.createTempDir;
+import static com.gigaspaces.gigapro.web.util.FileUtils.replaceFile;
 import static java.util.Arrays.asList;
 
 @Service
@@ -29,12 +31,24 @@ public class ZippedConfigCreationService implements ZippedConfigCreator {
     @Override
     public Path createZippedConfig(XapConfigOptions xapConfigOptions) {
         XAPConfigScriptCreator scriptCreator = scriptCreatorFactory.getXAPConfigScriptCreator(xapConfigOptions.getScriptType());
+        List<Path> filesToZip = getFilesToZip(xapConfigOptions, scriptCreator);
+        return zipFileCreator.createZipFile(zipConfigName, filesToZip);
+    }
+
+    private List<Path> getFilesToZip(XapConfigOptions xapConfigOptions, XAPConfigScriptCreator scriptCreator) {
         Path setAppEnvScript = scriptCreator.createSetAppEnvScript(xapConfigOptions);
         Path webuiScript = scriptCreator.getWebuiScript();
         Path cliScript = scriptCreator.getCliScript();
-        List<Path> filesToZip = asList(
-                createTempDir("config"), createTempDir("lib"), createTempDir("local"), createTempDir("logs"), createTempDir("work"), createTempDir("deploy"),
-                setAppEnvScript, webuiScript, cliScript);
-        return zipFileCreator.createZipFile(zipConfigName, filesToZip);
+        List<Path> startGridScripts = scriptCreator.createStartGridScripts(xapConfigOptions);
+
+        List<Path> toZip = new ArrayList<>();
+        toZip.addAll(asList(createTempDir("config"), createTempDir("lib"), createTempDir("local"), createTempDir("logs"), createTempDir("work"), createTempDir("deploy")));
+        toZip.add(setAppEnvScript);
+        toZip.add(webuiScript);
+        toZip.add(cliScript);
+        Path grid = createTempDir("grid");
+        startGridScripts.forEach(script -> replaceFile(grid, script));
+        toZip.add(grid);
+        return toZip;
     }
 }

@@ -9,6 +9,7 @@
     <modules>
         <module>rebalancer</module>
         <module>webui</module>
+        <module>rebalancer-od</module>
     </modules>
 
     <properties>
@@ -28,6 +29,18 @@
                 <version>${gsVersion}</version>
                 <scope>provided</scope>
             </dependency>
+
+            <dependency>
+                <groupId>com.beust</groupId>
+                <artifactId>jcommander</artifactId>
+                <version>1.47</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>18.0</version>
+            </dependency>
+
 
             <!--LOGGING-->
             <dependency>

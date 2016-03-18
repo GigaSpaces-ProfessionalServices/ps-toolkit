@@ -1,7 +1,10 @@
 package com.gigaspaces.gigapro.web.controller;
 
 import com.gigaspaces.gigapro.web.Application;
-import com.gigaspaces.gigapro.web.model.*;
+import com.gigaspaces.gigapro.web.model.RestError;
+import com.gigaspaces.gigapro.web.model.ValidationRequest;
+import com.gigaspaces.gigapro.web.model.ValidationResponse;
+import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -13,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
-import static com.gigaspaces.gigapro.web.XAPTestOptions.getOptionsUnicastFalse;
+import static com.gigaspaces.gigapro.web.XAPTestOptions.getNamedZoneOptions;
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
 import static java.lang.System.getenv;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -60,7 +63,7 @@ public class XapConfigControllerTest {
 
     @Test
     public void generateIsReachableTest() {
-        XapConfigOptions options = getOptionsUnicastFalse();
+        XapConfigOptions options = getNamedZoneOptions();
         options.setScriptType(SHELL);
         ResponseEntity<InputStreamResource> responseEntity = template.postForEntity("http://localhost:9999/generate", options, InputStreamResource.class);
 
@@ -69,7 +72,7 @@ public class XapConfigControllerTest {
 
     @Test
     public void generateHeadersTest() {
-        XapConfigOptions options = getOptionsUnicastFalse();
+        XapConfigOptions options = getNamedZoneOptions();
         options.setScriptType(SHELL);
         ResponseEntity<InputStreamResource> responseEntity = template.postForEntity("http://localhost:9999/generate", options, InputStreamResource.class);
 
@@ -86,15 +89,17 @@ public class XapConfigControllerTest {
     @Test
     public void exceptionHandlerTest() {
         ResponseEntity<RestError> responseEntity = template.postForEntity("http://localhost:9999/generate", new XapConfigOptions(), RestError.class);
-        String errorMessage = "javaHome cannot be null or empty!\n" +
-                "xapHome cannot be null or empty!\n" +
-                "lookupGroups cannot be null or empty!\n" +
-                "maxProcessesNumber cannot be null!\n" +
-                "maxOpenFileDescriptorsNumber cannot be null!\n" +
-                "scriptType cannot be null!\n";
+        String errorMessage = "javaHome cannot be null or empty!<br/>" +
+                "xapHome cannot be null or empty!<br/>" +
+                "lookupGroups cannot be null or empty!<br/>" +
+                "maxProcessesNumber cannot be null!<br/>" +
+                "maxOpenFileDescriptorsNumber cannot be null!<br/>" +
+                "zoneOptions cannot be null or empty!<br/>";
+
+        String detailedMessage = "javax.validation.ValidationException: " + errorMessage;
 
         assertThat(responseEntity.getBody().getStatusCode(), is(500));
         assertThat(responseEntity.getBody().getMessage(), is(errorMessage));
-        assertThat(responseEntity.getBody().getDetailedMessage(), is(errorMessage));
+        assertThat(responseEntity.getBody().getDetailedMessage(), is(detailedMessage));
     }
 }

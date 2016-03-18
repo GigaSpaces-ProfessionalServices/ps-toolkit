@@ -2,6 +2,7 @@ package com.gigaspaces.gigapro.web.service.zip;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 
 import static com.gigaspaces.gigapro.web.util.FileUtils.createTempFile;
+import static com.gigaspaces.gigapro.web.util.FileUtils.replaceFile;
+import static java.lang.System.getProperty;
 import static java.net.URI.create;
 import static java.nio.file.FileSystems.newFileSystem;
 import static java.nio.file.FileVisitResult.CONTINUE;
@@ -26,6 +29,11 @@ public class ZipFileCreationService implements ZipFileCreator {
     private static final Logger LOG = LoggerFactory.getLogger(ZipFileCreationService.class);
 
     private static final String ZIP_FILE_TYPE = ".zip";
+
+    private static final String TEMP_FOLDER_PATH = getProperty("java.io.tmpdir");
+
+    @Value("${app.scripts.static-scripts.path}")
+    private String staticScriptsPath;
 
     @Override
     public Path createZipFile(String name, List<Path> filesToAdd) {
@@ -45,16 +53,12 @@ public class ZipFileCreationService implements ZipFileCreator {
         } catch (IOException e) {
             throw new RuntimeException("Error occurred generating zip archive " + name + ZIP_FILE_TYPE, e);
         }
-        try {
-            replaceTempZipFile(tempZipFile, get(generatedZipPath));
-        } catch (IOException e) {
-            throw new RuntimeException("Error occurred generating zip archive " + name + ZIP_FILE_TYPE, e);
-        }
+        replaceFile(tempZipFile, get(generatedZipPath));
         return tempZipFile;
     }
 
     private void addFileToZip(FileSystem zipFileSystem, Path root, Path file) throws IOException {
-        final Path dest = zipFileSystem.getPath(root.toString(), file.toFile().getName());
+        final Path dest = zipFileSystem.getPath(root.toString(), getRelativePath(file).toString());
         LOG.info("Adding file " + dest);
         Files.copy(file, dest, REPLACE_EXISTING);
     }
@@ -63,14 +67,14 @@ public class ZipFileCreationService implements ZipFileCreator {
         Files.walkFileTree(file, new SimpleFileVisitor<Path>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                final Path dest = zipFileSystem.getPath(root.toString(), file.toFile().getName());
+                final Path dest = zipFileSystem.getPath(root.toString(), getRelativePath(file).toString());
                 Files.copy(file, dest, REPLACE_EXISTING);
                 return CONTINUE;
             }
 
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                final Path dirToCreate = zipFileSystem.getPath(root.toString(), dir.toFile().getName());
+                final Path dirToCreate = zipFileSystem.getPath(root.toString(), getRelativePath(dir).toString());
                 if (notExists(dirToCreate)) {
                     LOG.info("Adding directory " + dirToCreate);
                     createDirectories(dirToCreate);
@@ -78,6 +82,17 @@ public class ZipFileCreationService implements ZipFileCreator {
                 return CONTINUE;
             }
         });
+    }
+
+    private Path getRelativePath(Path file) {
+        if (file.toString().contains(TEMP_FOLDER_PATH)) {
+            return get(TEMP_FOLDER_PATH).relativize(file);
+        }
+        if (file.toString().contains(staticScriptsPath.replace("/", ""))) {
+            return file.getFileName();
+        }
+
+        throw new RuntimeException("Cannot resolve relative path for file " + file);
     }
 
     private FileSystem createZipFileSystem(String zipFilename, boolean create) throws IOException {
@@ -89,10 +104,5 @@ public class ZipFileCreationService implements ZipFileCreator {
             env.put("create", "true");
         }
         return newFileSystem(uri, env);
-    }
-
-    private void replaceTempZipFile(Path tempZipFile, Path source) throws IOException {
-        Path newDir = tempZipFile.getParent();
-        Files.move(source, newDir.resolve(source.getFileName()), REPLACE_EXISTING);
     }
 }

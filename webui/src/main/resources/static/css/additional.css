@@ -26,3 +26,9 @@
     font-size: 14px;
     line-height: 1.4;
 }
+
+.entry {
+    padding: 15px;
+    position: relative;
+    display: table;
+}

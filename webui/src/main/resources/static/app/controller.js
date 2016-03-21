@@ -61,37 +61,37 @@ angular.module('xapConfigApp.controllers', [])
 
     }]).controller('ModalInstanceCtrl', function ($scope, $uibModalInstance, data) {
 
-        $scope.data = data;
+    $scope.data = data;
 
-        $scope.cancel = function () {
-            $uibModalInstance.dismiss('cancel');
-        };
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
 
-        $scope.close = function () {
-            $uibModalInstance.close($scope.data);
-        };
-    }).directive('equals', function () {
-        return {
-            restrict: 'A',
-            require: 'ngModel',
-            link: function (scope, elem, attrs, ngModel) {
-                if (!ngModel) {
-                    return;
-                }
-                scope.$watch(attrs.ngModel, function () {
-                    validate();
-                });
-                attrs.$observe('equals', function (val) {
-                    validate();
-                });
-                var validate = function () {
-                    var val1 = ngModel.$viewValue;
-                    var val2 = attrs.equals;
-                    ngModel.$setValidity('equals', val1 === val2);
-                };
+    $scope.close = function () {
+        $uibModalInstance.close($scope.data);
+    };
+}).directive('equals', function () {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function (scope, elem, attrs, ngModel) {
+            if (!ngModel) {
+                return;
             }
-        };
-    }).directive('within', function () {
+            scope.$watch(attrs.ngModel, function () {
+                validate();
+            });
+            attrs.$observe('equals', function (val) {
+                validate();
+            });
+            var validate = function () {
+                var val1 = ngModel.$viewValue;
+                var val2 = attrs.equals;
+                ngModel.$setValidity('equals', val1 === val2);
+            };
+        }
+    };
+}).directive('within', function () {
     return {
         restrict: 'A',
         require: 'ngModel',
@@ -126,6 +126,33 @@ angular.module('xapConfigApp.controllers', [])
                     var rightBound = bounds[2].trim() * valueToCompare;
                     ngModel.$setValidity('within', (leftBound <= value && value <= rightBound));
                 }
+            };
+        }
+    };
+}).directive('unique', function () {
+    return {
+        restrict: 'A',
+        require: 'ngModel',
+        link: function (scope, elem, attrs, ngModel) {
+            if (!ngModel) {
+                return;
+            }
+            scope.$watch(attrs.ngModel, function () {
+                validate();
+            });
+            attrs.$observe('unique', function (val) {
+                validate();
+            });
+            var validate = function () {
+                var zoneName = ngModel.$viewValue;
+                var index = ngModel.$name.replace(/[^0-9\.]/g, '');
+                var isUnique = true;
+                scope.zones.forEach(function (item, i, arr) {
+                    if (i != index && item.zoneName == zoneName) {
+                        isUnique = false;
+                    }
+                });
+                ngModel.$setValidity('unique', isUnique);
             };
         }
     };

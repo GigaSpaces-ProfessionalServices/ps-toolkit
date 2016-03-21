@@ -92,10 +92,12 @@
                             <span class="glyphicon glyphicon-minus"></span>
                         </button>
                         <div class="form-group">
-                            <label class="col-md-2" for="zone-name{{$index}}">Zone name:</label>
+                            <label class="col-md-2" for="zoneName{{$index}}">Zone name:</label>
                             <div class="col-md-3">
-                                <input type="text" class="form-control" id="zone-name{{$index}}"
-                                       ng-model="zone.zoneName">
+                                <input type="text" class="form-control" id="zoneName{{$index}}" name="zoneName{{$index}}"
+                                       ng-model="zone.zoneName" unique>
+                                <span class="error-message"
+                                      ng-show="xapConfigForm.zoneName{{$index}}.$touched && xapConfigForm.zoneName{{$index}}.$error.unique">Zone name is not unique!</span>
                             </div>
                             <div class="col-md-2">
                                 <input type="text" class="form-control" name="xmx{{$index}}" id="xmx{{$index}}"
@@ -131,8 +133,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label class="col-md-2" for="zone-name{{$index}}">Number of:</label>
-                            <label class="col-md-1" for="zone-name{{$index}}">GSC:
+                            <label class="col-md-2" for="zoneName{{$index}}">Number of:</label>
+                            <label class="col-md-1" for="zoneName{{$index}}">GSC:
                                 <span class="asteriskField">*</span>
                             </label>
                             <div class="col-md-2">
@@ -144,7 +146,7 @@
                                       ng-show="xapConfigForm.gsc{{$index}}.$dirty && xapConfigForm.gsc{{$index}}.$invalid &&
                                       !xapConfigForm.gsc{{$index}}.$error.required">Must be >= 0!</span>
                             </div>
-                            <label class="col-md-1" for="zone-name{{$index}}">GSM:
+                            <label class="col-md-1" for="zoneName{{$index}}">GSM:
                                 <span class="asteriskField">*</span>
                             </label>
                             <div class="col-md-2">
@@ -156,7 +158,7 @@
                                       ng-show="xapConfigForm.gsm{{$index}}.$dirty && xapConfigForm.gsm{{$index}}.$invalid &&
                                       !xapConfigForm.gsm{{$index}}.$error.required">Must be >= 0!</span>
                             </div>
-                            <label class="col-md-1" for="zone-name{{$index}}">LUS:
+                            <label class="col-md-1" for="zoneName{{$index}}">LUS:
                                 <span class="asteriskField">*</span>
                             </label>
                             <div class="col-md-2">

@@ -106,17 +106,21 @@
                             </div>
                             <div class="col-md-2">
                                 <input type="text" class="form-control" name="xms{{$index}}" id="xms{{$index}}"
-                                       ng-model="zone.xms"
+                                       ng-model="zone.xms" equals="{{zone.xmx}}"
                                        ng-pattern="/^[0-9]{1,4}[mg]{1}$/" msd-placeholder="Xms" required>
+                                <span class="error-message" ng-show="xapConfigForm.xms{{$index}}.$touched &&
+                                xapConfigForm.xms{{$index}}.$invalid && !xapConfigForm.xms{{$index}}.$error.equals">Pattern is 1234[m|g]</span>
                                 <span class="error-message"
-                                      ng-show="xapConfigForm.xms{{$index}}.$touched && xapConfigForm.xms{{$index}}.$invalid">Pattern is 1234[m|g]</span>
+                                      ng-show="xapConfigForm.xms{{$index}}.$touched && xapConfigForm.xms{{$index}}.$error.equals">Xms must be equal to Xmx!</span>
                             </div>
                             <div class="col-md-2">
                                 <input type="text" class="form-control" name="xmn{{$index}}" id="xmn{{$index}}"
-                                       ng-model="zone.xmn"
+                                       ng-model="zone.xmn" within="{{zone.xmx}},0.3,0.35"
                                        ng-pattern="/^[0-9]{1,4}[mg]{1}$/" msd-placeholder="Xmn" required>
+                                <span class="error-message" ng-show="xapConfigForm.xmn{{$index}}.$touched
+                                && xapConfigForm.xmn{{$index}}.$invalid && !xapConfigForm.xmn{{$index}}.$error.within">Pattern is 1234[m|g]</span>
                                 <span class="error-message"
-                                      ng-show="xapConfigForm.xmn{{$index}}.$touched && xapConfigForm.xmn{{$index}}.$invalid">Pattern is 1234[m|g]</span>
+                                      ng-show="xapConfigForm.xmn{{$index}}.$error.within">Xmn must be 1/3 of Xmx!</span>
                             </div>
                         </div>
                         <div class="form-group">

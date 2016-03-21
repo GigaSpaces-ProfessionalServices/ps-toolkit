@@ -4,6 +4,7 @@ import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.validation.ValidationException;
+import java.util.HashSet;
 import java.util.List;
 
 import static java.util.Arrays.asList;
@@ -87,6 +88,9 @@ public class XapConfigOptions {
                 } catch (RuntimeException e) {
                     errorMessage += e.getMessage();
                 }
+            }
+            if (new HashSet<>(zoneOptions).size() != zoneOptions.size()) {
+                errorMessage += "zoneNames must be unique!<br/>";
             }
         } else {
             errorMessage += "zoneOptions cannot be null or empty!<br/>";

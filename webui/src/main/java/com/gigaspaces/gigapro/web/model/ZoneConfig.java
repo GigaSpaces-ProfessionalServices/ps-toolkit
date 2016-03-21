@@ -1,6 +1,7 @@
 package com.gigaspaces.gigapro.web.model;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import javax.validation.ValidationException;
 
@@ -8,6 +9,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 @Data
+@EqualsAndHashCode(of = "zoneName")
 public class ZoneConfig {
     private String zoneName;
     private String xmx;

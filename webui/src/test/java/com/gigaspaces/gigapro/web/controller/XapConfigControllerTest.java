@@ -2,8 +2,6 @@ package com.gigaspaces.gigapro.web.controller;
 
 import com.gigaspaces.gigapro.web.Application;
 import com.gigaspaces.gigapro.web.model.RestError;
-import com.gigaspaces.gigapro.web.model.ValidationRequest;
-import com.gigaspaces.gigapro.web.model.ValidationResponse;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,13 +16,10 @@ import org.springframework.web.client.RestTemplate;
 
 import static com.gigaspaces.gigapro.web.XAPTestOptions.getNamedZoneOptions;
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
-import static java.lang.System.getenv;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
-import static org.junit.Assume.assumeTrue;
 import static org.springframework.http.HttpStatus.OK;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -34,32 +29,6 @@ import static org.springframework.http.HttpStatus.OK;
 public class XapConfigControllerTest {
 
     RestTemplate template = new TestRestTemplate();
-
-    @Test
-    public void validJavaHomeIsReachableTest() {
-        ResponseEntity<ValidationResponse> responseEntity = template.postForEntity("http://localhost:9999/validjavahome", new ValidationRequest(), ValidationResponse.class);
-
-        assertThat(responseEntity.getStatusCode(), is(OK));
-    }
-
-    @Test
-    public void validJavaHomeCorrectTest() {
-        String javaHome = getenv("JAVA_HOME");
-        assumeTrue("Environment variable 'JAVA_HOME' is not set", isNotBlank(javaHome));
-
-        ValidationRequest request = new ValidationRequest();
-        request.setValue(javaHome);
-        ResponseEntity<ValidationResponse> responseEntity = template.postForEntity("http://localhost:9999/validjavahome", request, ValidationResponse.class);
-
-        assertThat(responseEntity.getBody().isValid(), is(true));
-    }
-
-    @Test
-    public void validJavaHomeIncorrectTest() {
-        ResponseEntity<ValidationResponse> responseEntity = template.postForEntity("http://localhost:9999/validjavahome", new ValidationRequest(), ValidationResponse.class);
-
-        assertThat(responseEntity.getBody().isValid(), is(false));
-    }
 
     @Test
     public void generateIsReachableTest() {

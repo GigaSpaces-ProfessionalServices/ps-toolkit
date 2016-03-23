@@ -1,11 +1,8 @@
 package com.gigaspaces.gigapro.web.controller;
 
 import com.gigaspaces.gigapro.web.model.RestError;
-import com.gigaspaces.gigapro.web.model.ValidationRequest;
-import com.gigaspaces.gigapro.web.model.ValidationResponse;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import com.gigaspaces.gigapro.web.service.ZippedConfigCreator;
-import com.gigaspaces.gigapro.web.service.validation.ValidationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,9 +29,6 @@ public class XapConfigController {
     private static final Logger LOG = LoggerFactory.getLogger(XapConfigController.class);
 
     @Autowired
-    private ValidationService validationService;
-
-    @Autowired
     private ZippedConfigCreator zippedConfigCreator;
 
     @RequestMapping(value = "/generate", method = POST, consumes = APPLICATION_JSON_VALUE)
@@ -51,14 +45,6 @@ public class XapConfigController {
                 .contentLength(body.contentLength())
                 .contentType(parseMediaType("application/zip"))
                 .body(body);
-    }
-
-    @RequestMapping(value = "/validjavahome", method = POST, consumes = APPLICATION_JSON_VALUE)
-    public ResponseEntity validJavaHome(@RequestBody ValidationRequest request) {
-        LOG.info("Validating JAVA_HOME: " + request);
-        ValidationResponse response = validationService.validate(request);
-        LOG.info("Validation result: " + response);
-        return ResponseEntity.ok(response);
     }
 
     @ExceptionHandler(Exception.class)

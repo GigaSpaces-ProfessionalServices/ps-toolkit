@@ -15,11 +15,12 @@
             <div class="col-md-3">
                 <input id="javaHome" name="javaHome" class="form-control input-md" type="text" required
                        msd-placeholder="/usr/lib/java/" ng-model="options.javaHome"
-                       ng-remote-validate="/validjavahome"/>
+                       ng-pattern="/^.*(jdk).*$/i" />
                 <span class="error-message"
                       ng-show="xapConfigForm.javaHome.$touched && xapConfigForm.javaHome.$error.required">Java Home is required.</span>
-                <span class="error-message" ng-show="xapConfigForm.javaHome.$error.ngRemoteValidate">JDK cannot be found by this path.</span>
-                <span class="message" ng-show="xapConfigForm.javaHome.$pending">Validating JAVA_HOME...</span>
+                <span class="error-message" ng-show="xapConfigForm.javaHome.$touched && xapConfigForm.javaHome.$invalid
+                                                    && !xapConfigForm.javaHome.$error.required">
+                    XAP Requires a JDK, we cannot validate by the path a JDK is used, please double check this is indeed a JDK.</span>
             </div>
         </div>
         <div class="form-group">
@@ -208,9 +209,7 @@
 <script type="text/javascript" src="./bower_components/angular/angular.min.js"></script>
 <script type="text/javascript" src="./bower_components/angular-resource/angular-resource.min.js"></script>
 <script type="text/javascript" src="./bower_components/angular-placeholder/placeholder.js"></script>
-<script type="text/javascript" src="./bower_components/ng-remote-validate/release/ngRemoteValidate.js"></script>
-<script type="text/javascript"
-        src="./bower_components/angular-file-saver/dist/angular-file-saver.bundle.min.js"></script>
+<script type="text/javascript" src="./bower_components/angular-file-saver/dist/angular-file-saver.bundle.min.js"></script>
 <script type="text/javascript" src="./bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
 <script type="text/javascript" src="./app/app.js"></script>
 <script type="text/javascript" src="./app/controller.js"></script>

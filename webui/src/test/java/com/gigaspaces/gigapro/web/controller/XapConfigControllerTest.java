@@ -58,16 +58,16 @@ public class XapConfigControllerTest {
     @Test
     public void exceptionHandlerTest() {
         ResponseEntity<RestError> responseEntity = template.postForEntity("http://localhost:9999/generate", new XapConfigOptions(), RestError.class);
-        String errorMessage = "javaHome cannot be null or empty!<br/>" +
+        String errorMessage = "Validation exception occurred!";
+
+        String detailedMessage = "javaHome cannot be null or empty!<br/>" +
                 "xapHome cannot be null or empty!<br/>" +
                 "lookupGroups cannot be null or empty!<br/>" +
                 "maxProcessesNumber cannot be null!<br/>" +
                 "maxOpenFileDescriptorsNumber cannot be null!<br/>" +
                 "zoneOptions cannot be null or empty!<br/>";
 
-        String detailedMessage = "javax.validation.ValidationException: " + errorMessage;
-
-        assertThat(responseEntity.getBody().getStatusCode(), is(500));
+        assertThat(responseEntity.getBody().getStatusCode(), is(400));
         assertThat(responseEntity.getBody().getMessage(), is(errorMessage));
         assertThat(responseEntity.getBody().getDetailedMessage(), is(detailedMessage));
     }

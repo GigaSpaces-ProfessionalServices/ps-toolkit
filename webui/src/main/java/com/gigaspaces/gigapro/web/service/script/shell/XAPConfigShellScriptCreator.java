@@ -10,15 +10,14 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.gigaspaces.gigapro.web.util.FileUtils.createTempFile;
-import static java.lang.ClassLoader.getSystemResource;
 import static java.nio.file.Files.newBufferedWriter;
-import static java.nio.file.Paths.get;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -63,28 +62,18 @@ public class XAPConfigShellScriptCreator implements XAPConfigScriptCreator {
 
     @Override
     public Path getWebuiScript() {
-        try {
-            String scriptPath = staticScriptsPath + webuiScriptName + fileExtension;
-            return get(getSystemResource(scriptPath).toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Error occurred generating script " + webuiScriptName + fileExtension, e);
-        }
+        return getStaticScript(webuiScriptName);
     }
 
     @Override
     public Path getCliScript() {
-        try {
-            String scriptPath = staticScriptsPath + cliScriptName + fileExtension;
-            return get(getSystemResource(scriptPath).toURI());
-        } catch (URISyntaxException e) {
-            throw new RuntimeException("Error occurred generating script " + cliScriptName + fileExtension, e);
-        }
+        return getStaticScript(cliScriptName);
     }
 
     @Override
     public List<Path> createStartGridScripts(XapConfigOptions options) {
         List<Path> startGridScripts = new ArrayList<>();
-        for (ZoneConfig zone: options.getZoneOptions()) {
+        for (ZoneConfig zone : options.getZoneOptions()) {
             String scriptName = isNotBlank(zone.getZoneName()) ? "start-" + zone.getZoneName() + "-services" : startGridScriptName;
             Path script = createTempFile(scriptName, fileExtension);
             try (BufferedWriter writer = newBufferedWriter(script, WRITE)) {
@@ -95,5 +84,16 @@ public class XAPConfigShellScriptCreator implements XAPConfigScriptCreator {
             startGridScripts.add(script);
         }
         return startGridScripts;
+    }
+
+    private Path getStaticScript(String scriptName) {
+        try {
+            String scriptPath = "/" + staticScriptsPath + scriptName + fileExtension;
+            Path script = createTempFile(scriptName, fileExtension);
+            Files.copy(getClass().getResourceAsStream(scriptPath), script, REPLACE_EXISTING);
+            return script;
+        } catch (IOException e) {
+            throw new RuntimeException("Error occurred generating script " + scriptName + fileExtension, e);
+        }
     }
 }

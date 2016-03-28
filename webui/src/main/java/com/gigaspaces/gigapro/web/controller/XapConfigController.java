@@ -8,17 +8,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.ValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.MediaType.*;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -50,10 +53,17 @@ public class XapConfigController {
     @ExceptionHandler(Exception.class)
     public ResponseEntity handleError(Exception exception) {
         String message = Optional.ofNullable(exception.getMessage()).orElse("Ooops! Something bad has happened!");
-        String detailedMessage = exception.getCause() != null ? exception.getCause().toString() : exception.toString();
-        RestError restError = new RestError(INTERNAL_SERVER_ERROR.value(), message, detailedMessage);
+        String detailedMessage = Optional.ofNullable(exception.getCause()).orElse(exception).toString();
+        HttpStatus httpStatus = INTERNAL_SERVER_ERROR;
+
+        if (exception instanceof ValidationException) {
+            message = "Validation exception occurred!";
+            detailedMessage = exception.getMessage();
+            httpStatus = BAD_REQUEST;
+        }
         LOG.error(message, exception);
-        return ResponseEntity.status(INTERNAL_SERVER_ERROR).contentType(APPLICATION_JSON).body(restError);
+        RestError restError = new RestError(httpStatus.value(), message, detailedMessage);
+        return ResponseEntity.status(httpStatus).contentType(APPLICATION_JSON).body(restError);
     }
 
     private HttpHeaders getHttpHeaders(FileSystemResource fileSystemResource) {

@@ -47,8 +47,8 @@ public class SetAppEnvShellMustacheTemplateTest {
                 containsString("LOOKUPGROUPS=" + wrap(optionsUnicastTrue.getLookupGroups(), '"')),
                 containsString("LOOKUPLOCATORS=" + wrap(optionsUnicastTrue.getLookupLocators() + ":" + optionsUnicastTrue.getDiscoveryPort(), '"')),
                 containsString("-Dcom.gs.multicast.enabled=" + !optionsUnicastTrue.getIsUnicast()),
-                containsString("$(ulimit -u) -lt " + optionsUnicastTrue.getMaxProcessesNumber()),
-                containsString("$(ulimit -n) -lt " + optionsUnicastTrue.getMaxOpenFileDescriptorsNumber())
+                containsString("$ulimitu -lt " + optionsUnicastTrue.getMaxProcessesNumber()),
+                containsString("$ulimitn -lt " + optionsUnicastTrue.getMaxOpenFileDescriptorsNumber())
         ));
     }
 
@@ -67,8 +67,8 @@ public class SetAppEnvShellMustacheTemplateTest {
                 containsString("LOOKUPGROUPS=" + wrap(optionsUnicastFalse.getLookupGroups(), '"')),
                 containsString("LOOKUPLOCATORS=" + "\"\""),
                 containsString("-Dcom.gs.multicast.enabled=" + !optionsUnicastFalse.getIsUnicast()),
-                containsString("$(ulimit -u) -lt " + optionsUnicastFalse.getMaxProcessesNumber()),
-                containsString("$(ulimit -n) -lt " + optionsUnicastFalse.getMaxOpenFileDescriptorsNumber())
+                containsString("$ulimitu -lt " + optionsUnicastFalse.getMaxProcessesNumber()),
+                containsString("$ulimitn -lt " + optionsUnicastFalse.getMaxOpenFileDescriptorsNumber())
         ));
     }
 

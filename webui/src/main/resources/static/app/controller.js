@@ -91,7 +91,7 @@ angular.module('xapConfigApp.controllers', [])
             };
         }
     };
-}).directive('within', function () {
+}).directive('third', function () {
     return {
         restrict: 'A',
         require: 'ngModel',
@@ -102,7 +102,7 @@ angular.module('xapConfigApp.controllers', [])
             scope.$watch(attrs.ngModel, function () {
                 validate();
             });
-            attrs.$observe('within', function (val) {
+            attrs.$observe('third', function (val) {
                 validate();
             });
             var validate = function () {
@@ -115,16 +115,14 @@ angular.module('xapConfigApp.controllers', [])
                         value = parseInt(val1);
                     }
 
-                    var bounds = attrs.within.split(",", 3);
-                    var valueToCompare = bounds[0].trim();
+                    var valueToCompare = attrs.third.trim();
                     if (valueToCompare.indexOf("g") != -1) {
                         valueToCompare = parseInt(valueToCompare) * 1024;
                     } else if (valueToCompare.indexOf("m") != -1) {
                         valueToCompare = parseInt(valueToCompare);
                     }
-                    var leftBound = bounds[1].trim() * valueToCompare;
-                    var rightBound = bounds[2].trim() * valueToCompare;
-                    ngModel.$setValidity('within', (leftBound <= value && value <= rightBound));
+                    valueToCompare = Math.ceil(valueToCompare / 3);
+                    ngModel.$setValidity('third', (value == valueToCompare));
                 }
             };
         }

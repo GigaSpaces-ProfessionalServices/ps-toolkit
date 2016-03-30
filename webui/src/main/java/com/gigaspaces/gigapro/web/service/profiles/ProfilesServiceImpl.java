@@ -3,7 +3,6 @@ package com.gigaspaces.gigapro.web.service.profiles;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gigaspaces.gigapro.web.model.Profile;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -62,13 +61,19 @@ public class ProfilesServiceImpl implements ProfilesService {
         LOG.info("applicationLocationPath:" + applicationLocationPath);
         LOG.info("profilesPath:" + profilesPath);
 
-        if (profilesPath == null) {
-            throw new RuntimeException("PROFILES PATH IS NULL!!!");
-        }
         while ( !exists(profilesPath.resolve("config/profiles"))) {
             profilesPath = profilesPath.getParent();
+
             LOG.info("profilesPath:" + profilesPath);
-            LOG.info(StringUtils.join(profilesPath.toFile().list(), ","));
+            LOG.info("Files in " + profilesPath + ":");
+            try (DirectoryStream<Path> directoryStream = newDirectoryStream(profilesPath)) {
+                directoryStream.forEach(p -> LOG.info(p.getFileName().toString()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (profilesPath == null) {
+                throw new RuntimeException("PROFILES PATH IS NULL!!!");
+            }
         }
         return profilesPath.resolve("config/profiles");
     }

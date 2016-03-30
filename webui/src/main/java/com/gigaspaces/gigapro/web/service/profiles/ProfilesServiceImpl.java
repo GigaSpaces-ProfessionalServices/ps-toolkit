@@ -16,7 +16,6 @@ import java.util.List;
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.newDirectoryStream;
 import static java.nio.file.Paths.get;
-import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.*;
 
 @Service
@@ -38,16 +37,6 @@ public class ProfilesServiceImpl implements ProfilesService {
         } catch (IOException e) {
             throw new RuntimeException("Error occurred reading profiles", e);
         }
-    }
-
-    @Override
-    public List<String> getProfilesNames() {
-        return getProfiles().stream().map(Profile::getName).collect(toList());
-    }
-
-    @Override
-    public Profile getProfile(String profileName) {
-        return getProfiles().stream().filter(p -> p.getName().equals(profileName)).findFirst().get();
     }
 
     private Path getProfilesLocationPath() throws URISyntaxException {

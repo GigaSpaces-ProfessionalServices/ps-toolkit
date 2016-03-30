@@ -3,6 +3,7 @@ package com.gigaspaces.gigapro.web.service.profiles;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gigaspaces.gigapro.web.model.Profile;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -11,12 +12,12 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.nio.file.Files.exists;
 import static java.nio.file.Files.newDirectoryStream;
+import static java.nio.file.Paths.get;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.StringUtils.*;
 
@@ -55,8 +56,13 @@ public class ProfilesServiceImpl implements ProfilesService {
 
     private Path getProfilesLocationPath() throws URISyntaxException {
         String applicationPath = getClass().getProtectionDomain().getCodeSource().getLocation().toURI().toString();
-        String applicationLocationPath = replacePattern(applicationPath, PATH_REPLACEMENT_PATTERN, EMPTY);
-        Path profilesPath = Paths.get(applicationLocationPath);
+        String applicationLocationPath;
+        if (SystemUtils.IS_OS_UNIX) {
+            applicationLocationPath = replacePattern(applicationPath, UNIX_PATH_REPLACEMENT_PATTERN, EMPTY);
+        } else {
+            applicationLocationPath = replacePattern(applicationPath, WIN_PATH_REPLACEMENT_PATTERN, EMPTY);
+        }
+        Path profilesPath = get(applicationLocationPath);
 
         LOG.info("applicationLocationPath:" + applicationLocationPath);
         LOG.info("profilesPath:" + profilesPath);

@@ -6,7 +6,9 @@ import java.util.List;
 
 public interface ProfilesService {
 
-    String PATH_REPLACEMENT_PATTERN = "(jar:|file:/|!/)";
+    String WIN_PATH_REPLACEMENT_PATTERN = "(jar:|file:/|!/)";
+
+    String UNIX_PATH_REPLACEMENT_PATTERN = "(jar:|file:|!/)";
 
     List<Profile> getProfiles();
 

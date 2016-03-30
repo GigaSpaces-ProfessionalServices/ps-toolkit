@@ -1,18 +1,15 @@
 package com.gigaspaces.gigapro.web.model;
 
 import lombok.Data;
-import org.apache.commons.lang3.StringUtils;
 
-import javax.validation.ValidationException;
-import java.util.HashSet;
 import java.util.List;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang3.ArrayUtils.isNotEmpty;
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
-import static org.apache.commons.lang3.StringUtils.*;
+import static org.apache.commons.lang3.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.split;
 
 @Data
 public class XapConfigOptions {
@@ -48,55 +45,5 @@ public class XapConfigOptions {
     public String getLookupLocatorsWithPort() {
         List<String> lookupLocatorsWithPort = getLookupLocatorsAsList().stream().map(i -> i + ":" + discoveryPort).collect(toList());
         return join(lookupLocatorsWithPort, ",");
-    }
-
-
-    /**
-     * This method validates all required fields for @NotNull
-     */
-    public void validate() {
-        String errorMessage = "";
-        if (isBlank(javaHome)) {
-            errorMessage += "javaHome cannot be null or empty!<br/>";
-        }
-        if (isBlank(xapHome)) {
-            errorMessage += "xapHome cannot be null or empty!<br/>";
-        }
-        if (isBlank(lookupGroups)) {
-            errorMessage += "lookupGroups cannot be null or empty!<br/>";
-        }
-        if (maxProcessesNumber == null) {
-            errorMessage += "maxProcessesNumber cannot be null!<br/>";
-        }
-        if (maxOpenFileDescriptorsNumber == null) {
-            errorMessage += "maxOpenFileDescriptorsNumber cannot be null!<br/>";
-        }
-        if (scriptType == null) {
-            errorMessage += "scriptType cannot be null!<br/>";
-        }
-        if (isTrue(isUnicast)) {
-            if (discoveryPort == null) {
-                errorMessage += "discoveryPort cannot be null!<br/>";
-            }
-            if (isBlank(lookupLocators))
-                errorMessage += "lookupLocators cannot be null or empty!<br/>";
-        }
-        if (zoneOptions != null) {
-            for (ZoneConfig zone : zoneOptions) {
-                try {
-                    zone.validate();
-                } catch (RuntimeException e) {
-                    errorMessage += e.getMessage();
-                }
-            }
-            if (new HashSet<>(zoneOptions).size() != zoneOptions.size()) {
-                errorMessage += "zoneNames must be unique!<br/>";
-            }
-        } else {
-            errorMessage += "zoneOptions cannot be null or empty!<br/>";
-        }
-        if (StringUtils.isNotEmpty(errorMessage)) {
-            throw new ValidationException(errorMessage);
-        }
     }
 }

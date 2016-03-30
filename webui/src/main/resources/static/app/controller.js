@@ -5,9 +5,21 @@ angular.module('xapConfigApp.controllers', [])
         $scope.data = {};
         $scope.zones = [{id: 'zone1'}];
 
-        $scope.download = function (options) {
+        $scope.download = function (options, force) {
             $scope.xapConfigOptions = angular.copy(options);
             $scope.xapConfigOptions['zoneOptions'] = $scope.zones;
+
+            if ( !force && !validateOptions($scope.xapConfigOptions)) {
+                $uibModal.open({
+                    animation: true,
+                    templateUrl: 'warningModalContent.html',
+                    controller: 'WarningModalInstanceCtrl',
+                    keyboard: true,
+                    size: 'md',
+                    resolve: {mainScope : $scope}
+                });
+                return;
+            }
 
             var config = {responseType: 'arraybuffer', cache: false};
             $http.post('/generate', $scope.xapConfigOptions, config).then(function (response) {
@@ -58,6 +70,27 @@ angular.module('xapConfigApp.controllers', [])
         };
         $scope.reset();
 
+        var validateOptions = function (options) {
+            var result =
+                options['javaHome'] != undefined &&
+                options['xapHome'] != undefined &&
+                options['maxProcessesNumber'] != undefined &&
+                options['maxOpenFileDescriptorsNumber'] != undefined &&
+                options['lookupGroups'] != undefined;
+
+            if (options['isUnicast']) {
+                result = result && options['discoveryPort'] != undefined && options['lookupLocators'] != undefined;
+            }
+            if (options['zoneOptions'] != undefined) {
+                options.zoneOptions.forEach(function (item, i, arr) {
+                    result = result && item['xmx'] != undefined && item['xms'] != undefined && item['xmn'] != undefined &&
+                        item['gscNum'] != undefined && item['gsmNum'] != undefined && item['lusNum'] != undefined;
+                });
+            } else {
+                result = false;
+            }
+            return result;
+        };
 
     }]).controller('ModalInstanceCtrl', function ($scope, $uibModalInstance, data) {
 
@@ -69,6 +102,18 @@ angular.module('xapConfigApp.controllers', [])
 
     $scope.close = function () {
         $uibModalInstance.close($scope.data);
+    };
+}).controller('WarningModalInstanceCtrl', function ($scope, $uibModalInstance, mainScope) {
+
+    $scope.mainScope = mainScope;
+
+    $scope.cancel = function () {
+        $uibModalInstance.dismiss('cancel');
+    };
+
+    $scope.forceDownload = function () {
+        $uibModalInstance.close();
+        mainScope.download(mainScope.xapConfigOptions, true);
     };
 }).directive('equals', function () {
     return {

@@ -7,12 +7,12 @@
 </head>
 <body ng-app="xapConfigApp">
 <div class="container" ng-controller="MainController">
-    <form name="xapConfigForm" class="form-horizontal voffset6" autocomplete="off" novalidate>
+    <form name="xapConfigForm" class="form-horizontal voffset6" autocomplete="off" novalidate ng-model-options="{allowInvalid:true}">
         <div class="form-group">
             <label class="col-md-2 col-md-offset-2" for="javaHome">Java Home:
                 <span class="asteriskField">*</span>
             </label>
-            <div class="col-md-3">
+            <div class="col-md-3" ng-class="{'has-error': xapConfigForm.javaHome.$touched && xapConfigForm.javaHome.$invalid}">
                 <input id="javaHome" name="javaHome" class="form-control input-md" type="text" required
                        msd-placeholder="/usr/lib/java/" ng-model="options.javaHome"
                        ng-pattern="/^.*(jdk).*$/i" />
@@ -23,7 +23,7 @@
                     XAP Requires a JDK, we cannot validate by the path a JDK is used, please double check this is indeed a JDK.</span>
             </div>
         </div>
-        <div class="form-group">
+        <div class="form-group" ng-class="{'has-error': xapConfigForm.xapHome.$touched && xapConfigForm.xapHome.$invalid}">
             <label class="col-md-2 col-md-offset-2" for="xapHome">XAP Home:
                 <span class="asteriskField">*</span>
             </label>
@@ -35,18 +35,18 @@
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" ng-class="{'has-error': xapConfigForm.ulimitU.$touched && xapConfigForm.ulimitU.$invalid}">
             <label class="col-md-2 col-md-offset-2" for="maxProcessesNumber">Acceptable Ulimit -u:
                 <span class="asteriskField">*</span>
             </label>
             <div class="col-md-3">
                 <input name="ulimitU" id="maxProcessesNumber" class="form-control" type="number"
-                       ng-model="options.maxProcessesNumber" msd-placeholder="8192" required/>
+                       ng-model="options.maxProcessesNumber" msd-placeholder="8192" required />
                 <span class="error-message" ng-show="xapConfigForm.ulimitU.$touched && xapConfigForm.ulimitU.$error.required">ulimit -u is required.</span>
             </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group" ng-class="{'has-error': xapConfigForm.ulimitN.$touched && xapConfigForm.ulimitN.$invalid}">
             <label class="col-md-2 col-md-offset-2" for="maxOpenFileDescriptorsNumber">Acceptable Ulimit -n:
                 <span class="asteriskField">*</span>
             </label>
@@ -63,19 +63,19 @@
             <div class="col-md-1 ">
                 <input name="unicast" id="unicast" type="checkbox" ng-model="options.isUnicast"/>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2" ng-class="{'has-error': xapConfigForm.unicast.$touched && xapConfigForm.uniport.$invalid}">
                 <input name="uniport" class="form-control" type="number" msd-placeholder="UNI-PORT"
                        ng-model="options.discoveryPort" ng-required="options.isUnicast == true"/>
                 <span class="error-message"
                       ng-show="xapConfigForm.unicast.$touched && xapConfigForm.uniport.$touched && xapConfigForm.uniport.$error.required">UNI-PORT is required.</span>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-3" ng-class="{'has-error': xapConfigForm.unicast.$touched && xapConfigForm.hosts.$invalid}">
                 <input name="hosts" class="form-control" type="text" msd-placeholder="LUS_HOSTS"
                        ng-model="options.lookupLocators" ng-required="options.isUnicast == true"/>
                 <span class="error-message"
                       ng-show="xapConfigForm.unicast.$touched && xapConfigForm.hosts.$touched && xapConfigForm.hosts.$error.required">LUS_HOSTS is required.</span>
             </div>
-            <div class="col-md-2">
+            <div class="col-md-2" ng-class="{'has-error': xapConfigForm.group.$invalid}">
                 <input name="group" class="form-control" type="text" msd-placeholder="GROUP" required
                        ng-model="options.lookupGroups"/>
                 <span class="error-message" ng-show="xapConfigForm.group.$touched && xapConfigForm.group.$error.required">Lookup group is required.</span>
@@ -100,14 +100,14 @@
                                 <span class="error-message"
                                       ng-show="xapConfigForm.zoneName{{$index}}.$error.unique">Zone name is not unique!</span>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-2" ng-class="{'has-error': xapConfigForm.xmx{{$index}}.$invalid}">
                                 <input type="text" class="form-control" name="xmx{{$index}}" id="xmx{{$index}}"
                                        ng-model="zone.xmx"
                                        ng-pattern="/^[0-9]{1,4}[mg]{1}$/" msd-placeholder="Xmx" required>
                                 <span class="error-message"
                                       ng-show="xapConfigForm.xmx{{$index}}.$touched && xapConfigForm.xmx{{$index}}.$invalid">Pattern is 1234[m|g]</span>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-2" ng-class="{'has-error': xapConfigForm.xms{{$index}}.$invalid}">
                                 <input type="text" class="form-control" name="xms{{$index}}" id="xms{{$index}}"
                                        ng-model="zone.xms" equals="{{zone.xmx}}"
                                        ng-pattern="/^[0-9]{1,4}[mg]{1}$/" msd-placeholder="Xms" required>
@@ -116,7 +116,7 @@
                                 <span class="error-message"
                                       ng-show="xapConfigForm.xms{{$index}}.$touched && xapConfigForm.xms{{$index}}.$error.equals">Xms must be equal to Xmx!</span>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-2" ng-class="{'has-error': xapConfigForm.xmn{{$index}}.$invalid}">
                                 <input type="text" class="form-control" name="xmn{{$index}}" id="xmn{{$index}}"
                                        ng-model="zone.xmn" third="{{zone.xmx}}"
                                        ng-pattern="/^[0-9]{1,4}[mg]{1}$/" msd-placeholder="Xmn" required>
@@ -138,7 +138,7 @@
                             <label class="col-md-1" for="zoneName{{$index}}">GSC:
                                 <span class="asteriskField">*</span>
                             </label>
-                            <div class="col-md-2">
+                            <div class="col-md-2" ng-class="{'has-error': xapConfigForm.gsc{{$index}}.$touched && xapConfigForm.gsc{{$index}}.$invalid}">
                                 <input type="number" class="form-control" name="gsc{{$index}}" id="gsc{{$index}}"
                                        ng-model="zone.gscNum" ng-pattern="/^[0-9]*$/" required>
                                 <span class="error-message" style="position: absolute"
@@ -150,7 +150,7 @@
                             <label class="col-md-1" for="zoneName{{$index}}">GSM:
                                 <span class="asteriskField">*</span>
                             </label>
-                            <div class="col-md-2">
+                            <div class="col-md-2" ng-class="{'has-error': xapConfigForm.gsm{{$index}}.$touched && xapConfigForm.gsm{{$index}}.$invalid}">
                                 <input type="number" class="form-control" name="gsm{{$index}}" id="gsm{{$index}}"
                                        ng-model="zone.gsmNum" ng-pattern="/^[0-9]*$/" required>
                                 <span class="error-message" style="position: absolute"
@@ -162,7 +162,7 @@
                             <label class="col-md-1" for="zoneName{{$index}}">LUS:
                                 <span class="asteriskField">*</span>
                             </label>
-                            <div class="col-md-2">
+                            <div class="col-md-2" ng-class="{'has-error': xapConfigForm.lus{{$index}}.$touched && xapConfigForm.lus{{$index}}.$invalid}">
                                 <input type="number" class="form-control" name="lus{{$index}}" id="lus{{$index}}"
                                        ng-model="zone.lusNum" ng-pattern="/^[0-9]*$/" required>
                                 <span class="error-message" style="position: absolute"
@@ -184,17 +184,14 @@
 
         <div class="form-group">
             <div class="col-md-4 col-md-offset-2">
-                <input type="submit" class="btn btn-primary" ng-click="download(options)" value="Generate"
-                       ng-disabled="xapConfigForm.$invalid || myForm.$pending"/>
+                <input type="submit" class="btn btn-primary" ng-click="download(options, false)" value="Generate"
+                       ng-disabled="xapConfigForm.$error.unique"/>
                 <input type="button" class="btn btn-default" ng-click="reset(xapConfigForm)" value="Reset"/>
             </div>
         </div>
     </form>
 
     <script type="text/ng-template" id="myModalContent.html">
-        <div class="modal-header">
-            <h3 class="modal-title">Error message:</h3>
-        </div>
         <div class="modal-body">
             <h4><b>Status Code:</b> {{ data.statusCode }}</h4><br/>
             <h4><b>Error message:</b> {{ data.message }}</h4><br/>
@@ -202,6 +199,18 @@
         </div>
         <div class="modal-footer">
             <button class="btn btn-warning" type="button" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
+
+    <script type="text/ng-template" id="warningModalContent.html">
+        <div class="modal-body">
+            <h4>You haven't filled all required fields.</h4>
+            <h4>The generated scripts will be corrupted.</h4> <br/>
+            <h3>Do you want to continue anyway?</h3>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" type="button" ng-click="forceDownload()">Generate</button>
+            <button class="btn btn-default" type="button" ng-click="cancel()">Cancel</button>
         </div>
     </script>
 </div>

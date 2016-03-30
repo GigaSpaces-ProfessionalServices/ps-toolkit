@@ -15,13 +15,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.ValidationException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.MediaType.*;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
@@ -39,7 +37,6 @@ public class XapConfigController {
         // SHELL script type is set manually until another script types are implemented
         xapConfigOptions.setScriptType(SHELL);
 
-        xapConfigOptions.validate();
         LOG.info("Generating script using options: " + xapConfigOptions);
         Path zippedConfig = zippedConfigCreator.createZippedConfig(xapConfigOptions);
         FileSystemResource body = new FileSystemResource(zippedConfig.toFile());
@@ -55,13 +52,8 @@ public class XapConfigController {
         String message = Optional.ofNullable(exception.getMessage()).orElse("Ooops! Something bad has happened!");
         String detailedMessage = Optional.ofNullable(exception.getCause()).orElse(exception).toString();
         HttpStatus httpStatus = INTERNAL_SERVER_ERROR;
-
-        if (exception instanceof ValidationException) {
-            message = "Validation exception occurred!";
-            detailedMessage = exception.getMessage();
-            httpStatus = BAD_REQUEST;
-        }
         LOG.error(message, exception);
+
         RestError restError = new RestError(httpStatus.value(), message, detailedMessage);
         return ResponseEntity.status(httpStatus).contentType(APPLICATION_JSON).body(restError);
     }

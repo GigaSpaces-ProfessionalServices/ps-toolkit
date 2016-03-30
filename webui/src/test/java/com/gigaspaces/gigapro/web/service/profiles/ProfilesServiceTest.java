@@ -12,7 +12,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.List;
 
 import static com.gigaspaces.gigapro.web.XAPTestOptions.getDefaultOptions;
-import static com.gigaspaces.gigapro.web.service.profiles.ProfilesService.PATH_REPLACEMENT_PATTERN;
+import static com.gigaspaces.gigapro.web.service.profiles.ProfilesService.UNIX_PATH_REPLACEMENT_PATTERN;
+import static com.gigaspaces.gigapro.web.service.profiles.ProfilesService.WIN_PATH_REPLACEMENT_PATTERN;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.replacePattern;
@@ -30,10 +31,13 @@ public class ProfilesServiceTest {
     @Test
     public void pathReplacementPatternTest() {
         String applicationPath = "jar:file:/D:/path/to/file/app.jar!/";
-        String expected = "D:/path/to/file/app.jar";
-        String actual = replacePattern(applicationPath, PATH_REPLACEMENT_PATTERN, EMPTY);
+        String winExpected = "D:/path/to/file/app.jar";
+        String unixExpected = "/D:/path/to/file/app.jar";
+        String winActual = replacePattern(applicationPath, WIN_PATH_REPLACEMENT_PATTERN, EMPTY);
+        String unixActual = replacePattern(applicationPath, UNIX_PATH_REPLACEMENT_PATTERN, EMPTY);
 
-        assertThat(actual, is(expected));
+        assertThat(winActual, is(winExpected));
+        assertThat(unixActual, is(unixExpected));
     }
 
     @Test

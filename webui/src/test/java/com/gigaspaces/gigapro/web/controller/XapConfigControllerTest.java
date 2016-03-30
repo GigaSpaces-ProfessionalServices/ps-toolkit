@@ -1,7 +1,6 @@
 package com.gigaspaces.gigapro.web.controller;
 
 import com.gigaspaces.gigapro.web.Application;
-import com.gigaspaces.gigapro.web.model.RestError;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,22 +52,5 @@ public class XapConfigControllerTest {
                 hasEntry("Expires", "0"),
                 hasEntry("Content-Description", "File Transfer"))
         );
-    }
-
-    @Test
-    public void exceptionHandlerTest() {
-        ResponseEntity<RestError> responseEntity = template.postForEntity("http://localhost:9999/generate", new XapConfigOptions(), RestError.class);
-        String errorMessage = "Validation exception occurred!";
-
-        String detailedMessage = "javaHome cannot be null or empty!<br/>" +
-                "xapHome cannot be null or empty!<br/>" +
-                "lookupGroups cannot be null or empty!<br/>" +
-                "maxProcessesNumber cannot be null!<br/>" +
-                "maxOpenFileDescriptorsNumber cannot be null!<br/>" +
-                "zoneOptions cannot be null or empty!<br/>";
-
-        assertThat(responseEntity.getBody().getStatusCode(), is(400));
-        assertThat(responseEntity.getBody().getMessage(), is(errorMessage));
-        assertThat(responseEntity.getBody().getDetailedMessage(), is(detailedMessage));
     }
 }

@@ -1,5 +1,6 @@
 package com.gigaspaces.gigapro.web.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gigaspaces.gigapro.web.Application;
 import com.gigaspaces.gigapro.web.model.Profile;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
@@ -14,8 +15,11 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static com.gigaspaces.gigapro.web.XAPTestOptions.getDefaultOptions;
 import static com.gigaspaces.gigapro.web.XAPTestOptions.getNamedZoneOptions;
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
@@ -59,21 +63,16 @@ public class XapConfigControllerTest {
     }
 
     @Test
-    public void profilesTest() {
+    public void profilesTest() throws IOException {
         ResponseEntity<List> responseEntity = template.getForEntity("http://localhost:9999/profiles", List.class);
-        List<String> profiles = responseEntity.getBody();
+        List<HashMap> profiles = responseEntity.getBody();
+        ObjectMapper objectMapper = new ObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+        String json = objectMapper.writeValueAsString(profiles.get(0));
+        Profile profile = objectMapper.readValue(json, Profile.class);
+
 
         assertThat(responseEntity.getStatusCode(), is(OK));
         assertThat(profiles.size(), is(1));
-        assertThat(profiles.get(0), is("default"));
-    }
-
-    @Test
-    public void profileTest() {
-        ResponseEntity<Profile> responseEntity = template.getForEntity("http://localhost:9999/profiles/default", Profile.class);
-        Profile profile = responseEntity.getBody();
-
-        assertThat(responseEntity.getStatusCode(), is(OK));
         assertThat(profile.getName(), is("default"));
         assertThat(profile.getOptions(), is(getDefaultOptions()));
     }

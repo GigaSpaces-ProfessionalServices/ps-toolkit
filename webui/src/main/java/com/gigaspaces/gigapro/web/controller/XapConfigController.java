@@ -53,20 +53,11 @@ public class XapConfigController {
 
     @RequestMapping(value = "/profiles", method = GET, produces = APPLICATION_JSON_VALUE)
     public ResponseEntity profiles() {
-        List<String> profilesNames = profilesService.getProfilesNames();
-        LOG.info("Available profiles found: " + profilesNames);
+        List<Profile> profiles = profilesService.getProfiles();
+        LOG.info("Available profiles found: " + profiles);
 
-        return ResponseEntity.ok(profilesNames);
+        return ResponseEntity.ok(profiles);
     }
-
-    @RequestMapping(value = "/profiles/{profile}", method = GET, produces = APPLICATION_JSON_VALUE)
-    public ResponseEntity profile(@PathVariable("profile") String profileName) {
-        Profile profile = profilesService.getProfile(profileName);
-        LOG.info("Profile found: " + profile);
-
-        return ResponseEntity.ok(profile);
-    }
-
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity handleError(Exception exception) {

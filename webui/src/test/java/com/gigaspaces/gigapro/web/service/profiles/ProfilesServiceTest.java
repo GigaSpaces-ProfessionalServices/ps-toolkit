@@ -14,7 +14,6 @@ import java.util.List;
 import static com.gigaspaces.gigapro.web.XAPTestOptions.getDefaultOptions;
 import static com.gigaspaces.gigapro.web.service.profiles.ProfilesService.UNIX_PATH_REPLACEMENT_PATTERN;
 import static com.gigaspaces.gigapro.web.service.profiles.ProfilesService.WIN_PATH_REPLACEMENT_PATTERN;
-import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.replacePattern;
 import static org.hamcrest.CoreMatchers.is;
@@ -47,21 +46,5 @@ public class ProfilesServiceTest {
         assertThat(profiles.size(), is(1));
         assertThat(profiles.get(0).getName(), is("default"));
         assertThat(profiles.get(0).getOptions(), is(getDefaultOptions()));
-    }
-
-    @Test
-    public void getProfilesNamesTest() {
-        List<String> actual = profilesService.getProfilesNames();
-        List<String> expected = singletonList("default");
-
-        assertThat(actual, is(expected));
-    }
-
-    @Test
-    public void getProfileTest() {
-        Profile actual = profilesService.getProfile("default");
-        Profile expected = new Profile("default", getDefaultOptions());
-
-        assertThat(actual, is(expected));
     }
 }

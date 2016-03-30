@@ -11,8 +11,4 @@ public interface ProfilesService {
     String UNIX_PATH_REPLACEMENT_PATTERN = "(jar:|file:|!/)";
 
     List<Profile> getProfiles();
-
-    List<String> getProfilesNames();
-
-    Profile getProfile(String profileName);
 }

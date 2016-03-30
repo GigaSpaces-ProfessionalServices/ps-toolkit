@@ -3,6 +3,8 @@ package com.gigaspaces.gigapro.web.service.profiles;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gigaspaces.gigapro.web.model.Profile;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,6 +22,8 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 @Service
 public class ProfilesServiceImpl implements ProfilesService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ProfilesServiceImpl.class);
 
     private static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
@@ -53,6 +57,11 @@ public class ProfilesServiceImpl implements ProfilesService {
         String applicationPath = getClass().getProtectionDomain().getCodeSource().getLocation().toURI().toString();
         String applicationLocationPath = replacePattern(applicationPath, PATH_REPLACEMENT_PATTERN, EMPTY);
         Path profilesPath = Paths.get(applicationLocationPath);
+
+        LOG.info("applicationPath:" + applicationPath);
+        LOG.info("applicationLocationPath:" + applicationLocationPath);
+        LOG.info("profilesPath:" + profilesPath);
+
         while ( !exists(profilesPath.resolve("config/profiles"))) {
             profilesPath = profilesPath.getParent();
         }

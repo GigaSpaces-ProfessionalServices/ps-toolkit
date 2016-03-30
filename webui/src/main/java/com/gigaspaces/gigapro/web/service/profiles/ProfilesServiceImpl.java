@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gigaspaces.gigapro.web.model.Profile;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import org.apache.commons.lang3.SystemUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -23,8 +21,6 @@ import static org.apache.commons.lang3.StringUtils.*;
 
 @Service
 public class ProfilesServiceImpl implements ProfilesService {
-
-    private static final Logger LOG = LoggerFactory.getLogger(ProfilesServiceImpl.class);
 
     private static final ObjectMapper JSON_OBJECT_MAPPER = new ObjectMapper();
 
@@ -64,21 +60,10 @@ public class ProfilesServiceImpl implements ProfilesService {
         }
         Path profilesPath = get(applicationLocationPath);
 
-        LOG.info("applicationLocationPath:" + applicationLocationPath);
-        LOG.info("profilesPath:" + profilesPath);
-
         while ( !exists(profilesPath.resolve("config/profiles"))) {
             profilesPath = profilesPath.getParent();
-
-            LOG.info("profilesPath:" + profilesPath);
-            LOG.info("Files in " + profilesPath + ":");
-            try (DirectoryStream<Path> directoryStream = newDirectoryStream(profilesPath)) {
-                directoryStream.forEach(p -> LOG.info(p.getFileName().toString()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
             if (profilesPath == null) {
-                throw new RuntimeException("PROFILES PATH IS NULL!!!");
+                throw new RuntimeException("Haven't found /config/profiles directory");
             }
         }
         return profilesPath.resolve("config/profiles");

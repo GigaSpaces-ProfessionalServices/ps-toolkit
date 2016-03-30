@@ -111,7 +111,7 @@ angular.module('xapConfigApp.controllers', [])
             $scope.options.lookupLocators = profile.lookupLocators;
             $scope.options.lookupGroups = profile.lookupGroups;
 
-            $scope.zones.splice(0, 1);
+            $scope.zones = [];
             profile.zoneOptions.forEach(function (item, i, arr) {
                 var zone = {'id': 'zone' + (i + 1)};
                 for(var k in item) zone[k] = item[k];

@@ -173,10 +173,21 @@
                             </div>
                         </div>
                     </div>
-                    <button class="btn btn-success btn-add" type="button" ng-click="addNewZone()"
-                            style="float:right">
-                        <span class="glyphicon glyphicon-plus"></span>
-                    </button>
+
+                    <div class="form-group">
+                        <label class="col-md-2" for="profile-select">Select profile:</label>
+                        <div class="col-md-3">
+                            <select class="form-control" id="profile-select"
+                                    data-ng-options="profile.name for profile in profiles"
+                                    data-ng-model="selectedProfile" ng-change="applyProfile()">
+                            </select>
+                        </div>
+
+                        <button class="btn btn-success btn-add" type="button" ng-click="addNewZone()"
+                                style="float:right;margin-right:15px;">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

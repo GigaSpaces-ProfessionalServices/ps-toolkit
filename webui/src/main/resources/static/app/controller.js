@@ -4,6 +4,12 @@ angular.module('xapConfigApp.controllers', [])
         $scope.xapConfigOptions = {};
         $scope.data = {};
         $scope.zones = [{id: 'zone1'}];
+        $scope.profiles = [];
+        $scope.selectedProfile = null;
+
+        $http.get('/profiles').then(function (result) {
+                $scope.profiles = result.data;
+            });
 
         $scope.download = function (options, force) {
             $scope.xapConfigOptions = angular.copy(options);
@@ -67,6 +73,7 @@ angular.module('xapConfigApp.controllers', [])
             $scope.options = {};
             $scope.xapConfigOptions = {};
             $scope.zones = [{id: 'zone1'}];
+            $scope.selectedProfile = null;
         };
         $scope.reset();
 
@@ -90,6 +97,26 @@ angular.module('xapConfigApp.controllers', [])
                 result = false;
             }
             return result;
+        };
+
+        $scope.applyProfile = function () {
+            var profile = $scope.selectedProfile.options;
+
+            $scope.options.javaHome = profile.javaHome;
+            $scope.options.xapHome = profile.xapHome;
+            $scope.options.maxProcessesNumber = profile.maxProcessesNumber;
+            $scope.options.maxOpenFileDescriptorsNumber = profile.maxOpenFileDescriptorsNumber;
+            $scope.options.isUnicast = profile.isUnicast;
+            $scope.options.discoveryPort = profile.discoveryPort;
+            $scope.options.lookupLocators = profile.lookupLocators;
+            $scope.options.lookupGroups = profile.lookupGroups;
+
+            profile.zoneOptions.forEach(function (item, i, arr) {
+                $scope.zones.splice(0, 1);
+                var zone = {'id': 'zone' + (i + 1)};
+                for(var k in item) zone[k] = item[k];
+                $scope.zones.push(zone);
+            });
         };
 
     }]).controller('ModalInstanceCtrl', function ($scope, $uibModalInstance, data) {

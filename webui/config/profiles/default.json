@@ -1,0 +1,23 @@
+{
+  "javaHome": "/usr/lib/java",
+  "xapHome": "/opt/giga-10-ga",
+  "maxProcessesNumber": 8192,
+  "maxOpenFileDescriptorsNumber": 32000,
+  "isUnicast": false,
+  "discoveryPort": null,
+  "lookupLocators": null,
+  "lookupGroups": "group",
+  "scriptType": 1,
+  "zoneOptions": [
+    {
+      "zoneName": null,
+      "xmx": "1g",
+      "xms": "1g",
+      "xmn": "342m",
+      "otherOptions": null,
+      "gscNum": 1,
+      "gsmNum": 1,
+      "lusNum": 1
+    }
+  ]
+}

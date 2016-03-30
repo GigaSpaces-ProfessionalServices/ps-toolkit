@@ -1,8 +1,10 @@
 package com.gigaspaces.gigapro.web.controller;
 
+import com.gigaspaces.gigapro.web.model.Profile;
 import com.gigaspaces.gigapro.web.model.RestError;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import com.gigaspaces.gigapro.web.service.ZippedConfigCreator;
+import com.gigaspaces.gigapro.web.service.profiles.ProfilesService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,18 +12,17 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Optional;
 
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
 import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.MediaType.*;
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
 @RestController
@@ -31,6 +32,9 @@ public class XapConfigController {
 
     @Autowired
     private ZippedConfigCreator zippedConfigCreator;
+
+    @Autowired
+    private ProfilesService profilesService;
 
     @RequestMapping(value = "/generate", method = POST, consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity generate(@RequestBody XapConfigOptions xapConfigOptions) throws IOException {
@@ -46,6 +50,23 @@ public class XapConfigController {
                 .contentType(parseMediaType("application/zip"))
                 .body(body);
     }
+
+    @RequestMapping(value = "/profiles", method = GET, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity profiles() {
+        List<String> profilesNames = profilesService.getProfilesNames();
+        LOG.info("Available profiles found: " + profilesNames);
+
+        return ResponseEntity.ok(profilesNames);
+    }
+
+    @RequestMapping(value = "/profiles/{profile}", method = GET, produces = APPLICATION_JSON_VALUE)
+    public ResponseEntity profile(@PathVariable("profile") String profileName) {
+        Profile profile = profilesService.getProfile(profileName);
+        LOG.info("Profile found: " + profile);
+
+        return ResponseEntity.ok(profile);
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity handleError(Exception exception) {

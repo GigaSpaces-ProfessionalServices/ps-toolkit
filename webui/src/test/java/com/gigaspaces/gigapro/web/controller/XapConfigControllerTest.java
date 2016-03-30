@@ -1,6 +1,7 @@
 package com.gigaspaces.gigapro.web.controller;
 
 import com.gigaspaces.gigapro.web.Application;
+import com.gigaspaces.gigapro.web.model.Profile;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,6 +14,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+
+import static com.gigaspaces.gigapro.web.XAPTestOptions.getDefaultOptions;
 import static com.gigaspaces.gigapro.web.XAPTestOptions.getNamedZoneOptions;
 import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
 import static org.hamcrest.CoreMatchers.*;
@@ -52,5 +56,25 @@ public class XapConfigControllerTest {
                 hasEntry("Expires", "0"),
                 hasEntry("Content-Description", "File Transfer"))
         );
+    }
+
+    @Test
+    public void profilesTest() {
+        ResponseEntity<List> responseEntity = template.getForEntity("http://localhost:9999/profiles", List.class);
+        List<String> profiles = responseEntity.getBody();
+
+        assertThat(responseEntity.getStatusCode(), is(OK));
+        assertThat(profiles.size(), is(1));
+        assertThat(profiles.get(0), is("default"));
+    }
+
+    @Test
+    public void profileTest() {
+        ResponseEntity<Profile> responseEntity = template.getForEntity("http://localhost:9999/profiles/default", Profile.class);
+        Profile profile = responseEntity.getBody();
+
+        assertThat(responseEntity.getStatusCode(), is(OK));
+        assertThat(profile.getName(), is("default"));
+        assertThat(profile.getOptions(), is(getDefaultOptions()));
     }
 }

@@ -3,7 +3,9 @@ package com.gigaspaces.gigapro.web;
 import com.gigaspaces.gigapro.web.model.XapConfigOptions;
 import com.gigaspaces.gigapro.web.model.ZoneConfig;
 
+import static com.gigaspaces.gigapro.web.model.XAPConfigScriptType.SHELL;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 @SuppressWarnings("Duplicates")
 public class XAPTestOptions {
@@ -17,7 +19,7 @@ public class XAPTestOptions {
     public static final String LOOKUP_LOCATORS_MANY = "10.9.1.20, 10.9.1.21, 10.9.1.22";
     public static final String XMX = "1g";
     public static final String XMS = "1g";
-    public static final String XMN = "330m";
+    public static final String XMN = "342m";
     public static final int GSC_NUM = 1;
     public static final int GSM_NUM = 1;
     public static final int LUS_NUM = 1;
@@ -30,6 +32,7 @@ public class XAPTestOptions {
     private static XapConfigOptions namedZoneOptions;
     private static XapConfigOptions unnamedZoneOptions;
     private static XapConfigOptions manyZonesOptions;
+    private static XapConfigOptions defaultOptions;
     private static ZoneConfig namedZone;
     private static ZoneConfig unnamedZone;
 
@@ -128,5 +131,20 @@ public class XAPTestOptions {
             manyZonesOptions.setZoneOptions(asList(getNamedZone(), getUnnamedZone()));
         }
         return manyZonesOptions;
+    }
+
+    public static XapConfigOptions getDefaultOptions() {
+        if (defaultOptions == null) {
+            defaultOptions = new XapConfigOptions();
+            defaultOptions.setJavaHome("/usr/lib/java");
+            defaultOptions.setXapHome("/opt/giga-10-ga");
+            defaultOptions.setMaxProcessesNumber(8192);
+            defaultOptions.setMaxOpenFileDescriptorsNumber(32000);
+            defaultOptions.setIsUnicast(false);
+            defaultOptions.setLookupGroups("group");
+            defaultOptions.setScriptType(SHELL);
+            defaultOptions.setZoneOptions(singletonList(getUnnamedZone()));
+        }
+        return defaultOptions;
     }
 }

@@ -3,6 +3,9 @@
 # Current Directory
 SCRIPT_INSTALL="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# export machine-options.sh
+"$SCRIPT_INSTALL/local/machine-options.sh"
+
 # Application Directories
 export JAVA_HOME="{{javaHome}}"
 export JSHOMEDIR="{{xapHome}}"

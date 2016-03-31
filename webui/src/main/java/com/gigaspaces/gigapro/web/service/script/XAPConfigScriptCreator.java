@@ -10,5 +10,6 @@ public interface XAPConfigScriptCreator {
     Path createSetAppEnvScript(XapConfigOptions options);
     Path getWebuiScript();
     Path getCliScript();
+    Path getMachineOptionsScript();
     List<Path> createStartGridScripts(XapConfigOptions options);
 }

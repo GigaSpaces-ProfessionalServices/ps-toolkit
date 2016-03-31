@@ -25,6 +25,11 @@ public class XAPConfigBatScriptCreator implements XAPConfigScriptCreator {
     }
 
     @Override
+    public Path getMachineOptionsScript() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public List<Path> createStartGridScripts(XapConfigOptions options) {
         throw new UnsupportedOperationException();
     }

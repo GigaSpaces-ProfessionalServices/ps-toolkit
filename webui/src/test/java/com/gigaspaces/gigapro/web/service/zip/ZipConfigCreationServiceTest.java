@@ -46,6 +46,9 @@ public class ZipConfigCreationServiceTest {
     @Value("${app.scripts.start-grid.name}")
     private String startGridScriptName;
 
+    @Value("${app.scripts.machine-options.name}")
+    private String machineOptionsScriptName;
+
     @Autowired
     private ZippedConfigCreator configCreationService;
 
@@ -74,7 +77,7 @@ public class ZipConfigCreationServiceTest {
         ZipFile zipFile = new ZipFile(zippedConfig.toString());
         long entriesCount = zipFile.size();
 
-        assertThat(entriesCount, is(12L));
+        assertThat(entriesCount, is(13L));
     }
 
     @Test
@@ -86,6 +89,7 @@ public class ZipConfigCreationServiceTest {
                 webuiScriptName + sh,
                 cliScriptName + sh,
                 "grid/" + "start-" + getNamedZone().getZoneName() + "-services" + sh,
-                "grid/" + startGridScriptName + sh));
+                "grid/" + startGridScriptName + sh,
+                "local/" + machineOptionsScriptName + sh));
     }
 }

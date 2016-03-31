@@ -39,16 +39,20 @@ public class ZippedConfigCreationService implements ZippedConfigCreator {
         Path setAppEnvScript = scriptCreator.createSetAppEnvScript(xapConfigOptions);
         Path webuiScript = scriptCreator.getWebuiScript();
         Path cliScript = scriptCreator.getCliScript();
+        Path machineOptionsScript = scriptCreator.getMachineOptionsScript();
         List<Path> startGridScripts = scriptCreator.createStartGridScripts(xapConfigOptions);
 
         List<Path> toZip = new ArrayList<>();
-        toZip.addAll(asList(createTempDir("config"), createTempDir("lib"), createTempDir("local"), createTempDir("logs"), createTempDir("work"), createTempDir("deploy")));
+        toZip.addAll(asList(createTempDir("config"), createTempDir("lib"), createTempDir("logs"), createTempDir("work"), createTempDir("deploy")));
         toZip.add(setAppEnvScript);
         toZip.add(webuiScript);
         toZip.add(cliScript);
         Path grid = createTempDir("grid");
         startGridScripts.forEach(script -> replaceFile(grid, script));
         toZip.add(grid);
+        Path local = createTempDir("local");
+        replaceFile(local, machineOptionsScript);
+        toZip.add(local);
         return toZip;
     }
 }

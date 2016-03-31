@@ -48,6 +48,9 @@ public class XAPConfigShellScriptCreator implements XAPConfigScriptCreator {
     @Value("${app.scripts.start-grid.name}")
     private String startGridScriptName;
 
+    @Value("${app.scripts.machine-options.name}")
+    private String machineOptionsScriptName;
+
     @Override
     public Path createSetAppEnvScript(XapConfigOptions options) {
         Path script = createTempFile(setAppEnvScriptName, fileExtension);
@@ -68,6 +71,11 @@ public class XAPConfigShellScriptCreator implements XAPConfigScriptCreator {
     @Override
     public Path getCliScript() {
         return getStaticScript(cliScriptName);
+    }
+
+    @Override
+    public Path getMachineOptionsScript() {
+        return getStaticScript(machineOptionsScriptName);
     }
 
     @Override

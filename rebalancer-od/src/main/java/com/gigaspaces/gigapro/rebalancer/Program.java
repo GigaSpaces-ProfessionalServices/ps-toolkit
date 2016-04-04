@@ -10,6 +10,8 @@ import java.io.Console;
 import java.util.List;
 import java.util.logging.Logger;
 
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
+
 /**
  * Created by Skyler on 3/17/2016.
  */
@@ -25,14 +27,14 @@ public class Program {
         logger.info("Initializing rebalancer with the following options: " + configuration.toString());
         AdminFactory adminFactory = new AdminFactory();
 
-        if(configuration.getLocators() != null && configuration.getLocators().size() > 0)
+        if (isNotEmpty(configuration.getLocators()))
             adminFactory.addLocators(join(configuration.getLocators()));
 
-        if(configuration.getGroups() != null && configuration.getGroups().size() > 0)
+        if (isNotEmpty(configuration.getGroups()))
             adminFactory.addGroups(join(configuration.getGroups()));
 
         Console console = System.console();
-        if(configuration.isSecured()){
+        if (configuration.isSecured()) {
             String username = console.readLine("XAP Username: ");
             String password = new String(console.readPassword("XAP Password: "));
 
@@ -45,10 +47,10 @@ public class Program {
 
         try {
             balancer.balance();
-        } catch(Exception ex){
+        } catch (Exception ex) {
             logger.severe(ex.getMessage());
             ex.printStackTrace();
-        }finally{
+        } finally {
             admin.close();
         }
     }

@@ -9,13 +9,14 @@ import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.gsa.GridServiceAgents;
 import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnits;
-import org.openspaces.admin.zone.config.RequiredZonesConfig;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 /**
  * Created by Skyler on 3/17/2016.
@@ -25,7 +26,7 @@ public class ProcessingUnitBalancer {
     private Configuration configuration;
     private Logger logger = Logger.getLogger(Constants.LOGGER_NAME);
 
-    public ProcessingUnitBalancer(Admin admin, Configuration configuration){
+    public ProcessingUnitBalancer(Admin admin, Configuration configuration) {
         this.admin = admin;
         this.configuration = configuration;
     }
@@ -41,34 +42,38 @@ public class ProcessingUnitBalancer {
         strategy.balance(targetPu, reduceAgentsByZone(targetPu, agents));
     }
 
-    private List<GridServiceAgent> reduceAgentsByZone(ProcessingUnit processingUnits, GridServiceAgent[] agents) throws Exception {
-        List<GridServiceAgent> output = new ArrayList<>();
+    /**
+     * @param processingUnit processing unit which zones are used for filtering
+     * @param agents list of agents to filter
+     * @return agents which contain zones from processingUnit
+     * @throws Exception
+     */
+    private List<GridServiceAgent> reduceAgentsByZone(ProcessingUnit processingUnit, GridServiceAgent[] agents) throws Exception {
+        List<GridServiceAgent> filteredAgents = new ArrayList<>();
 
-        RequiredZonesConfig requiredContainerZones = processingUnits.getRequiredContainerZones();
-        Set<String> processingUnitZones = requiredContainerZones.getZones();
+        Set<String> processingUnitZones = processingUnit.getRequiredContainerZones().getZones();
 
-        for(int x = 0; x < agents.length; x++) {
-            GridServiceAgent agent = agents[x];
-            Set<String> zones = agent.getExactZones().getZones();
+        for (GridServiceAgent agent : agents) {
+            Set<String> agentZones = agent.getExactZones().getZones();
 
-            if(zones.size() == 0 && processingUnitZones.size() == 0){
-                output.add(agent);
+            if (isEmpty(agentZones) && isEmpty(processingUnitZones)) {
+                filteredAgents.add(agent);
                 continue;
             }
 
-            for(String zone : processingUnitZones){
-                if(zones.contains(zone)){
-                    output.add(agent);
+            for (String zone : processingUnitZones) {
+                if (agentZones.contains(zone)) {
+                    filteredAgents.add(agent);
                     break;
                 }
             }
         }
 
-        if(output.size() == 0){
+        if (filteredAgents.size() == 0) {
             throw new Exception("No agents were found matching the processing unit zone requirements.");
         }
 
-        return output;
+        return filteredAgents;
     }
 
     private GridServiceAgent[] waitForAgents() throws Exception {
@@ -77,9 +82,9 @@ public class ProcessingUnitBalancer {
         GridServiceAgent[] agents = gridServiceAgents.getAgents();
         GridServiceAgent[] output = new GridServiceAgent[agents.length];
 
-        if(output != null && output.length > 0){
+        if (output.length > 0) {
             logger.info(String.format("Found %s running agent(s).", agents.length));
-            for(int x =0; x < agents.length; x++) {
+            for (int x = 0; x < agents.length; x++) {
                 GridServiceAgent agent = agents[x];
                 logger.info(String.format("Agent [%s]", agent.getVirtualMachine().getDetails().getPid()));
                 output[x] = agent;
@@ -93,7 +98,7 @@ public class ProcessingUnitBalancer {
         ProcessingUnits processingUnits = admin.getProcessingUnits();
         ProcessingUnit output = processingUnits.waitFor(configuration.getName(), configuration.getTimeout(), TimeUnit.MILLISECONDS);
 
-        if(output == null){
+        if (output == null) {
             throw new Exception("Failed to find processing unit.");
         }
 

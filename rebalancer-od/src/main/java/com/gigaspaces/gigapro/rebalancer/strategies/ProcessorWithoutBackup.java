@@ -7,13 +7,15 @@ import org.openspaces.admin.gsc.GridServiceContainer;
 import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnitInstance;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import static java.util.Arrays.stream;
-import static java.util.Collections.addAll;
-import static java.util.stream.Collectors.toList;
+import static com.gigaspaces.gigapro.rebalancer.strategies.ProcessorCommons.findEmptyContainers;
+import static com.gigaspaces.gigapro.rebalancer.strategies.ProcessorCommons.findInstances;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 public class ProcessorWithoutBackup implements BalancerStrategy {
@@ -64,7 +66,7 @@ public class ProcessorWithoutBackup implements BalancerStrategy {
         for (GridServiceAgent agent : gridServiceAgents) {
             long agentPid = agent.getVirtualMachine().getDetails().getPid();
             List<GridServiceContainer> emptyContainers = findEmptyContainers(agent);
-            List<ProcessingUnitInstance> agentInstances = findInstances(agent);
+            List<ProcessingUnitInstance> agentInstances = findInstances(agent, configuration.getName());
             int instanceCount = agentInstances.size();
 
             String operation = "NO ACTION";
@@ -92,26 +94,6 @@ public class ProcessorWithoutBackup implements BalancerStrategy {
         for (int x = 0; (x < numberToAdd) && (x < source.size()); x++) {
             dest.add(source.get(x));
         }
-    }
-
-    /**
-     * @param agent GSA to find processing instances in
-     * @return list of all processing instances in agent
-     */
-    private List<ProcessingUnitInstance> findInstances(GridServiceAgent agent) {
-        List<ProcessingUnitInstance> processingInstances = new ArrayList<>();
-
-        stream(agent.getGridServiceContainers().getContainers()).forEach(c -> addAll(processingInstances, c.getProcessingUnitInstances(configuration.getName())));
-
-        return processingInstances;
-    }
-
-    /**
-     * @param agent GSA to find empty GSCs in
-     * @return list of empty GSCs in agent
-     */
-    private List<GridServiceContainer> findEmptyContainers(GridServiceAgent agent) {
-        return stream(agent.getGridServiceContainers().getContainers()).filter(c -> c.getProcessingUnitInstances().length == 0).collect(toList());
     }
 
     /**

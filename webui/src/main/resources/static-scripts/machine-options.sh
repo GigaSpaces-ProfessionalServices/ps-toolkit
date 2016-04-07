@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-HOSTNAME = $(hostname)
+HOSTNAME=$(hostname)
 export NIC_ADDR=$HOSTNAME

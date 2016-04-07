@@ -8,15 +8,11 @@ import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnitInstance;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import static com.gigaspaces.gigapro.rebalancer.strategies.ProcessorCommons.findEmptyContainers;
-import static com.gigaspaces.gigapro.rebalancer.strategies.ProcessorCommons.findInstances;
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
+import static com.gigaspaces.gigapro.rebalancer.strategies.ProcessorCommons.*;
 
 public class ProcessorWithoutBackup implements BalancerStrategy {
     private Logger logger = Logger.getLogger(Constants.LOGGER_NAME);
@@ -50,7 +46,7 @@ public class ProcessorWithoutBackup implements BalancerStrategy {
 
         populateAgentCollections(gridServiceAgents, agentCeil, availableContainers, excessInstances);
 
-        relocateExcessInstances(availableContainers, excessInstances);
+        relocateExcessInstances(availableContainers, excessInstances, configuration);
     }
 
     /**
@@ -96,34 +92,5 @@ public class ProcessorWithoutBackup implements BalancerStrategy {
         }
     }
 
-    /**
-     * Relocates excess processing instances to empty GSCs
-     *
-     * @param availableContainers empty GSCs which excess instances will be relocated to
-     * @param excessInstances excess instances to be relocated
-     * @throws Exception if number of availableContainers < number of excessInstances
-     */
-    private void relocateExcessInstances(Set<GridServiceContainer> availableContainers, Set<ProcessingUnitInstance> excessInstances) throws Exception {
-        if (isEmpty(availableContainers) || isEmpty(excessInstances)) {
-            logger.info("No containers and/or no processing units to relocate.");
-            return;
-        }
 
-        logger.info("Starting relocations...");
-        Iterator<ProcessingUnitInstance> instanceIterator = excessInstances.iterator();
-        Iterator<GridServiceContainer> containerIterator = availableContainers.iterator();
-
-        while (instanceIterator.hasNext()) {
-            ProcessingUnitInstance processingUnit = instanceIterator.next();
-
-            if (containerIterator.hasNext()) {
-                GridServiceContainer targetContainer = containerIterator.next();
-                logger.info(String.format("Relocating processing unit [%s] to container [%s].", processingUnit.getUid(), targetContainer.getUid()));
-
-                processingUnit.relocateAndWait(targetContainer, configuration.getTimeout(), TimeUnit.MILLISECONDS);
-            } else {
-                throw new Exception("No containers are available to finish relocations.");
-            }
-        }
-    }
 }

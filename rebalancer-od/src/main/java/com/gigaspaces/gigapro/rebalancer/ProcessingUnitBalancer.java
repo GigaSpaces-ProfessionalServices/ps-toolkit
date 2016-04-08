@@ -38,7 +38,7 @@ public class ProcessingUnitBalancer {
         logger.info(String.format("Searching for processing unit '%s'...", configuration.getName()));
         ProcessingUnit targetPu = waitForProcessingUnit();
 
-        BalancerStrategy strategy = targetPu.getNumberOfBackups() != 0 ? new ProcessorWithBackup(configuration) : new ProcessorWithoutBackup(configuration);
+        BalancerStrategy strategy = targetPu.getNumberOfBackups() != 0 ? new ProcessorWithBackup(admin, configuration) : new ProcessorWithoutBackup(configuration);
         strategy.balance(targetPu, reduceAgentsByZone(targetPu, agents));
     }
 

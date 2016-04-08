@@ -2,7 +2,9 @@ package com.gigaspaces.gigapro.rebalancer.strategies;
 
 import com.gigaspaces.gigapro.rebalancer.Constants;
 import com.gigaspaces.gigapro.rebalancer.config.Configuration;
+import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
+import org.openspaces.admin.gsa.GridServiceAgents;
 import org.openspaces.admin.gsc.GridServiceContainer;
 import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnitInstance;
@@ -19,12 +21,13 @@ import static java.util.Arrays.stream;
 import static java.util.Collections.frequency;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.collections.CollectionUtils.addAll;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
-@SuppressWarnings("Duplicates")
 public class ProcessorWithBackup implements BalancerStrategy {
     private Logger logger = Logger.getLogger(Constants.LOGGER_NAME);
     private Configuration configuration;
+    private Admin admin;
 
     private int instancesNum;
     private int backupsNum;
@@ -33,16 +36,18 @@ public class ProcessorWithBackup implements BalancerStrategy {
     private int floorPerMachine;
     private int primariesPerMachine;
     private int machinesWithExtraPrimary;
+    List<GridServiceAgent> gridServiceAgents;
 
-    public ProcessorWithBackup(Configuration configuration) {
+    public ProcessorWithBackup(Admin admin, Configuration configuration) {
+        this.admin = admin;
         this.configuration = configuration;
     }
 
     @Override
-    public void balance(ProcessingUnit targetPu, List<GridServiceAgent> gridServiceAgents) throws Exception {
+    public void balance(ProcessingUnit targetPu, List<GridServiceAgent> GSAs) throws Exception {
         logger.info("Using the backup-full rebalancing strategy.");
 
-        initParameters(targetPu, gridServiceAgents);
+        initParameters(targetPu, GSAs);
 
         if (gridServiceAgents.size() == 1)
             throw new Exception("Deployment would be compromised as only one machine is available to host all primaries and their backups.");
@@ -56,9 +61,11 @@ public class ProcessorWithBackup implements BalancerStrategy {
             logger.info(format("%s GSAs will host %s instance(s).", machinesWithExtraPrimary, ceilPerMachine));
 
         logger.info("Starting shuffling odd instances...");
-        shuffle(gridServiceAgents);
+        shuffle();
+        logger.info("Shuffling is finished.");
         logger.info("Starting normalization...");
-        normalize(gridServiceAgents);
+        normalize();
+        logger.info("Normalization is finished.");
     }
 
     /**
@@ -66,22 +73,23 @@ public class ProcessorWithBackup implements BalancerStrategy {
      * On this step all odd instances from all GSAs are moved to another GSAs.
      * As a result, each GSA contains even number of primaries and backups and
      * no primary shares the same GSA as its backup instance.
-     *
-     * @param gridServiceAgents list of GSAs
      */
-    private void shuffle(List<GridServiceAgent> gridServiceAgents) {
-        while (!validate(gridServiceAgents)) {
-            Set<ProcessingUnitInstance> oddInstances = findOdd(gridServiceAgents);
+    private void shuffle() {
+        while (!validate()) {
+            Set<ProcessingUnitInstance> oddInstances = findOdd();
             Iterator<ProcessingUnitInstance> instanceIterator = oddInstances.iterator();
             while (instanceIterator.hasNext()) {
                 ProcessingUnitInstance instance = instanceIterator.next();
-                if (findAllEmptyContainers(gridServiceAgents).isEmpty() && validateForUniqueInstances(gridServiceAgents)) {
+                if (findAllEmptyContainers(gridServiceAgents).isEmpty() && validateForUniqueInstances()) {
+                    logger.info(format("Restarting processing unit [%s].", instance.getUid()));
                     instance.restartAndWait(configuration.getTimeout(), TimeUnit.MILLISECONDS);
+                    updateGridServiceAgents();
                 }
-                List<GridServiceContainer> containersToRelocate = getContainersToRelocate(gridServiceAgents, instance);
+                List<GridServiceContainer> containersToRelocate = getContainersToRelocate(instance);
                 for (GridServiceContainer container : containersToRelocate) {
                     if (tryRelocate(instance, container)) {
                         instanceIterator.remove();
+                        updateGridServiceAgents();
                         break;
                     }
                 }
@@ -92,17 +100,15 @@ public class ProcessorWithBackup implements BalancerStrategy {
     /**
      * This is the second step of rebalancing process.
      * Here all instances within each GSA are evenly distributed (1 instance per container).
-     *
-     * @param gridServiceAgents list of GSAs to normalize
      */
-    private void normalize(List<GridServiceAgent> gridServiceAgents) {
+    private void normalize() {
         while (isNotEmpty(findAllEmptyContainers(gridServiceAgents))) {
             gridServiceAgents.forEach(this::normalizeAgent);
         }
     }
 
     /**
-     *  This method evenly (1 instance per container) distributes all instances on containers in the GSA.
+     * This method evenly (1 instance per container) distributes all instances on containers in the GSA.
      *
      * @param agent GSA to normalize
      */
@@ -111,15 +117,14 @@ public class ProcessorWithBackup implements BalancerStrategy {
         if (isNotEmpty(availableContainers)) {
             try {
                 relocateExcessInstances(availableContainers, getExcessInstances(agent), configuration);
-            } catch (Exception e){/*NOP*/}
+            } catch (Exception e) {/*NOP*/}
         }
     }
 
     /**
-     * @param gridServiceAgents GSAs to find in
      * @return Set of odd items in the GSAs
      */
-    private Set<ProcessingUnitInstance> findOdd(List<GridServiceAgent> gridServiceAgents) {
+    private Set<ProcessingUnitInstance> findOdd() {
         return gridServiceAgents.stream().flatMap(a -> findOdd(a).stream()).collect(toSet());
     }
 
@@ -168,26 +173,24 @@ public class ProcessorWithBackup implements BalancerStrategy {
                 int toMove = primariesCount - primariesPerMachine;
                 toMove = toMove == 0 ? 1 : toMove;
                 return instances.stream().filter(ProcessorCommons::isPrimary).limit(toMove).collect(toSet());
-            } else {
+            } else if (backupsCount > 0) {
                 int toMove = abs(instancesCount - ceilPerMachine);
                 toMove = toMove == 0 ? 1 : toMove;
-
-                // if only 1 instance needs to be moved we choose it randomly to prevent endless loop in shuffle()
-                // which is possible if this instance doesn't fit to any GSAs
-                if (toMove <= 1) {
-                    Set<ProcessingUnitInstance> result = new HashSet<>();
-                    ProcessingUnitInstance randomBackup = instances.stream().filter(ProcessorCommons::isBackup).collect(toList()).get(new Random().nextInt(backupsCount));
+                Set<ProcessingUnitInstance> result = new HashSet<>();
+                for (int i = 0; i < toMove; i++) {
+                    List<ProcessingUnitInstance> oddBackups = instances.stream().filter(ProcessorCommons::isBackup).collect(toList());
+                    int index = (new Random().nextInt(backupsCount) + i) % oddBackups.size();
+                    ProcessingUnitInstance randomBackup = oddBackups.get(index);
                     result.add(randomBackup);
-                    return result;
                 }
-                return instances.stream().filter(ProcessorCommons::isBackup).limit(toMove).collect(toSet());
+                return result;
             }
         }
         return Collections.emptySet();
     }
 
     /**
-     * @param instance instance to relocate
+     * @param instance     instance to relocate
      * @param newContainer container which the instance must be relocated to
      * @return true - if instance relocated successfully, <br> false - otherwise
      */
@@ -205,10 +208,9 @@ public class ProcessorWithBackup implements BalancerStrategy {
     }
 
     /**
-     * @param gridServiceAgents GSAs to validate
      * @return true - if instances on GSAs are balanced well, <br> false - otherwise
      */
-    private boolean validate(List<GridServiceAgent> gridServiceAgents) {
+    private boolean validate() {
         return !gridServiceAgents.stream().map(this::validateAgent).filter(i -> !i).findFirst().isPresent();
     }
 
@@ -219,21 +221,26 @@ public class ProcessorWithBackup implements BalancerStrategy {
      * @return true - if instances on the GSA are balanced well, <br> false - otherwise
      */
     private boolean validateAgent(GridServiceAgent agent) {
-        List<ProcessingUnitInstance> instances = getInstances(agent);
-        if (instances.size() > ceilPerMachine) return false;
+        logger.info(format("Validating GSA [%s]...", agent.getUid()));
 
+        List<ProcessingUnitInstance> instances = getInstances(agent);
+        String instancesNames = instances.stream().map(i -> (isPrimary(i) ? "P:" : "B:") + i.getProcessingUnitInstanceName()).reduce("", (a, b) -> a + " " + b);
         long primaries = instances.stream().filter(ProcessorCommons::isPrimary).count();
         long backups = instances.stream().filter(ProcessorCommons::isBackup).count();
+
+        logger.info(format("GSA [%s] stores %s processing units: %s", agent.getUid(), instances.size(), instancesNames));
+        logger.info(format("Primaries: %s, Backups: %s", primaries, backups));
+
+        if (instances.size() > ceilPerMachine) return false;
         if (primaries > primariesPerMachine || abs(primaries - backups) > 1) return false;
 
         return validateAgentForUniqueInstances(agent);
     }
 
     /**
-     * @param gridServiceAgents GSAs to validate
      * @return true - if instances on all GSAs are unique by name, <br> false - otherwise
      */
-    private boolean validateForUniqueInstances(List<GridServiceAgent> gridServiceAgents) {
+    private boolean validateForUniqueInstances() {
         return !gridServiceAgents.stream().map(this::validateAgentForUniqueInstances).filter(i -> !i).findFirst().isPresent();
     }
 
@@ -243,8 +250,10 @@ public class ProcessorWithBackup implements BalancerStrategy {
      */
     private boolean validateAgentForUniqueInstances(GridServiceAgent agent) {
         List<ProcessingUnitInstance> instances = getInstances(agent);
-        long distinctInstances = instances.stream().map(ProcessorCommons::getInstanceName).distinct().count();
-        return distinctInstances == instances.size();
+        long uniqueInstances = instances.stream().map(ProcessorCommons::getInstanceName).distinct().count();
+
+        logger.info(format("Unique instances: %s", uniqueInstances));
+        return uniqueInstances == instances.size();
     }
 
     /**
@@ -255,7 +264,7 @@ public class ProcessorWithBackup implements BalancerStrategy {
 
     /**
      * @param agent GSA to find processing instances in
-     * @param name name of instance
+     * @param name  name of instance
      * @return Set of instances with given name (both primaries and backups)
      */
     private Set<ProcessingUnitInstance> getInstancesByName(GridServiceAgent agent, String name) {
@@ -263,11 +272,10 @@ public class ProcessorWithBackup implements BalancerStrategy {
     }
 
     /**
-     * @param gridServiceAgents GSAs to scan for GSCs
      * @param instance instance to relocate
      * @return if there're empty GSCs they are returned, otherwise GSCs of not instance's GSAs are returned
      */
-    private List<GridServiceContainer> getContainersToRelocate(List<GridServiceAgent> gridServiceAgents, ProcessingUnitInstance instance) {
+    private List<GridServiceContainer> getContainersToRelocate(ProcessingUnitInstance instance) {
         List<GridServiceContainer> emptyContainers = findAllEmptyContainers(gridServiceAgents);
         if (emptyContainers.isEmpty()) {
             List<GridServiceAgent> otherAgents = gridServiceAgents.stream().filter(a -> !a.equals(instance.getGridServiceContainer().getGridServiceAgent())).collect(toList());
@@ -287,7 +295,8 @@ public class ProcessorWithBackup implements BalancerStrategy {
                 .collect(toSet());
     }
 
-    private void initParameters(ProcessingUnit targetPu, List<GridServiceAgent> gridServiceAgents) {
+    private void initParameters(ProcessingUnit targetPu, List<GridServiceAgent> GSAs) {
+        gridServiceAgents = GSAs;
         int machinesNum = gridServiceAgents.size();
         instancesNum = targetPu.getPlannedNumberOfInstances();
         primariesNum = (int) gridServiceAgents.stream().flatMap(a -> getInstances(a).stream()).filter(ProcessorCommons::isPrimary).count();
@@ -296,6 +305,14 @@ public class ProcessorWithBackup implements BalancerStrategy {
         floorPerMachine = (int) floor((double) instancesNum / machinesNum);
         primariesPerMachine = (int) ceil((double) primariesNum / machinesNum);
         machinesWithExtraPrimary = ceilPerMachine - floorPerMachine == 0 ? 0 : primariesNum - machinesNum * (primariesPerMachine - 1);
+    }
+
+    private void updateGridServiceAgents() {
+        logger.info("Updating GSAs state...");
+        GridServiceAgents freshAgents = admin.getGridServiceAgents();
+        freshAgents.waitFor(configuration.getMachines(), configuration.getTimeout(), TimeUnit.MILLISECONDS);
+        gridServiceAgents.clear();
+        addAll(gridServiceAgents, freshAgents.getAgents());
     }
 }
 

@@ -57,9 +57,15 @@ public class ProcessorWithBackup implements BalancerStrategy {
         if (primariesNum != backupsNum)
             throw new Exception("The number of primaries is not equal to the number of backups.");
 
-        logger.info(format("Each GSA will host %s instance(s).", floorPerMachine));
-        if (machinesWithExtraPrimary > 0)
-            logger.info(format("%s GSAs will host %s instance(s).", machinesWithExtraPrimary, ceilPerMachine));
+
+        if (machinesWithExtraPrimary > 0) {
+            int machinesWithoutExtraPrimary = GSAs.size() - machinesWithExtraPrimary;
+            int otherInstances = instancesNum - machinesWithExtraPrimary * ceilPerMachine;
+            logger.info(format("%s GSA(s) will host %s instance(s) & %s instance(s) will be distributed over the other %s GSA(s).",
+                    machinesWithExtraPrimary, ceilPerMachine, otherInstances, machinesWithoutExtraPrimary));
+        }
+        else
+            logger.info(format("Each GSA will host %s instance(s).", floorPerMachine));
 
         logger.info("Starting shuffling odd instances...");
         shuffle();
@@ -183,6 +189,8 @@ public class ProcessorWithBackup implements BalancerStrategy {
 
     private Set<ProcessingUnitInstance> getRandomInstances(List<ProcessingUnitInstance> instances, int toMove) {
         Set<ProcessingUnitInstance> result = new HashSet<>();
+        if (toMove > instances.size())
+            toMove = instances.size();
         while (result.size() < toMove) {
             int index = new Random().nextInt(instances.size());
             ProcessingUnitInstance randomInstance = instances.get(index);

@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
+import static com.gigaspaces.gigapro.rebalancer.strategies.ProcessorCommons.findAllContainers;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.apache.commons.collections.CollectionUtils.isEmpty;
 
 /**
@@ -35,8 +37,11 @@ public class ProcessingUnitBalancer {
         logger.info("Searching for agents...");
         GridServiceAgent[] agents = waitForAgents();
 
+        logger.info(String.format("Found %s running container(s).", findAllContainers(newArrayList(agents)).size()));
+
         logger.info(String.format("Searching for processing unit '%s'...", configuration.getName()));
         ProcessingUnit targetPu = waitForProcessingUnit();
+        logger.info(String.format("Found %s running instance(s).", targetPu.getInstances().length));
 
         BalancerStrategy strategy = targetPu.getNumberOfBackups() != 0 ? new ProcessorWithBackup(admin, configuration) : new ProcessorWithoutBackup(configuration);
         strategy.balance(targetPu, reduceAgentsByZone(targetPu, agents));

@@ -191,8 +191,9 @@ public class ProcessorWithBackup implements BalancerStrategy {
         Set<ProcessingUnitInstance> result = new HashSet<>();
         if (toMove > instances.size())
             toMove = instances.size();
+        Random random = new Random();
         while (result.size() < toMove) {
-            int index = new Random().nextInt(instances.size());
+            int index = random.nextInt(instances.size());
             ProcessingUnitInstance randomInstance = instances.get(index);
             result.add(randomInstance);
         }
@@ -221,7 +222,8 @@ public class ProcessorWithBackup implements BalancerStrategy {
      * @return true - if instances on GSAs are balanced well, <br> false - otherwise
      */
     private boolean validate() {
-        gridServiceAgents.forEach(this::logAgentState);
+        // Uncomment for showing GSAs state in logs
+        //gridServiceAgents.forEach(this::logAgentState);
         return !gridServiceAgents.stream().map(this::validateAgent).filter(i -> !i).findFirst().isPresent();
     }
 

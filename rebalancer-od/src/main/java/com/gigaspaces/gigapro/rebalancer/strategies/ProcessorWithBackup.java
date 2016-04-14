@@ -26,9 +26,9 @@ import static org.apache.commons.collections.CollectionUtils.addAll;
 import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 public class ProcessorWithBackup implements BalancerStrategy {
-    private Logger logger = Logger.getLogger(Constants.LOGGER_NAME);
-    private Configuration configuration;
-    private Admin admin;
+    private final Logger logger = Logger.getLogger(Constants.LOGGER_NAME);
+    private final Configuration configuration;
+    private final Admin admin;
 
     private int instancesNum;
     private int backupsNum;
@@ -63,8 +63,7 @@ public class ProcessorWithBackup implements BalancerStrategy {
             int otherInstances = instancesNum - machinesWithExtraPrimary * ceilPerMachine;
             logger.info(format("%s GSA(s) will host %s instance(s) & %s instance(s) will be distributed over the other %s GSA(s).",
                     machinesWithExtraPrimary, ceilPerMachine, otherInstances, machinesWithoutExtraPrimary));
-        }
-        else
+        } else
             logger.info(format("Each GSA will host %s instance(s).", floorPerMachine));
 
         logger.info("Starting shuffling odd instances...");
@@ -88,13 +87,10 @@ public class ProcessorWithBackup implements BalancerStrategy {
             while (instanceIterator.hasNext()) {
                 ProcessingUnitInstance instance = instanceIterator.next();
                 List<GridServiceContainer> containersToRelocate = getContainersToRelocate(instance);
-                for (GridServiceContainer container : containersToRelocate) {
-                    if (tryRelocate(instance, container)) {
-                        instanceIterator.remove();
-                        updateGridServiceAgents();
-                        break;
-                    }
-                }
+                containersToRelocate.stream().filter(container -> tryRelocate(instance, container)).findFirst().ifPresent(c -> {
+                    instanceIterator.remove();
+                    updateGridServiceAgents();
+                });
             }
         }
     }
@@ -208,12 +204,10 @@ public class ProcessorWithBackup implements BalancerStrategy {
     private boolean tryRelocate(ProcessingUnitInstance instance, GridServiceContainer newContainer) {
         GridServiceAgent newAgent = newContainer.getGridServiceAgent();
         GridServiceAgent oldAgent = instance.getGridServiceContainer().getGridServiceAgent();
-        if (!newAgent.equals(oldAgent)) {
-            if (getInstancesByName(newAgent, getInstanceName(instance)).isEmpty()) {
-                logger.info(format("Relocating processing unit [%s] to container [%s].", instance.getProcessingUnitInstanceName(), newContainer.getVirtualMachine().getDetails().getPid()));
-                instance.relocateAndWait(newContainer, configuration.getTimeout(), TimeUnit.MILLISECONDS);
-                return true;
-            }
+        if (!newAgent.equals(oldAgent) && getInstancesByName(newAgent, getInstanceName(instance)).isEmpty()) {
+            logger.info(format("Relocating processing unit [%s] to container [%s].", instance.getProcessingUnitInstanceName(), newContainer.getVirtualMachine().getDetails().getPid()));
+            instance.relocateAndWait(newContainer, configuration.getTimeout(), TimeUnit.MILLISECONDS);
+            return true;
         }
         return false;
     }

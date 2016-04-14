@@ -15,8 +15,8 @@ import java.util.logging.Logger;
 import static com.gigaspaces.gigapro.rebalancer.strategies.ProcessorCommons.*;
 
 public class ProcessorWithoutBackup implements BalancerStrategy {
-    private Logger logger = Logger.getLogger(Constants.LOGGER_NAME);
-    private Configuration configuration;
+    private final Logger logger = Logger.getLogger(Constants.LOGGER_NAME);
+    private final Configuration configuration;
 
     public ProcessorWithoutBackup(Configuration configuration) {
         this.configuration = configuration;

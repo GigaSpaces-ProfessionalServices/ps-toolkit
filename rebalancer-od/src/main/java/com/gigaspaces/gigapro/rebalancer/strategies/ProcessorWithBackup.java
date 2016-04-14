@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static com.gigaspaces.gigapro.rebalancer.strategies.ProcessorCommons.*;
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Integer.compare;
 import static java.lang.Math.*;
@@ -36,7 +37,7 @@ public class ProcessorWithBackup implements BalancerStrategy {
     private int ceilPerMachine;
     private int floorPerMachine;
     private int primariesPerMachine;
-    private int machinesWithExtraPrimary;
+    private int machinesWithExtraInstance;
     List<GridServiceAgent> gridServiceAgents;
 
     public ProcessorWithBackup(Admin admin, Configuration configuration) {
@@ -58,11 +59,10 @@ public class ProcessorWithBackup implements BalancerStrategy {
             throw new Exception("The number of primaries is not equal to the number of backups.");
 
 
-        if (machinesWithExtraPrimary > 0) {
-            int machinesWithoutExtraPrimary = GSAs.size() - machinesWithExtraPrimary;
-            int otherInstances = instancesNum - machinesWithExtraPrimary * ceilPerMachine;
-            logger.info(format("%s GSA(s) will host %s instance(s) & %s instance(s) will be distributed over the other %s GSA(s).",
-                    machinesWithExtraPrimary, ceilPerMachine, otherInstances, machinesWithoutExtraPrimary));
+        if (machinesWithExtraInstance > 0) {
+            int machinesWithoutExtraInstance = GSAs.size() - machinesWithExtraInstance;
+            logger.info(format("%s GSA(s) will host %s instance(s) & %s GSA(s) will host %s instance(s).",
+                    machinesWithExtraInstance, ceilPerMachine, machinesWithoutExtraInstance, floorPerMachine));
         } else
             logger.info(format("Each GSA will host %s instance(s).", floorPerMachine));
 
@@ -116,6 +116,7 @@ public class ProcessorWithBackup implements BalancerStrategy {
         if (isNotEmpty(availableContainers)) {
             try {
                 relocateExcessInstances(availableContainers, getExcessInstances(agent), configuration);
+                updateGridServiceAgents();
             } catch (Exception e) {/*NOP*/}
         }
     }
@@ -134,61 +135,78 @@ public class ProcessorWithBackup implements BalancerStrategy {
     private Set<ProcessingUnitInstance> findOdd(GridServiceAgent agent) {
         if (!validateAgent(agent)) {
             List<ProcessingUnitInstance> instances = getInstances(agent);
-            List<ProcessingUnitInstance> backups = instances.stream().filter(ProcessorCommons::isBackup).collect(toList());
-            List<ProcessingUnitInstance> primaries = instances.stream().filter(ProcessorCommons::isPrimary).collect(toList());
-
             int instancesCount = instances.size();
             int primariesCount = (int) instances.stream().filter(ProcessorCommons::isPrimary).count();
-            int backupsCount = (int) instances.stream().filter(ProcessorCommons::isBackup).count();
 
-            // Here we check if there're not unique (by name) instances in the GSA
-            List<String> instancesNames = instances.stream().map(ProcessorCommons::getInstanceName).collect(toList());
-            Set<String> notUniqueInstancesNames = instancesNames.stream().filter(n -> frequency(instancesNames, n) > 1).collect(toSet());
-
-            // If found not unique instances
-            if (isNotEmpty(notUniqueInstancesNames)) {
-                Set<ProcessingUnitInstance> notUniqueInstances = instances.stream().filter(i -> notUniqueInstancesNames.contains(getInstanceName(i))).collect(toSet());
-                Set<ProcessingUnitInstance> oddBackups = notUniqueInstances.stream().filter(ProcessorCommons::isBackup).collect(toSet());
-                Set<ProcessingUnitInstance> oddPrimaries = notUniqueInstances.stream().filter(ProcessorCommons::isPrimary).collect(toSet());
-                if (primariesCount < primariesPerMachine) {
-                    int toMove = floorPerMachine - primariesCount - primariesPerMachine;
-                    toMove = toMove == 0 ? 1 : toMove;
-                    return oddBackups.stream().limit(toMove).collect(toSet());
-                } else if (primariesCount > primariesPerMachine) {
-                    int toMove = primariesCount - primariesPerMachine;
-                    toMove = toMove == 0 ? 1 : toMove;
-                    return oddPrimaries.stream().limit(toMove).collect(toSet());
-                } else {
-                    int toMove = abs(instancesCount - ceilPerMachine);
-                    toMove = toMove == 0 ? 1 : toMove;
-                    return oddBackups.stream().limit(toMove).collect(toSet());
-                }
+            Set<ProcessingUnitInstance> notUniqueInstances = getNotUniqueInstances(instances);
+            if (isNotEmpty(notUniqueInstances)) {
+                return getInstancesToMove(instancesCount, primariesCount, notUniqueInstances);
             }
-
-            // If all instances in the GSA are unique (by name)
-            if (primariesCount < primariesPerMachine) {
-                int toMove = floorPerMachine - primariesCount - primariesPerMachine;
-                toMove = toMove == 0 ? 1 : toMove;
-                return getRandomInstances(backups, toMove);
-            } else if (primariesCount > primariesPerMachine) {
-                int toMove = primariesCount - primariesPerMachine;
-                toMove = toMove == 0 ? 1 : toMove;
-                return getRandomInstances(primaries, toMove);
-            } else if (backupsCount > 0) {
-                int toMove = abs(instancesCount - ceilPerMachine);
-                toMove = toMove == 0 ? 1 : toMove;
-                return getRandomInstances(backups, toMove);
-            }
+            return getInstancesToMove(instancesCount, primariesCount, instances);
         }
         return Collections.emptySet();
     }
 
-    private Set<ProcessingUnitInstance> getRandomInstances(List<ProcessingUnitInstance> instances, int toMove) {
+    /**
+     * @param instances list of instances
+     * @return Set of not unique instances (by name)
+     */
+    private Set<ProcessingUnitInstance> getNotUniqueInstances(List<ProcessingUnitInstance> instances) {
+        List<String> instancesNames = instances.stream().map(ProcessorCommons::getInstanceName).collect(toList());
+        Set<String> notUniqueInstancesNames = instancesNames.stream().filter(n -> frequency(instancesNames, n) > 1).collect(toSet());
+        return instances.stream().filter(i -> notUniqueInstancesNames.contains(getInstanceName(i))).collect(toSet());
+    }
+
+    /**
+     * @param instancesCount number of instances in the GSA (needed to count the number of instances to move)
+     * @param primariesCount number of primaries in the GSA (needed to count the number of instances to move)
+     * @param instances      Collection of instances
+     * @return Set of either primaries of backups to be moved out from the GSA
+     */
+    private Set<ProcessingUnitInstance> getInstancesToMove(int instancesCount, int primariesCount, Collection<ProcessingUnitInstance> instances) {
+        List<ProcessingUnitInstance> backups = instances.stream().filter(ProcessorCommons::isBackup).collect(toList());
+        List<ProcessingUnitInstance> primaries = instances.stream().filter(ProcessorCommons::isPrimary).collect(toList());
+        int toMove = calculateNumberOfInstancesToMove(instancesCount, primariesCount);
+        if (primariesCount > primariesPerMachine) {
+            return getRandomInstances(primaries, toMove);
+        } else if (primariesCount < primariesPerMachine) {
+            return getRandomInstances(backups, toMove);
+        } else {
+            return getRandomInstances(newArrayList(instances), toMove);
+        }
+    }
+
+    /**
+     * @param instancesCount number of instances in the GSA
+     * @param primariesCount number of primaries in the GSA
+     * @return Number of odd instances to be moved from the GSA
+     */
+    private int calculateNumberOfInstancesToMove(int instancesCount, int primariesCount) {
+        int toMove;
+        if (primariesCount < primariesPerMachine) {
+            toMove = floorPerMachine - primariesCount - primariesPerMachine;
+        } else if (primariesCount > primariesPerMachine) {
+            toMove = primariesCount - primariesPerMachine;
+        } else {
+            toMove = abs(instancesCount - ceilPerMachine);
+        }
+        return toMove == 0 ? 1 : toMove;
+    }
+
+    /**
+     * @param instances list of PU instances
+     * @param limit     number of instances to return
+     * @return Random subset of <i>instances</i> limited by <i>limit</i>.<br/>
+     * <p>
+     * If <i>instances.size()</i> < <i>limit</i>, then Set of <i>instances</i> is returned.
+     */
+    private Set<ProcessingUnitInstance> getRandomInstances(List<ProcessingUnitInstance> instances, int limit) {
         Set<ProcessingUnitInstance> result = new HashSet<>();
-        if (toMove > instances.size())
-            toMove = instances.size();
+        if (limit > instances.size())
+            return newHashSet(instances);
+
         Random random = new Random();
-        while (result.size() < toMove) {
+        while (result.size() < limit) {
             int index = random.nextInt(instances.size());
             ProcessingUnitInstance randomInstance = instances.get(index);
             result.add(randomInstance);
@@ -234,8 +252,17 @@ public class ProcessorWithBackup implements BalancerStrategy {
 
         if (instances.size() > ceilPerMachine) return false;
         if (primaries > primariesPerMachine || abs(primaries - backups) > 1) return false;
+        if (!validateAgentForUniqueInstances(agent)) return false;
 
-        return validateAgentForUniqueInstances(agent);
+        return isClusterEvenlyBalanced() || instances.size() <= floorPerMachine;
+
+    }
+
+    /**
+     * @return true - if there's no any GSA with number of instances less then floorPerMachine, <br> false - otherwise
+     */
+    private boolean isClusterEvenlyBalanced() {
+        return !gridServiceAgents.stream().filter(a -> getInstances(a).size() < floorPerMachine).findFirst().isPresent();
     }
 
     private void logAgentState(GridServiceAgent agent) {
@@ -311,7 +338,7 @@ public class ProcessorWithBackup implements BalancerStrategy {
         ceilPerMachine = (int) ceil((double) instancesNum / machinesNum);
         floorPerMachine = (int) floor((double) instancesNum / machinesNum);
         primariesPerMachine = (int) ceil((double) primariesNum / machinesNum);
-        machinesWithExtraPrimary = ceilPerMachine - floorPerMachine == 0 ? 0 : primariesNum - machinesNum * (primariesPerMachine - 1);
+        machinesWithExtraInstance = instancesNum % GSAs.size();
     }
 
     private void updateGridServiceAgents() {

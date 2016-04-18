@@ -161,7 +161,7 @@ public class ProcessorWithBackup implements BalancerStrategy {
      * @param instancesCount number of instances in the GSA (needed to count the number of instances to move)
      * @param primariesCount number of primaries in the GSA (needed to count the number of instances to move)
      * @param instances      Collection of instances
-     * @return Set of either primaries of backups to be moved out from the GSA
+     * @return Set of either primaries or backups to be moved out from the GSA
      */
     private Set<ProcessingUnitInstance> getInstancesToMove(int instancesCount, int primariesCount, Collection<ProcessingUnitInstance> instances) {
         List<ProcessingUnitInstance> backups = instances.stream().filter(ProcessorCommons::isBackup).collect(toList());

@@ -119,6 +119,12 @@ angular.module('xapConfigApp.controllers', [])
             });
         };
 
+        $scope.isDown = false;
+        $scope.shutdown = function () {
+            $http.post('/shutdown');
+            $scope.isDown = true;
+        };
+
     }]).controller('ModalInstanceCtrl', function ($scope, $uibModalInstance, data) {
 
     $scope.data = data;

@@ -9,6 +9,12 @@
 <div class="container" ng-controller="MainController">
     <form name="xapConfigForm" class="form-horizontal voffset6" autocomplete="off" novalidate ng-model-options="{allowInvalid:true}">
         <div class="form-group">
+            <button id="shutdownButton" name="shutdownButton" class="btn btn-danger" type="button" aria-label="Shutdown" ng-click="shutdown()"
+                    tooltip-placement="top" uib-tooltip="Shutdown"
+                    ng-disabled="isDown" ng-model="isDown"
+                    style="float:right;margin-right:15px;">
+                <span class="glyphicon glyphicon-off"></span>
+            </button>
             <label class="col-md-2 col-md-offset-2" for="javaHome">Java Home:
                 <span class="asteriskField">*</span>
             </label>

@@ -11,7 +11,7 @@ readonly REGEXES_ARR=(${LOG_FILE_REGEXES//;/ })
 # The empty array for matched log files
 FOUND_FILES_ARRAY=()
 
-# Searching log files by regexes and put them to FOUND_FILES_ARRAY
+# Search log files by regexes and put them to FOUND_FILES_ARRAY
 for element in "${REGEXES_ARR[@]}"; do
     for file in "$(find ${BASE_LOG_DIR} -type f -regextype posix-extended -regex ${element})"; do
         FOUND_FILES_ARRAY+=(${file})

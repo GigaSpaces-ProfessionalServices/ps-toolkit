@@ -4,6 +4,4 @@ This script searches for log files (base folder must be specified in `BASE_LOG_D
 Detected Exceptions are printed to stdout and stderr.
 Also it detects system recovery messages and prints them to stdout\stderr as well.
 
-
-
 If you need more details regarding the script, navigate to [BW-1](http://10.8.1.184:8080/issue/BW-1)

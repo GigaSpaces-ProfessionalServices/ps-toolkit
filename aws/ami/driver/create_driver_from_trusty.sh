@@ -7,7 +7,7 @@ readonly ami_id="ami-4e16e023"
 readonly instance_count=1
 readonly instance_type="t2.micro"
 readonly key_name="fe-shared"
-# 'default' secutiry group
+# 'default' security group
 readonly security_group_id="sg-78022a1c"
 # private subnet
 readonly subnet_id="subnet-ef88edb6"

@@ -1,7 +1,8 @@
 #!/bin/bash
+set -o errexit
 
-pid=`ps aux | grep -v grep | grep process.marker=webui-marker | awk '{print $2}'`
-if [ -z $pid ]; then
+readonly pid=$(ps aux | grep -v grep | grep process.marker=webui-marker | awk '{print $2}')
+if [[ -z $pid ]]; then
     echo "Web management console is not running"
     exit
 fi
@@ -10,7 +11,7 @@ kill -SIGTERM $pid
     
 TIMEOUT=60
 while ps -p $pid > /dev/null; do
-    if [ $TIMEOUT -le 0 ]; then
+    if [[ $TIMEOUT -le 0 ]]; then
         break
     fi
     let "TIMEOUT--"

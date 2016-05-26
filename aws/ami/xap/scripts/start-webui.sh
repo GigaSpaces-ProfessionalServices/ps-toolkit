@@ -1,6 +1,7 @@
 #!/bin/bash
+set -o errexit
 
-if [ -z "$JSHOMEDIR" ]; then
+if [[ -z "$JSHOMEDIR" ]]; then
     echo "Please set JSHOMEDIR."
     exit 1
 fi

@@ -1,38 +1,40 @@
 #!/bin/bash
+set -o errexit
 
-JSHOMEDIR=/opt/gigaspaces/gigaspaces-xap-premium-10.2.1-ga
-JAVA_HOME=/opt/java/jdk1.7.0_79
-IP_ADDR=`/sbin/ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://'`
-NIC_ADDR=$IP_ADDR
-LOOKUPLOCATORS=$IP_ADDR:4174
+readonly jshomedir="/opt/gigaspaces/gigaspaces-xap-premium-10.2.1-ga"
+readonly java_home="/opt/java/jdk1.7.0_79"
+readonly ip_addr=$(/sbin/ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://')
+readonly nic_addr=$ip_addr
+readonly lookuplocators=$ip_addr:4174
+lookupgroups=
 
-bash_profile=~/.bash_profile
-gs_license=/tmp/gslicense.xml
+readonly bash_profile=~/.bash_profile
+readonly gs_license=/tmp/gslicense.xml
 
 main() {
-   if [ ${JSHOMEDIR} ] ; then
-      grep -q -F "JSHOMEDIR" $bash_profile || echo "export JSHOMEDIR=\"${JSHOMEDIR}\"" >>$bash_profile
+   if [[ ${jshomedir} ]] ; then
+      grep -q -F "JSHOMEDIR" $bash_profile || echo "export JSHOMEDIR=\"${jshomedir}\"" >>$bash_profile
    fi
 
-   if [ ${JAVA_HOME} ] ; then
-      grep -q -F "JAVA_HOME" $bash_profile || echo "export JAVA_HOME=\"${JAVA_HOME}\" PATH=\"${PATH}:${JAVA_HOME}/bin\"" >>$bash_profile 
+   if [[ ${java_home} ]] ; then
+      grep -q -F "JAVA_HOME" $bash_profile || echo "export JAVA_HOME=\"${java_home}\" PATH=\"${PATH}:${java_home}/bin\"" >>$bash_profile 
    fi
 
-   if [ ${NIC_ADDR} ] ; then
-      grep -q -F "NIC_ADDR" $bash_profile || echo "export NIC_ADDR=\"${NIC_ADDR}\"" >>$bash_profile
+   if [[ ${nic_addr} ]] ; then
+      grep -q -F "NIC_ADDR" $bash_profile || echo "export NIC_ADDR=\"${nic_addr}\"" >>$bash_profile
    fi
 
-   if [ ${LOOKUPGROUPS} ] ; then
-      grep -q -F "LOOKUPGROUPS" $bash_profile || echo "export LOOKUPGROUPS=\"${LOOKUPGROUPS}\"" >>$bash_profile
+   if [[ ${lookupgroups} ]] ; then
+      grep -q -F "LOOKUPGROUPS" $bash_profile || echo "export LOOKUPGROUPS=\"${lookupgroups}\"" >>$bash_profile
    fi
 
-   if [ ${LOOKUPLOCATORS} ] ; then
-      grep -q -F "LOOKUPLOCATORS" $bash_profile || echo "export LOOKUPLOCATORS=\"${LOOKUPLOCATORS}\"" >>$bash_profile
+   if [[ ${lookuplocators} ]] ; then
+      grep -q -F "LOOKUPLOCATORS" $bash_profile || echo "export LOOKUPLOCATORS=\"${lookuplocators}\"" >>$bash_profile
    fi
 
    source ${bash_profile}
 
-   if [ -e "${gs_license}" ]; then
+   if [[ -e "${gs_license}" ]]; then
       cp -rf ${gs_license} ${JSHOMEDIR}
    else 
       echo "License ${gs_license} does not exist. No license was installed."
@@ -47,12 +49,15 @@ usage() {
 }
 
 parse_input() {
-   while [ "$1" != "" ]
+   if [[ "$#" -eq 0 ]] ; then
+      return 0
+   fi
+   while [[ -n $1 ]]
    do
       case $1 in
       "-g" | "--group")
           shift
-          LOOKUPGROUPS=$1
+          lookupgroups="$1"
           ;;
       "--help")
 	  shift
@@ -62,6 +67,5 @@ parse_input() {
      shift
    done
 }
-
 parse_input "$@"
 main

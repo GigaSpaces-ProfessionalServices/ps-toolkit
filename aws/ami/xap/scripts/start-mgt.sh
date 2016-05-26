@@ -24,4 +24,4 @@ if [[ -e "${log_file}" ]]; then
 fi
 
 nohup ${JSHOMEDIR}/bin/gs-agent.sh gsa.gsc 0 gsa.lus 1 gsa.gsm 1 >${log_file} 2>&1 &
-echo "Starting gs agent..."
+echo "Starting gs agent... See ${log_file}"

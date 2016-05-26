@@ -12,7 +12,8 @@ kill -SIGTERM $pid
 TIMEOUT=60
 while ps -p $pid > /dev/null; do
     if [[ $TIMEOUT -le 0 ]]; then
-        break
+        echo "Web management console has not been stopped within $TIMEOUT seconds"
+        exit 1
     fi
     let "TIMEOUT--"
     sleep 1

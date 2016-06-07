@@ -323,8 +323,9 @@
         }
       }
     },
-    "PrimaryNode": {
+    "ComputeNode1": {
       "Type": "AWS::EC2::Instance",
+      "DependsOn": "ManagementNode",
       "Properties": {
         "AvailabilityZone": "us-east-1d",
         "InstanceType": {
@@ -387,7 +388,7 @@
                 {
                   "Ref": "AWS::StackName"
                 },
-                "         --resource PrimaryNode ",
+                "         --resource ComputeNode1 ",
                 "         --region ",
                 {
                   "Ref": "AWS::Region"
@@ -398,7 +399,7 @@
                 {
                   "Ref": "AWS::StackName"
                 },
-                "         --resource PrimaryNode ",
+                "         --resource ComputeNode1 ",
                 "         --region ",
                 {
                   "Ref": "AWS::Region"
@@ -434,7 +435,14 @@
                       {
                         "Ref": "LookupGroups"
                       },
-                      " --locators ${ip_addr}:4174",
+                      " --locators ",
+                      {
+                        "Fn::GetAtt": [
+                          "ManagementNode",
+                          "PrivateIp"
+                        ]
+                      },
+                      ":4174",
                       " --nic-address ${ip_addr}\n",
                       "./start-gscs.sh 1\n"
                     ]
@@ -460,8 +468,9 @@
         }
       }
     },
-    "BackupNode": {
+    "ComputeNode2": {
       "Type": "AWS::EC2::Instance",
+      "DependsOn": "ManagementNode",
       "Properties": {
         "AvailabilityZone": "us-east-1d",
         "InstanceType": {
@@ -524,7 +533,7 @@
                 {
                   "Ref": "AWS::StackName"
                 },
-                "         --resource BackupNode ",
+                "         --resource ComputeNode2 ",
                 "         --region ",
                 {
                   "Ref": "AWS::Region"
@@ -535,7 +544,7 @@
                 {
                   "Ref": "AWS::StackName"
                 },
-                "         --resource BackupNode ",
+                "         --resource ComputeNode2 ",
                 "         --region ",
                 {
                   "Ref": "AWS::Region"
@@ -571,7 +580,14 @@
                       {
                         "Ref": "LookupGroups"
                       },
-                      " --locators ${ip_addr}:4174",
+                      " --locators ",
+                      {
+                        "Fn::GetAtt": [
+                          "ManagementNode",
+                          "PrivateIp"
+                        ]
+                      },
+                      ":4174",
                       " --nic-address ${ip_addr}\n",
                       "./start-gscs.sh 1\n"
                     ]
@@ -614,32 +630,32 @@
         ]
       }
     },
-    "PrimaryInstanceId": {
-      "Description": "InstanceId of the newly created Primary Node",
+    "ComputeNode1InstanceId": {
+      "Description": "InstanceId of the newly created Compute Node",
       "Value": {
-        "Ref": "PrimaryNode"
+        "Ref": "ComputeNode1"
       }
     },
-    "PrimaryPrivateIP": {
-      "Description": "Private IP address of the newly created Primary Node",
+    "ComputeNode1PrivateIP": {
+      "Description": "Private IP address of the newly created Compute Node",
       "Value": {
         "Fn::GetAtt": [
-          "PrimaryNode",
+          "ComputeNode1",
           "PrivateIp"
         ]
       }
     },
-    "InstanceId": {
-      "Description": "InstanceId of the newly created Backup Node",
+    "ComputeNode2InstanceId": {
+      "Description": "InstanceId of the newly created Compute Node",
       "Value": {
-        "Ref": "BackupNode"
+        "Ref": "ComputeNode2"
       }
     },
-    "PrivateIP": {
-      "Description": "Private IP address of the newly created Backup Node",
+    "ComputeNode2PrivateIP": {
+      "Description": "Private IP address of the newly created Compute Node",
       "Value": {
         "Fn::GetAtt": [
-          "BackupNode",
+          "ComputeNode2",
           "PrivateIp"
         ]
       }

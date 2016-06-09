@@ -10,7 +10,7 @@
         <module>rebalancer</module>
         <module>script-creator</module>
         <module>rebalancer-od</module>
-        <module>xap-failover-demo</module>
+        <module>xap-alerts-demo</module>
     </modules>
 
     <properties>

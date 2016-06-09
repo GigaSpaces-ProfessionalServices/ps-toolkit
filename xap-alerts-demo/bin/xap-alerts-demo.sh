@@ -1,18 +1,17 @@
 #!/bin/bash
 set -o errexit
 
-readonly stack_name="xap-failover-demo"
-readonly template_uri="file:///tmp/boot-grid.template"
-readonly lookup_groups="xap-failover-demo-group"
+readonly stack_name="xap-alerts-demo"
+readonly monitor_tool_path="$(pwd)/.."
+readonly template_uri="file:///$(pwd)/boot-grid.template"
+readonly lookup_groups="xap-alerts-demo-group"
 lookup_locators=
 
 readonly project_dir="/tmp"
-readonly project_name="test-xap-failover"
+readonly project_name="basic-xap-project"
 readonly project_template="basic"
 
-readonly monitor_tool_path="/tmp/monitor-tool"
-
-readonly sla_file="/tmp/sla.xml"
+readonly sla_file="${project_dir}/sla.xml"
 readonly cluster_schema="partitioned-sync2backup"
 readonly number_of_instances=4
 readonly number_of_backups=1
@@ -46,22 +45,23 @@ deploy() {
    mvn package
    mvn os:deploy -Dgroups=$lookup_groups -Dlocators=$lookup_locators -Dsla=$sla_file
 }
-setup() {
-  create_project
-  create_sla
-  create_vms
-  deploy
+run_monitor_tool() {
+  lookup_locators=$(aws cloudformation describe-stacks --stack-name ${stack_name} --query 'Stacks[*].Outputs[?OutputKey==`MgtPrivateIP`].OutputValue[]' --output text)
+  
+  nohup java -jar $monitor_tool_path/xap-alerts-demo.jar "$lookup_groups" "$lookup_locators" -Dprocess.marker=monitor-tool-marker > /dev/null &
+}
+stop_monitor_tool() {
+  if pid=$(ps aux | grep -v grep | grep process.marker=monitor-tool-marker | awk '{print $2}'); then
+      kill -SIGTERM $pid
+  fi; 
 }
 failover_demo() {
-  lookup_locators=$(aws cloudformation describe-stacks --stack-name ${stack_name} --query 'Stacks[*].Outputs[?OutputKey==`MgtPrivateIP`].OutputValue[]' --output text)
-  nohup java -cp $monitor_tool_path/xap-failover-demo.jar:$monitor_tool_path/lib/* com.gigaspaces.gigapro.alert.FailoverDemo "$lookup_groups" "$lookup_locators" >$monitor_tool_path/output.log 2>&1 &
-
   local compute_node_host=$(aws cloudformation describe-stacks --stack-name ${stack_name} --query 'Stacks[*].Outputs[?OutputKey==`ComputeNode1PrivateIP`].OutputValue[]' --output text 2> /dev/null )
   if [[ -z $compute_node_host ]]; then
      echo "${stack_name} stack does not exist."; exit 1
   fi
 
-  ssh $compute_node_host <<EOF
+  ssh -oStrictHostKeyChecking=no $compute_node_host <<EOF
      readonly pids=\$(ps aux | grep -v grep | grep GSC | awk '{print \$2}')
      if [[ -z \$pids ]]; then
         echo "No gscs are running on ${compute_node_host}."; exit 1
@@ -82,6 +82,14 @@ failover_demo() {
      echo "GSC \${pid_arr[0]} has been killed."
 EOF
 }
+cpu_load_demo() {
+  local compute_node_host=$(aws cloudformation describe-stacks --stack-name ${stack_name} --query 'Stacks[*].Outputs[?OutputKey==`ComputeNode2PrivateIP`].OutputValue[]' --output text 2> /dev/null )
+  if [[ -z $compute_node_host ]]; then
+     echo "${stack_name} stack does not exist."; exit 1
+  fi
+  echo "Producing CPU load on ${compute_node_host} during 80 seconds..."
+  ssh -oStrictHostKeyChecking=no $compute_node_host stress --cpu 1 --timeout 80
+}
 teardown() {
   echo "Deleting stack ${stack_name}. Please wait..."
   aws cloudformation delete-stack --stack-name ${stack_name}
@@ -90,13 +98,20 @@ teardown() {
 
   rm -rf ${project_dir}/${project_name}
   rm -rf $sla_file
+  
+  stop_monitor_tool
 }
 case "$1" in
   setup)
-    setup
+    create_project
+    create_sla
+    create_vms
+    deploy
+    run_monitor_tool
     ;;
   demo)
     failover_demo 
+    cpu_load_demo
     ;;
   teardown)
     teardown

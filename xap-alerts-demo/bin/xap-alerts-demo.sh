@@ -18,7 +18,8 @@ readonly number_of_backups=1
 
 create_project() {
   cd $project_dir
-  mvn os:create -DartifactId=$project_name -Dtemplate=$project_template
+  mvn os:create -DartifactId=$project_name -Dtemplate=$project_template > /dev/null
+  echo "${project_dir}/${project_name} project has been created using $project_template template"
 }
 create_sla() {
   {
@@ -42,13 +43,13 @@ create_vms() {
 }
 deploy() {
    cd ${project_dir}/${project_name}
-   mvn package
-   mvn os:deploy -Dgroups=$lookup_groups -Dlocators=$lookup_locators -Dsla=$sla_file
+   echo "Deploying ${project_name} application with ${number_of_instances},${number_of_backups} topology"
+   mvn package > /dev/null
+   mvn os:deploy -Dgroups=$lookup_groups -Dlocators=$lookup_locators -Dsla=$sla_file > /dev/null
+   echo "${project_name} has been deployed"
 }
 run_monitor_tool() {
-  lookup_locators=$(aws cloudformation describe-stacks --stack-name ${stack_name} --query 'Stacks[*].Outputs[?OutputKey==`MgtPrivateIP`].OutputValue[]' --output text)
-  
-  nohup java -jar $monitor_tool_path/xap-alerts-demo.jar "$lookup_groups" "$lookup_locators" -Dprocess.marker=monitor-tool-marker > /dev/null &
+  nohup java -jar $monitor_tool_path/xap-alerts-demo.jar "$lookup_groups" "$lookup_locators" -Dprocess.marker=monitor-tool-marker > /dev/null 2>&1 &
 }
 stop_monitor_tool() {
   if pid=$(ps aux | grep -v grep | grep process.marker=monitor-tool-marker | awk '{print $2}'); then

@@ -404,7 +404,8 @@
                 {
                   "Ref": "AWS::Region"
                 },
-                "\n"
+                "\n",
+                "apt-get install stress"
               ]
             ]
           }
@@ -549,7 +550,8 @@
                 {
                   "Ref": "AWS::Region"
                 },
-                "\n"
+                "\n",
+                "apt-get install stress"
               ]
             ]
           }

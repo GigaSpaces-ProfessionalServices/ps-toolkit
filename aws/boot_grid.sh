@@ -3,13 +3,55 @@ set -o errexit
 
 stack_name="xap-grid"
 template_uri="file:///tmp/boot-grid.template"
-lookup_groups="gigaspaces-xap-premium-10.2.1"
-lookup_locators=
+
+# required parameters
 project_dir=
 
+# optional parameters
+mgt_node_type=
+mgt_node_size=
+
+compute_node_type=
+compute_node_size=
+compute_node_count=
+
+lookup_groups=
+lookup_locators=
+
 create_vms() {
+   local create_stack_cmd="aws cloudformation create-stack --stack-name ${stack_name} --template-body ${template_uri} --query 'StackId' --output text"
+   
+   local parameters=
+   if [[ $lookup_groups ]]; then
+      parameters+=" ParameterKey=LookupGroups,ParameterValue=$lookup_groups"
+   fi
+   
+   if [[ $mgt_node_type ]]; then
+      parameters+=" ParameterKey=MgtNodeInstanceType,ParameterValue=$mgt_node_type"
+   fi
+   
+   if [[ $mgt_node_size ]]; then
+      parameters+=" ParameterKey=MgtNodeSize,ParameterValue=$mgt_node_size"
+   fi
+   
+   if [[ $compute_node_type ]]; then
+      parameters+=" ParameterKey=ComputeNodeInstanceType,ParameterValue=$compute_node_type"
+   fi
+   
+   if [[ $compute_node_size ]]; then
+      parameters+=" ParameterKey=ComputeNodeSize,ParameterValue=$compute_node_size"
+   fi
+   
+   if [[ $compute_node_count ]]; then
+      parameters+=" ParameterKey=ComputeNodesCount,ParameterValue=$compute_node_count"
+   fi
+   
+   if [[ $parameters ]]; then
+      create_stack_cmd+=" --parameters$parameters"
+   fi
+
    local stack_id
-   if ! stack_id=$(aws cloudformation create-stack --stack-name ${stack_name} --template-body ${template_uri} --parameters ParameterKey=LookupGroups,ParameterValue=$lookup_groups --query 'StackId' --output text); then
+   if ! stack_id=$(eval $create_stack_cmd); then
      exit $?
    fi
    echo "Creating stack ${stack_id}..."
@@ -21,14 +63,24 @@ create_vms() {
 deploy() {
    cd ${project_dir}
    mvn clean package
-   mvn os:deploy -Dgroups=$lookup_groups -Dlocators=$lookup_locators 
+   
+   local deploy_cmd="mvn os:deploy -Dlocators=$lookup_locators"
+   if [[ $lookup_groups ]]; then
+      deploy_cmd+=" -Dgroups=$lookup_groups"
+   fi
+   $deploy_cmd
 }
 usage() { 
    echo "Usage: $0 path-to-project-dir"
-   echo "              --stack_name   | stack name"
-   echo "              --groups       | lookup groups"
-   echo "              --template_uri | template uri"
-   echo "              --help         | usage"
+   echo "              --s  | --stack_name        | stack name"
+   echo "              --t  | --template_uri      | template uri"
+   echo "              --mt | --mgt_node_type     | EC2 instance type of VM with global GSA"
+   echo "              --ms | --mgt_node_size     | size of EBS volume in GiB"
+   echo "              --ct | --compute_node_type | EC2 instance type of VM with GSC"
+   echo "              --cs | --compute_node_size | size of EBS volume in GiB"
+   echo "              --count                    | count of compute nodes"
+   echo "              --g  | --groups            | lookup groups"
+   echo "              --help                     | usage"
    exit 1
 }
 parse_input() {
@@ -45,18 +97,38 @@ parse_input() {
    while [[ -n $1 ]]
    do
       case $1 in
-      "--groups")
+      "--g" | "--groups")
           shift
           lookup_groups="$1"
           ;;
-      "--template_url")
+      "--t" | "--template_uri")
           shift
           template_uri="$1"
           ;;
-      "--stack_name")
+      "--s" | "--stack_name")
           shift
           stack_name="$1"
           ;;
+      "--mt" | "--mgt_node_type")
+          shift
+          mgt_node_type="$1"
+          ;;
+      "--ms" | "--mgt_node_size")
+          shift
+          mgt_node_size="$1"
+          ;;
+      "--ct" | "--compute_node_type")
+          shift
+          compute_node_type="$1"
+          ;;
+      "--cs" | "--compute_node_size")
+          shift
+          compute_node_size="$1"
+          ;;   
+      "--count")
+          shift
+          compute_node_count="$1"
+          ;;   
       "--help")
           usage
           ;;

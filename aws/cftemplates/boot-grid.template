@@ -2,6 +2,15 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "AWS CloudFormation Template, that creates one EC2 instance for service grid management components: 1 GSA, 1 LUS, 1 GSM and 1 WEB UI and requested count of EC2 instances for compute primary and backup nodes with one running GSC per node.",
   "Parameters": {
+    "AvailabilityZone": {
+      "Description": "Availability zone of the stack resources",
+      "Type": "String",
+      "Default": "us-east-1d",
+      "AllowedValues": [
+        "us-east-1d"
+      ],
+      "ConstraintDescription": "must be a valid availability zone."
+    },
     "MgtNodeInstanceType": {
       "Description": "EC2 instance type of management node",
       "Type": "String",
@@ -170,11 +179,11 @@
       "Default": "sg-78022a1c",
       "ConstraintDescription": "must be the id of an existing security group."
     },
-    "SubnetId": {
-      "Description": "Id of an existing subnet",
-      "Type": "String",
+    "Subnets": {
+      "Description": "The list of SubnetIds in your Virtual Private Cloud (VPC)",
+      "Type": "List<AWS::EC2::Subnet::Id>",
       "Default": "subnet-ef88edb6",
-      "ConstraintDescription": "must be the id of an existing subnet."
+      "ConstraintDescription": "must be a list of an existing subnets in the selected Virtual Private Cloud."
     }
   },
   "Mappings": {
@@ -188,7 +197,9 @@
     "ManagementNode": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "AvailabilityZone": "us-east-1d",
+        "AvailabilityZone": {
+          "Ref": "AvailabilityZone"
+        },
         "InstanceType": {
           "Ref": "MgtNodeInstanceType"
         },
@@ -204,7 +215,12 @@
           "Ref": "ImageId"
         },
         "SubnetId": {
-          "Ref": "SubnetId"
+          "Fn::Select": [
+            "0",
+            {
+              "Ref": "Subnets"
+            }
+          ]
         },
         "Tags": [
           {
@@ -236,7 +252,6 @@
               "",
               [
                 "#!/bin/bash -xe\n",
-                "add-apt-repository -y ppa:openjdk-r/ppa\n",
                 "apt-get update\n",
                 "apt-get -y install python-pip\n",
                 "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
@@ -264,8 +279,7 @@
                 "         --region ",
                 {
                   "Ref": "AWS::Region"
-                },
-                "\n"
+                }
               ]
             ]
           }
@@ -323,144 +337,37 @@
         }
       }
     },
-    "ComputeNode1": {
-      "Type": "AWS::EC2::Instance",
+    "ComputeNodesGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
       "DependsOn": "ManagementNode",
       "Properties": {
-        "AvailabilityZone": "us-east-1d",
-        "InstanceType": {
-          "Ref": "ComputeNodeInstanceType"
-        },
-        "SecurityGroupIds": [
+        "AvailabilityZones": [
           {
-            "Ref": "SecurityGroupId"
+            "Ref": "AvailabilityZone"
           }
         ],
-        "KeyName": {
-          "Ref": "KeyName"
+        "VPCZoneIdentifier": {
+          "Ref": "Subnets"
         },
-        "ImageId": {
-          "Ref": "ImageId"
+        "LaunchConfigurationName": {
+          "Ref": "ComputeNodeConfig"
         },
-        "SubnetId": {
-          "Ref": "SubnetId"
+        "DesiredCapacity": {
+          "Ref": "ComputeNodesCount"
+        },
+        "MaxSize": {
+          "Ref": "ComputeNodesCount"
+        },
+        "MinSize": {
+          "Ref": "ComputeNodesCount"
         },
         "Tags": [
           {
             "Key": "Name",
-            "Value": "Compute Node"
+            "Value": "Compute Node",
+            "PropagateAtLaunch": "true"
           }
-        ],
-        "BlockDeviceMappings": [
-          {
-            "DeviceName": {
-              "Fn::FindInMap": [
-                "AmiBlockDevice",
-                {
-                  "Ref": "ImageId"
-                },
-                "root"
-              ]
-            },
-            "Ebs": {
-              "VolumeSize": {
-                "Ref": "ComputeNodeSize"
-              }
-            }
-          }
-        ],
-        "UserData": {
-          "Fn::Base64": {
-            "Fn::Join": [
-              "",
-              [
-                "#!/bin/bash -xe\n",
-                "add-apt-repository -y ppa:openjdk-r/ppa\n",
-                "apt-get update\n",
-                "apt-get -y install python-pip\n",
-                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
-                "cp /usr/local/init/ubuntu/cfn-hup /etc/init.d/cfn-hup \n",
-                "chmod +x /etc/init.d/cfn-hup \n",
-                "update-rc.d cfn-hup defaults \n ",
-                "service cfn-hup start \n",
-                "cfn-init -v ",
-                "         --stack ",
-                {
-                  "Ref": "AWS::StackName"
-                },
-                "         --resource ComputeNode1 ",
-                "         --region ",
-                {
-                  "Ref": "AWS::Region"
-                },
-                "\n",
-                "cfn-signal -e $? ",
-                "         --stack ",
-                {
-                  "Ref": "AWS::StackName"
-                },
-                "         --resource ComputeNode1 ",
-                "         --region ",
-                {
-                  "Ref": "AWS::Region"
-                },
-                "\n"
-              ]
-            ]
-          }
-        }
-      },
-      "Metadata": {
-        "AWS::CloudFormation::Init": {
-          "config": {
-            "packages": {
-              "apt": {
-                "zip": []
-              }
-            },
-            "groups": {},
-            "users": {},
-            "sources": {},
-            "files": {
-              "/tmp/start-compute-node": {
-                "content": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "#!/bin/bash -xe\n",
-                      "cd /opt/gigaspaces/gigaspaces-xap-premium-10.2.1-ga/scripts\n",
-                      "ip_addr=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)\n",
-                      ". configure.sh",
-                      " --groups ",
-                      {
-                        "Ref": "LookupGroups"
-                      },
-                      " --locators ",
-                      {
-                        "Fn::GetAtt": [
-                          "ManagementNode",
-                          "PrivateIp"
-                        ]
-                      },
-                      ":4174",
-                      " --nic-address ${ip_addr}\n",
-                      "./start-gscs.sh 1\n"
-                    ]
-                  ]
-                },
-                "mode": "000755",
-                "owner": "ubuntu",
-                "group": "ubuntu"
-              }
-            },
-            "commands": {
-              "start_compute_node": {
-                "command": "sudo -u ubuntu /tmp/start-compute-node"
-              }
-            },
-            "services": {}
-          }
-        }
+        ]
       },
       "CreationPolicy": {
         "ResourceSignal": {
@@ -468,34 +375,10 @@
         }
       }
     },
-    "ComputeNode2": {
-      "Type": "AWS::EC2::Instance",
-      "DependsOn": "ManagementNode",
+    "ComputeNodeConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
-        "AvailabilityZone": "us-east-1d",
-        "InstanceType": {
-          "Ref": "ComputeNodeInstanceType"
-        },
-        "SecurityGroupIds": [
-          {
-            "Ref": "SecurityGroupId"
-          }
-        ],
-        "KeyName": {
-          "Ref": "KeyName"
-        },
-        "ImageId": {
-          "Ref": "ImageId"
-        },
-        "SubnetId": {
-          "Ref": "SubnetId"
-        },
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": "Compute Node"
-          }
-        ],
+        "AssociatePublicIpAddress": "false",
         "BlockDeviceMappings": [
           {
             "DeviceName": {
@@ -514,13 +397,28 @@
             }
           }
         ],
+        "EbsOptimized": false,
+        "ImageId": {
+          "Ref": "ImageId"
+        },
+        "InstanceMonitoring": false,
+        "InstanceType": {
+          "Ref": "ComputeNodeInstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "SecurityGroupId"
+          }
+        ],
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
               "",
               [
                 "#!/bin/bash -xe\n",
-                "add-apt-repository -y ppa:openjdk-r/ppa\n",
                 "apt-get update\n",
                 "apt-get -y install python-pip\n",
                 "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
@@ -533,7 +431,7 @@
                 {
                   "Ref": "AWS::StackName"
                 },
-                "         --resource ComputeNode2 ",
+                "         --resource ComputeNodeConfig ",
                 "         --region ",
                 {
                   "Ref": "AWS::Region"
@@ -544,12 +442,11 @@
                 {
                   "Ref": "AWS::StackName"
                 },
-                "         --resource ComputeNode2 ",
+                "         --resource ComputeNodesGroup ",
                 "         --region ",
                 {
                   "Ref": "AWS::Region"
-                },
-                "\n"
+                }
               ]
             ]
           }
@@ -605,11 +502,6 @@
             },
             "services": {}
           }
-        }
-      },
-      "CreationPolicy": {
-        "ResourceSignal": {
-          "Timeout": "PT5M"
         }
       }
     }
@@ -626,36 +518,6 @@
       "Value": {
         "Fn::GetAtt": [
           "ManagementNode",
-          "PrivateIp"
-        ]
-      }
-    },
-    "ComputeNode1InstanceId": {
-      "Description": "InstanceId of the newly created Compute Node",
-      "Value": {
-        "Ref": "ComputeNode1"
-      }
-    },
-    "ComputeNode1PrivateIP": {
-      "Description": "Private IP address of the newly created Compute Node",
-      "Value": {
-        "Fn::GetAtt": [
-          "ComputeNode1",
-          "PrivateIp"
-        ]
-      }
-    },
-    "ComputeNode2InstanceId": {
-      "Description": "InstanceId of the newly created Compute Node",
-      "Value": {
-        "Ref": "ComputeNode2"
-      }
-    },
-    "ComputeNode2PrivateIP": {
-      "Description": "Private IP address of the newly created Compute Node",
-      "Value": {
-        "Fn::GetAtt": [
-          "ComputeNode2",
           "PrivateIp"
         ]
       }

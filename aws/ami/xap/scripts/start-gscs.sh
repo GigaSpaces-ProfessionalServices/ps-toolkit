@@ -24,7 +24,7 @@ if [[ "$1" -ge 1 ]] 2>/dev/null; then
        zip ${log_file_zip} ${log_file}
     fi 
 
-    nohup ${JSHOMEDIR}/bin/gs-agent.sh gsa.gsc $1 gsa.global.gsm 0 gsa.global.lus 0 >${log_file} 2>&1 &
+    nohup ${JSHOMEDIR}/bin/gs-agent.sh gsa.global.lus 0 gsa.lus 0 gsa.gsm.global 0 gsa.gsm 0 gsa.gsc $1 >${log_file} 2>&1 &
     echo "Starting $1 GSC(s)... See ${log_file}"
 else
     echo "Invalid number of GSCs:$1. Usage $0 [count of GSCs]" >&2; exit 1

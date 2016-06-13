@@ -72,15 +72,15 @@ deploy() {
 }
 usage() { 
    echo "Usage: $0 path-to-project-dir"
-   echo "              --s  | --stack_name        | stack name"
-   echo "              --t  | --template_uri      | template uri"
-   echo "              --mt | --mgt_node_type     | EC2 instance type of VM with global GSA"
-   echo "              --ms | --mgt_node_size     | size of EBS volume in GiB"
-   echo "              --ct | --compute_node_type | EC2 instance type of VM with GSC"
-   echo "              --cs | --compute_node_size | size of EBS volume in GiB"
-   echo "              --count                    | count of compute nodes"
-   echo "              --g  | --groups            | lookup groups"
-   echo "              --help                     | usage"
+   echo "              -s  | --stack_name        | stack name"
+   echo "              -t  | --template_uri      | template uri"
+   echo "              -mt | --mgt_node_type     | EC2 instance type of VM with global GSA"
+   echo "              -ms | --mgt_node_size     | size of EBS volume in GiB"
+   echo "              -ct | --compute_node_type | EC2 instance type of VM with GSC"
+   echo "              -cs | --compute_node_size | size of EBS volume in GiB"
+   echo "              --count                   | count of compute nodes"
+   echo "              -g  | --groups            | lookup groups"
+   echo "              --help                    | usage"
    exit 1
 }
 parse_input() {
@@ -97,31 +97,31 @@ parse_input() {
    while [[ -n $1 ]]
    do
       case $1 in
-      "--g" | "--groups")
+      "-g" | "--groups")
           shift
           lookup_groups="$1"
           ;;
-      "--t" | "--template_uri")
+      "-t" | "--template_uri")
           shift
           template_uri="$1"
           ;;
-      "--s" | "--stack_name")
+      "-s" | "--stack_name")
           shift
           stack_name="$1"
           ;;
-      "--mt" | "--mgt_node_type")
+      "-mt" | "--mgt_node_type")
           shift
           mgt_node_type="$1"
           ;;
-      "--ms" | "--mgt_node_size")
+      "-ms" | "--mgt_node_size")
           shift
           mgt_node_size="$1"
           ;;
-      "--ct" | "--compute_node_type")
+      "-ct" | "--compute_node_type")
           shift
           compute_node_type="$1"
           ;;
-      "--cs" | "--compute_node_size")
+      "-cs" | "--compute_node_size")
           shift
           compute_node_size="$1"
           ;;   

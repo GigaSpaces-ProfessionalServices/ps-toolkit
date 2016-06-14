@@ -170,7 +170,7 @@
     "ImageId": {
       "Description": "Id of an existing image",
       "Type": "String",
-      "Default": "ami-d2bb44bf",
+      "Default": "ami-76c90d1b",
       "ConstraintDescription": "must be the id of an existing AMI."
     },
     "SecurityGroupId": {
@@ -188,7 +188,7 @@
   },
   "Mappings": {
     "AmiBlockDevice": {
-      "ami-d2bb44bf": {
+      "ami-76c90d1b": {
         "root": "/dev/sda1"
       }
     }
@@ -225,7 +225,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "Management Node"
+            "Value": "Mgt VM"
           }
         ],
         "BlockDeviceMappings": [
@@ -364,7 +364,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "Compute Node",
+            "Value": "XAP VM",
             "PropagateAtLaunch": "true"
           }
         ]

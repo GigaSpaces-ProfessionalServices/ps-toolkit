@@ -2,7 +2,7 @@
 set -o errexit
 
 stack_name="xap-grid"
-template_uri="file://boot-grid.template"
+template_uri="file://resources/boot-grid.template"
 
 # required parameters
 project_dir=

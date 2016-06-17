@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:os-core="http://www.openspaces.org/schema/core"
+       xmlns:os-events="http://www.openspaces.org/schema/events"
+       xmlns:os-remoting="http://www.openspaces.org/schema/remoting"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+       http://www.openspaces.org/schema/core http://www.openspaces.org/schema/10.2/core/openspaces-core.xsd
+       http://www.openspaces.org/schema/events http://www.openspaces.org/schema/10.2/events/openspaces-events.xsd
+       http://www.openspaces.org/schema/remoting http://www.openspaces.org/schema/10.2/remoting/openspaces-remoting.xsd">
+
+    <import resource="classpath:{{imported_pu_xml}}"/>
+    
+    <!--
+        A JDBC pooled data source that connects to the HSQL server the mirror starts.
+    -->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+        <property name="driverClassName" value="org.hsqldb.jdbcDriver"/>
+        <property name="url" value="jdbc:hsqldb:hsql://{{db_host}}/{{db_name}}"/>
+        <property name="username" value="{{db_user}}"/>
+        <property name="password" value="{{db_password}}"/>
+    </bean>
+
+    <!--
+        Hibernate SessionFactory bean. Uses the pooled data source to connect to the database.
+    -->
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="annotatedClasses">
+            <list>
+                {{mapping_resources}}
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.HSQLDialect</prop>
+                <prop key="hibernate.cache.provider_class">org.hibernate.cache.NoCacheProvider</prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.cache.use_query_cache">false</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="hibernateSpaceDataSource" class="org.openspaces.persistency.hibernate.DefaultHibernateSpaceDataSourceFactoryBean">
+        <property name="sessionFactory" ref="sessionFactory"/>
+        <property name="initialLoadChunkSize" value="2000"/>
+    </bean>
+    
+    <!--
+        A bean representing a space (an IJSpace implementation).
+
+        Note, we do not specify here the cluster topology of the space. It is declared outside of
+        the processing unit or within the SLA bean.
+    -->
+    <os-core:space id="space" url="/./{{space_name}}" schema="persistent" mirror="true" space-data-source="hibernateSpaceDataSource">
+        <os-core:properties>
+            <props>
+                <!-- Use ALL IN CACHE -->
+                <prop key="space-config.engine.cache_policy">1</prop>
+                <prop key="space-config.external-data-source.usage">read-only</prop>
+                <prop key="cluster-config.cache-loader.external-data-source">true</prop>
+                <prop key="cluster-config.cache-loader.central-data-source">true</prop>
+
+                <prop key="cluster-config.groups.group.repl-policy.replication-mode">sync</prop>
+
+                <!-- general parameters -->
+                <prop key="cluster-config.groups.group.repl-policy.policy-type">{{repl_policy_type}}</prop>
+                <prop key="cluster-config.groups.group.repl-policy.repl-find-timeout">{{repl_find_timeout}}</prop>
+                <prop key="cluster-config.groups.group.repl-policy.repl-full-take">{{repl_full_take}}</prop>
+                <prop key="cluster-config.groups.group.repl-policy.replicate-notify-templates">{{replicate_notify_templates}}</prop>
+                <prop key="cluster-config.groups.group.repl-policy.trigger-notify-templates">{{trigger_notify_templates}}</prop>
+
+                <!-- synchronous replication parameters -->
+                <prop key="cluster-config.groups.group.repl-policy.sync-replication.throttle-when-inactive">{{throttle_when_inactive}}</prop>
+                <prop key="cluster-config.groups.group.repl-policy.sync-replication.max-throttle-tp-when-inactive">{{max_throttle_tp_when_inactive}}</prop>
+                <prop key="cluster-config.groups.group.repl-policy.sync-replication.min-throttle-tp-when-active">{{min_throttle_tp_when_active}}</prop>
+                <prop key="cluster-config.groups.group.repl-policy.sync-replication.multiple-opers-chunk-size">{{multiple_opers_chunk_size}}</prop>
+                <prop key="cluster-config.groups.group.repl-policy.sync-replication.target-consume-timeout">{{target_consume_timeout}}</prop>
+
+                <!-- asynchronous replication parameters in case of recovery process -->
+                <prop key="cluster-config.groups.group.repl-policy.async-replication.repl-chunk-size">{{repl_chunk_size}}</prop>
+                <prop key="cluster-config.groups.group.repl-policy.async-replication.repl-interval-millis">{{repl_interval_millis}}</prop>
+
+                <!-- mirror service parameters -->
+                <prop key="cluster-config.mirror-service.url">jini://*/*/{{mirror_name}}</prop>
+                <prop key="cluster-config.mirror-service.bulk-size">{{mirror_bulk_size}}</prop>
+                <prop key="cluster-config.mirror-service.interval-millis">{{mirror_interval_millis}}</prop>
+                <prop key="cluster-config.mirror-service.interval-opers">{{mirror_interval_opers}}</prop>
+                <prop key="cluster-config.mirror-service.on-redo-log-capacity-exceeded">{{on_redo_log_capacity_exceeded}}</prop>
+                <prop key="cluster-config.mirror-service.redo-log-capacity">{{redo_log_capacity}}</prop>
+            </props>
+        </os-core:properties>
+    </os-core:space>
+ 
+</beans>

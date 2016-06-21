@@ -51,13 +51,13 @@ assemble_pu() {
         -e 's|{{repl_chunk_size}}|'"${repl_chunk_size}"'|g' \
         -e 's|{{repl_interval_millis}}|'"${repl_interval_millis}"'|g' \
         -e 's|{{multiple_opers_chunk_size}}|'"${multiple_opers_chunk_size}"'|g' \
-        ${pu_source_path} > ${1}/pu.xml
+        ${pu_source_path} > $1/pu.xml
 }
 assemble_sla() {
     sed -e 's|{{cluster_schema}}|'"${cluster_schema}"'|g' \
         -e 's|{{number_of_instances}}|'"${number_of_instances}"'|g' \
         -e 's|{{max_instances_per_vm}}|'"${max_instances_per_vm}"'|g' \
-        ${sla_source_path} > ${1}/sla.xml
+        ${sla_source_path} > $1/sla.xml
 }
 create_basic_project() {
    ./xap-topology-customize.sh -t $template -a $artifact_id
@@ -68,12 +68,12 @@ create_basic_project() {
 boot_grid() {
    ./boot-grid.sh $artifact_id --count $vm_count -s "sync-replicated-grid"
 }
-usage(){ 
-   echo "Usage: $0 number-of-instances vm-count"; exit 1
+show_usage() {
+   echo "Usage: $0 <number-of-instances> <vm-count>"
 }
-main(){
+main() {
    if [[ "$#" -ne 2 ]] ; then
-      usage
+      show_usage; exit 1
    else
       number_of_instances=$1
       vm_count=$2

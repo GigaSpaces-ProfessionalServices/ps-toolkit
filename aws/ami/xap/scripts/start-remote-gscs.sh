@@ -1,31 +1,34 @@
 #!/bin/bash
 set -o errexit
 
-usage() {
-    echo "Usage $0 [HOST1] [GSCs count] [HOST2] [GSCs count]..." >&2;
+show_usage() {
+    echo "Usage $0 <HOST1> <count-of-GSCs> <HOST2> <count-of-GSCs>..."
 }
 
 if [[ "$#" -eq 0 ]] || [[ `expr $# % 2` -ne 0 ]]; then
-    usage; exit 1
+    echo "Wrong number of parameters provided to $0" >&2;
+    show_usage; exit 1
 else
     readonly input_arr=( "$@" )
     host_addr=
-    count=     
+    count=
 
     for i in "${!input_arr[@]}"
     do
-	if [[ `expr $i % 2` -eq 0 ]]; then
-	   host_addr=${input_arr[$i]}
+       if [[ `expr $i % 2` -eq 0 ]]; then
+           host_addr=${input_arr[$i]}
            if [[ -z "$host_addr" ]]; then
-              usage; exit 1
+              echo "Cannot parse target host address parameter" >&2;
+              show_usage; exit 1
            fi
            continue;
         else
            count=${input_arr[$i]}
            if [[ -z "$count" ]]; then
-	      usage; exit 1  
-           fi    
+              echo "Cannot parse the number of GSCs to be started" >&2;
+              show_usage; exit 1
+           fi
            ssh ${host_addr} /bin/bash -l ${JSHOMEDIR}/scripts/start-gscs.sh ${count}
-	fi
-    done  
+       fi
+    done
 fi

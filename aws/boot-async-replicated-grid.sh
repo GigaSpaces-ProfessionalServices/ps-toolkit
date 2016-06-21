@@ -53,7 +53,7 @@ assemble_sla() {
 }
 create_basic_project() {
    ./xap-topology-customize.sh -t $template -a $artifact_id
-   
+
    assemble_pu $conf_dest_dir
    assemble_sla $conf_dest_dir
 }
@@ -73,4 +73,5 @@ main() {
    create_basic_project
    boot_grid
 }
+
 main "$@"

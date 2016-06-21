@@ -10,6 +10,7 @@ if [[ "$#" -eq 0 ]] || [[ `expr $# % 2` -ne 0 ]]; then
     show_usage; exit 1
 else
     readonly input_arr=( "$@" )
+
     host_addr=
     count=
 

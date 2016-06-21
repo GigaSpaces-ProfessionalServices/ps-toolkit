@@ -131,4 +131,5 @@ main() {
    start_hsqldb_server
    boot_grid
 }
+
 main "$@"

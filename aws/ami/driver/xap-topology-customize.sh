@@ -103,4 +103,5 @@ function main() {
     copy_config "pu.xml" ${pu_xml_path}
     copy_config "sla.xml" ${sla_xml_path}
 }
+
 main "$@"

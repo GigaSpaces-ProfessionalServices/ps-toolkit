@@ -7,8 +7,10 @@ readonly ami_id="ami-12d5117f"
 readonly instance_count=1
 readonly instance_type="t2.micro"
 readonly key_name="fe-shared"
+
 # 'default' security group
 readonly security_group_id="sg-78022a1c"
+
 # private subnet
 readonly subnet_id="subnet-ef88edb6"
 readonly root_volume_size=8

@@ -18,6 +18,5 @@ while ps -p $pid > /dev/null; do
     let "TIMEOUT--"
     sleep 1
 done
+
 echo "GS Agent stopped"
-
-

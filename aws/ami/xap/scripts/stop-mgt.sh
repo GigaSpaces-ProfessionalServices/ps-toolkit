@@ -1,4 +1,5 @@
 #!/bin/bash
+set -o errexit
 
 readonly pid=$(ps aux | grep -v grep | grep process.marker=management-agent-marker | awk '{print $2}')
 if [[ -z $pid ]] ; then

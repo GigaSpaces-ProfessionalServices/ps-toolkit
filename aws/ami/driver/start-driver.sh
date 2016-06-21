@@ -14,7 +14,11 @@ readonly subnet_id="subnet-ef88edb6"
 readonly root_volume_size=8
 readonly root_device="/dev/sda1"
 
-readonly instance_id=$(aws ec2 run-instances --image-id $ami_id --count $instance_count --instance-type $instance_type --key-name $key_name --security-group-ids $security_group_id --subnet-id $subnet_id --block-device-mappings "[{\"DeviceName\":\"${root_device}\",\"Ebs\":{\"VolumeSize\":${root_volume_size},\"DeleteOnTermination\":true}}]" --query 'Instances[0].InstanceId' --output text)
+readonly instance_id=$(aws ec2 run-instances --image-id $ami_id --count $instance_count \
+  --instance-type $instance_type --key-name $key_name --security-group-ids $security_group_id \
+  --subnet-id $subnet_id --block-device-mappings \
+  "[{\"DeviceName\":\"${root_device}\",\"Ebs\":{\"VolumeSize\":${root_volume_size},\"DeleteOnTermination\":true}}]" \
+  --query 'Instances[0].InstanceId' --output text)
 
 echo "Driver VM has been started, instance id: ${instance_id}"
 

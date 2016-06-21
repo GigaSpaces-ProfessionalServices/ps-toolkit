@@ -73,4 +73,5 @@ main() {
    create_basic_project
    boot_grid
 }
+
 main "$@"

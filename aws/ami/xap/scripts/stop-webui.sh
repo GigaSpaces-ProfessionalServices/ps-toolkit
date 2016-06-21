@@ -8,7 +8,7 @@ if [[ -z $pid ]]; then
 fi
 echo "Stopping web management console (pid: $pid)..."
 kill -SIGTERM $pid
-    
+
 TIMEOUT=60
 while ps -p $pid > /dev/null; do
     if [[ $TIMEOUT -le 0 ]]; then
@@ -18,4 +18,5 @@ while ps -p $pid > /dev/null; do
     let "TIMEOUT--"
     sleep 1
 done
+
 echo "Web management console stopped"

@@ -35,7 +35,7 @@ vm_count=
 
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
- 
+
     sed -e 's|{{imported_pu_xml}}|'"META-INF/spring/pu_old.xml"'|g' \
         -e 's|{{space_url}}|'"${space_url}"'|g' \
         -e 's|{{repl_policy_type}}|'"${repl_policy_type}"'|g' \
@@ -61,7 +61,7 @@ assemble_sla() {
 }
 create_basic_project() {
    ./xap-topology-customize.sh -t $template -a $artifact_id
-   
+
    assemble_pu $conf_dest_dir
    assemble_sla $conf_dest_dir
 }

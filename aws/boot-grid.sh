@@ -19,33 +19,34 @@ lookup_groups=
 lookup_locators=
 
 create_vms() {
-   local create_stack_cmd="aws cloudformation create-stack --stack-name ${stack_name} --template-body ${template_uri} --query 'StackId' --output text"
-   
+   local create_stack_cmd="aws cloudformation create-stack --stack-name ${stack_name} \
+      --template-body ${template_uri} --query 'StackId' --output text"
+
    local parameters=
    if [[ $lookup_groups ]]; then
       parameters+=" ParameterKey=LookupGroups,ParameterValue=$lookup_groups"
    fi
-   
+
    if [[ $mgt_node_type ]]; then
       parameters+=" ParameterKey=MgtNodeInstanceType,ParameterValue=$mgt_node_type"
    fi
-   
+
    if [[ $mgt_node_size ]]; then
       parameters+=" ParameterKey=MgtNodeSize,ParameterValue=$mgt_node_size"
    fi
-   
+
    if [[ $compute_node_type ]]; then
       parameters+=" ParameterKey=ComputeNodeInstanceType,ParameterValue=$compute_node_type"
    fi
-   
+
    if [[ $compute_node_size ]]; then
       parameters+=" ParameterKey=ComputeNodeSize,ParameterValue=$compute_node_size"
    fi
-   
+
    if [[ $compute_node_count ]]; then
       parameters+=" ParameterKey=ComputeNodesCount,ParameterValue=$compute_node_count"
    fi
-   
+
    if [[ $parameters ]]; then
       create_stack_cmd+=" --parameters$parameters"
    fi
@@ -58,19 +59,20 @@ create_vms() {
 
    aws cloudformation wait stack-create-complete --stack-name ${stack_name}
 
-   lookup_locators=$(aws cloudformation describe-stacks --stack-name ${stack_name} --query 'Stacks[*].Outputs[?OutputKey==`MgtPrivateIP`].OutputValue[]' --output text)
+   lookup_locators=$(aws cloudformation describe-stacks --stack-name ${stack_name} \
+      --query 'Stacks[*].Outputs[?OutputKey==`MgtPrivateIP`].OutputValue[]' --output text)
 }
 deploy() {
    cd ${project_dir}
    mvn clean package
-   
+
    local deploy_cmd="mvn os:deploy -Dlocators=$lookup_locators"
    if [[ $lookup_groups ]]; then
       deploy_cmd+=" -Dgroups=$lookup_groups"
    fi
    $deploy_cmd
 }
-usage() { 
+show_usage() {
    echo "Usage: $0 path-to-project-dir"
    echo "              -s  | --stack_name        | stack name"
    echo "              -t  | --template_uri      | template uri"
@@ -81,15 +83,14 @@ usage() {
    echo "              --count                   | count of compute nodes"
    echo "              -g  | --groups            | lookup groups"
    echo "              --help                    | usage"
-   exit 1
 }
 parse_input() {
    if [[ "$#" -eq 0 ]] ; then
-      usage
+      show_usage; exit 1
    fi
    project_dir="$1"
    shift
-  
+
    if [[ ! -e "$project_dir" ]]; then
       echo "${project_dir} does not exist"; exit 1 
    fi
@@ -124,22 +125,21 @@ parse_input() {
       "-cs" | "--compute_node_size")
           shift
           compute_node_size="$1"
-          ;;   
+          ;;
       "--count")
           shift
           compute_node_count="$1"
-          ;;   
+          ;;
       "--help")
-          usage
+          show_usage; exit 0
           ;;
      esac 
      shift
    done
 }
 main() {
-  parse_input "$@"
-  create_vms
-  deploy
+   parse_input "$@"
+   create_vms
+   deploy
 }
 main "$@"
-

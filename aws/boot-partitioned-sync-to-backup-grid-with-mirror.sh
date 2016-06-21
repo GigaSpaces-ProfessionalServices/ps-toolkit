@@ -79,14 +79,14 @@ assemble_pu() {
         -e 's|{{mirror_interval_opers}}|'"${mirror_interval_opers}"'|g' \
         -e 's|{{on_redo_log_capacity_exceeded}}|'"${on_redo_log_capacity_exceeded}"'|g' \
         -e 's|{{redo_log_capacity}}|'"${redo_log_capacity}"'|g' \
-        ${pu_template_path} > ${1}/pu.xml
+        ${pu_template_path} > $1/pu.xml
 }
 assemble_sla() {
     sed -e 's|{{cluster_schema}}|'"${cluster_schema}"'|g' \
         -e 's|{{number_of_instances}}|'"${number_of_instances}"'|g' \
         -e 's|{{number_of_backups}}|'"${number_of_backups}"'|g' \
         -e 's|{{max_instances_per_vm}}|'"${max_instances_per_vm}"'|g' \
-        ${sla_template_path} > ${1}/sla.xml
+        ${sla_template_path} > $1/sla.xml
 }
 assemble_mirror() {
     sed -e 's|{{db_path}}|'"${db_path}"'|g' \
@@ -117,12 +117,12 @@ start_hsqldb_server() {
 boot_grid() {
    ./boot-grid.sh $artifact_id --count $vm_count -s "partitioned-sync-replicated-grid-with-mirror"
 }
-usage(){ 
-   echo "Usage: $0 number-of-partitions vm-count"; exit 1
+show_usage() {
+   echo "Usage: $0 <number-of-partitions> <vm-count>"
 }
-main(){
+main() {
    if [[ "$#" -ne 2 ]] ; then
-      usage
+      show_usage; exit 1
    else
       number_of_instances=$1
       vm_count=$2
@@ -131,4 +131,5 @@ main(){
    start_hsqldb_server
    boot_grid
 }
+
 main "$@"

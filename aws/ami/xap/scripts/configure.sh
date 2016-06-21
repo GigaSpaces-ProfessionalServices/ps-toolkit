@@ -42,14 +42,13 @@ main() {
    fi
 }
 
-usage() {
+show_usage() {
    echo "Usage $0 [optional parameters]"
    echo "              --groups       | lookup groups"
    echo "              --locators     | lookup locators"
    echo "              --license      | path to gslicense.xml"
    echo "              --nic-address  | ip address"
    echo "              --help         | usage"
-   exit 1
 }
 
 parse_input() {
@@ -76,8 +75,8 @@ parse_input() {
           nic_addr="$1"
           ;;        
       "--help")
-	  shift
-          usage
+          shift
+          show_usage; exit 1
           ;;
      esac 
      shift

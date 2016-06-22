@@ -28,65 +28,59 @@ function show_usage() {
 }
 
 function backup_existing_grafana_config() {
-    destination_address=$1
-    echo ssh -t -i ${key_path} ${remote_user}@${destination_address} sudo cp -f ${config_dir}grafana.ini ${config_dir}metrics.$( date "+%s" ).xml
+    remote_host="$1"
+    echo ssh -t -i ${key_path} ${remote_user}@${remote_host} sudo cp -f ${config_dir}grafana.ini ${config_dir}grafana.$( date "+%s" ).ini
+    ssh -t -i ${key_path} ${remote_user}@${remote_host} sudo cp -f ${config_dir}grafana.ini ${config_dir}grafana.$( date "+%s" ).ini
 }
 
 function copy_file_to_destination() {
-    destination_address=$1
-    echo scp -i ${key_path} ${local_grafana_ini_path} ${remote_user}@${destination_address}:/tmp/grafana.ini
-    echo ssh -i -t ${key_path} ${remote_user}@${destination_address} sudo cp /tmp/grafana.ini ${config_dir}grafana.ini
-}
-
-address_list=''
-addresses=()
-
-function update_addresses() {
-    tail=''
-    cnt=0
-    if [[ $( has_comma ) == 0 ]];
-    then
-        addresses[0]=${address_list}
-    else
-        while [[ $( has_comma ) == 1 ]];
-        do
-            len=${#address_list}
-            tail=$(echo $address_list | sed 's#^\([^,]*\),\([^a-zA-Z0-9]*\)#\2#')
-            head_len=$((${len}-${#tail}-1))
-            head=${address_list:0:${head_len}}
-            addresses[$cnt]=${head}
-            address_list=${tail}
-            cnt=$((${cnt}+1))
-        done
-        addresses[$cnt]=${tail}
-    fi
+    remote_host="$1"
+    echo scp -i ${key_path} ${local_grafana_ini_path} ${remote_user}@${remote_host}:/tmp/grafana.ini
+    scp -i ${key_path} ${local_grafana_ini_path} ${remote_user}@${remote_host}:/tmp/grafana.ini
+    echo ssh -t -i ${key_path} ${remote_user}@${remote_host} sudo cp /tmp/grafana.ini ${config_dir}grafana.ini
+    ssh -t -i ${key_path} ${remote_user}@${remote_host} sudo cp /tmp/grafana.ini ${config_dir}grafana.ini
 }
 
 function parse_input() {
     if [[ $# == 0 ]];
     then
         show_usage;
+        exit 3
     fi
-    if [[ $# > 2 ]];
+    if [[ $# > 3 ]];
     then
         show_usage;
+        exit 3
     fi
     if [[ $# == 1 ]];
     then
         if [[ $1 == "--help" ]];
         then
             show_usage;
-        else
-            address_list=$1
+            exit 3
+	else
+	    local_grafana_ini_path=$1
+	    destination_address=localhost
+            test ! -f ${local_grafana_ini_path} &&  ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
         fi
     fi
     if [[ $# == 2 ]];
     then
-        destination_address=$2
-        local_grafana_ini_path=$1
-        test ! -f ${local_grafana_ini_path} || echo "Bad file path: ${local_grafana_ini_path} ."; show_usage;
+	if [[ "$1" == "-g" ]];
+	then
+            destination_address=$2
+            test ! -f ${local_grafana_ini_path} &&  ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
+        fi
     fi
-    update_addresses;
+    if [[ $# == 3 ]];
+    then
+	if [[ "$2" == "-g" ]];
+	then
+	    destination_address=$3
+	    local_grafana_ini_path=$1
+            test ! -f ${local_grafana_ini_path} &&  ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
+	fi
+    fi
 }
 
 function main() {

@@ -29,11 +29,13 @@ function show_usage() {
 function backup_existing_metrics_config() {
     destination_address=$1
     echo ssh -i ${key_path} ${remote_user}@${destination_address} cp -f ${config_dir}metrics.xml ${config_dir}metrics.$( date "+%s" ).xml
+    ssh -i ${key_path} ${remote_user}@${destination_address} cp -f ${config_dir}metrics.xml ${config_dir}metrics.$( date "+%s" ).xml
 }
 
 function copy_file_to_destination() {
     destination_address=$1
     echo scp -i ${key_path} ${local_metrics_xml_path} ${remote_user}@${destination_address}:${config_dir}metrics.xml
+    scp -i ${key_path} ${local_metrics_xml_path} ${remote_user}@${destination_address}:${config_dir}metrics.xml
 }
 
 address_list=''

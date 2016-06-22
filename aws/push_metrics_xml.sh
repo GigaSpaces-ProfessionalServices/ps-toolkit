@@ -14,7 +14,7 @@ destination_address=
 
 function show_usage() {
     echo ""
-    echo "   Usage: $0 [metrics.xml file path] destination_hostname1,destination_ip2,destination_ip3,destination_hostname2"
+    echo "   Usage: $0 [metrics.xml file path] <comma-delimited list of destination ips & hostnames>"
     echo ""
     echo "   A list of destination hosts is required, even if it's single destination."
     echo "   File path will default to $default_metrics_xml_path if another path is not provided."

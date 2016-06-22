@@ -1,7 +1,6 @@
 #!/bin/bash
 set -o nounset
 set -o errexit
-#set -x
 
 readonly influx_username_default='';
 readonly influx_password_default='';
@@ -25,8 +24,8 @@ function update_security() {
       else
         sed /SSS/d ${metrics_config_file} > ${metrics_temp_file} ;
       fi
-      sed -i "" s/"{{influx_username}}"/${influx_username}/ ${metrics_temp_file} ;
-      sed -i "" s/"{{influx_password}}"/${influx_password}/ ${metrics_temp_file} ;
+      sed -i s/"{{influx_username}}"/${influx_username}/ ${metrics_temp_file} ;
+      sed -i s/"{{influx_password}}"/${influx_password}/ ${metrics_temp_file} ;
   fi
 }
 
@@ -35,13 +34,13 @@ function update_metrics() {
     then
         if [[ -f ${metrics_temp_file} ]]
         then
-            sed -i "" /MMM/d ${metrics_temp_file}
+            sed -i /MMM/d ${metrics_temp_file}
         else
             sed /MMM/d ${metrics_config_file} > ${metrics_temp_file}
         fi
         if [[ ${influx_host} != '' ]];
         then
-            sed -i "" s/"{{influx_host}}"/${influx_host}/ ${metrics_temp_file}
+            sed -i s/"{{influx_host}}"/${influx_host}/ ${metrics_temp_file}
         fi
     fi
 }
@@ -51,16 +50,16 @@ function update_grafana() {
     then
         if [[ -f ${metrics_temp_file} ]]
         then
-            sed -i "" /GGG/d ${metrics_temp_file}
+            sed -i /GGG/d ${metrics_temp_file}
         else
             sed /GG/d ${metrics_config_file} > ${metrics_temp_file}
         fi
-        sed -i "" s/"{{grafana_host}}"/${grafana_host}/ ${metrics_temp_file}
+        sed -i s/"{{grafana_host}}"/${grafana_host}/ ${metrics_temp_file}
         # this next one is a little unexpected, but covers for the case where the user
         # uses -g <grafana_host> without giving -i <influx_host>
         if [[ ${influx_host} == '' ]];
         then
-            sed -i "" s/"{{influx_host}}"/${grafana_host}/ ${metrics_temp_file}
+            sed -i s/"{{influx_host}}"/${grafana_host}/ ${metrics_temp_file}
         fi
     fi
 }

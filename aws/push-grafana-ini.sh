@@ -59,8 +59,7 @@ function parse_input() {
             show_usage;
             exit 3
 	else
-	    local_grafana_ini_path=$1
-	    destination_address=localhost
+	    destination_address=$1
             test ! -f ${local_grafana_ini_path} &&  ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
         fi
     fi

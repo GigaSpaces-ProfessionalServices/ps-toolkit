@@ -18,7 +18,7 @@ function update_grafana() {
         echo "XXX WARNING: ${grafana_temp_file} already exists. XXX"
         echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
         echo ""
-        sed -i "" s/"{{domain_name}}"/${grafana_hostname}/ ${grafana_temp_file}
+        sed -i s/"{{domain_name}}"/${grafana_hostname}/ ${grafana_temp_file}
     else
         sed s/"{{domain_name}}"/${grafana_hostname}/ ${grafana_config_file} > ${grafana_temp_file}
     fi

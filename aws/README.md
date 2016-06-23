@@ -73,10 +73,10 @@ There **should be** a mention that a Grafana datasource is already defined.
 <br/>
 <br/>
 1. Deploy any XAP application
-+ `some-directory% mvn os:create -Dtemplate=basic`
-+ WEB-UI -> Processing Units -> Deploy Button -> file chooser to `some-directory/target/my-app-processor.jar`<br/>
-++ Use dialogs -> ... -> Deploy<br/>
-++ Click on Monitoring TAB<br/>
+++ (optional - build your own app from maven): `some-directory% mvn os:create -Dtemplate=basic`
+++ (optional - deploy the maven app to XAP): WEB-UI -> Processing Units -> Deploy Button -> file chooser to `some-directory/target/my-app-processor.jar`<br/>
+1. Use dialogs -> ... -> Deploy<br/>
+1. Click on Monitoring TAB<br/>
 <tr/>
 **Congrats!** It took only required that much work to get monitoring working in WEB UI.
 <br/>

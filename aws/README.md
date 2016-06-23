@@ -1,4 +1,4 @@
-### Driver scripts ###
+### Driver scripts
 
 This directory contains scripts that are found on Driver AMIs in the FE/PS Sandbox account on EC2. 
 
@@ -20,7 +20,7 @@ On the other hand, if you were to create the InfluxDB+Grafana nodes first, you w
 
 There are nuanced (i.e. complicated) ways of working around this, but it's easy enough to just restart the XAP grid after pushing the metrics.xml files. 
 
-##### The recipe
+##### Software install recipe
 
 1. `rm /tmp/grafana.ini /tmp/metrics.xml`
 <br/>
@@ -49,5 +49,37 @@ There are nuanced (i.e. complicated) ways of working around this, but it's easy 
 1. `./push-grafana-ini.sh --help`
 <br/>
 <br/>Follow instructions.
+<br/>
+<br/>
+
+##### More (manual) configuration recipe
+
+1. Navigate to http://<grafana-host>:3000/ then click on Datasources -> Add Datasource
+<br/>
+<br/>
+<br/>
+![DATASRC](./resources/docs/datasource.png)
+<br/>
+<br/>
+<br/>
+1. Start XAP
+1. Start WEB UI
+<br/>
+<br/>
+Browse to http://<mgt-ui-host>:8099/ and login (with empty username and empty password).
+Check the logs on <mgt-ui-host> (usually, they're at /opt/gigaspaces/current/logs/start-webui.log). 
+There **should be** a mention that a Graphana datasource is already defined.
+<br/>
+<br/>
+1. Deploy any XAP application
++ `some-directory% mvn os:create -Dtemplate=basic`
++ WEB-UI -> Processing Units -> Deploy Button -> file chooser to `some-directory/target/my-app-processor.jar`
+++ Use dialogs -> ... -> Deploy
+++ Click on Monitoring TAB 
+Congrats! It took only that much work to get montitoring working:
+<br/>
+<br/>
+<br/>
+![WEB-UI monitoring tab](./resources/docs/monitoring.png)
 <br/>
 <br/>

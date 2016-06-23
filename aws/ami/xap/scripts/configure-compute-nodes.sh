@@ -6,7 +6,7 @@ if [ "$#" -eq 0 ]; then
 else
     readonly ip_addr=( "$@" ) 
     for host_dest in "${ip_addr[@]}"
-    do      
+    do
         ssh ${host_dest} ${JSHOMEDIR}/scripts/configure.sh --groups ${LOOKUPGROUPS}
     done
 fi

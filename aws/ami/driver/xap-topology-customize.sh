@@ -1,11 +1,6 @@
 #!/bin/bash
 set -o errexit
 
-pu_xml_path=
-sla_xml_path=
-group_id=
-artifact_id=
-
 function show_usage() {
     echo ""
     echo "Usage: $0 [--help]"
@@ -16,6 +11,7 @@ function show_usage() {
     echo "    -t|--template <xap-template>"
     echo ""
 }
+
 function parse_input() {
     if [[ $1 == "--help" ]]; then
         show_usage; exit 0
@@ -58,7 +54,7 @@ function parse_input() {
         exit 1
     fi
 
-    if [[ $pu_xml_path && ! -f $sla_xml_path ]]; then
+    if [[ $sla_xml_path && ! -f $sla_xml_path ]]; then
         echo "Cannot locate SLA configuration: ${sla_xml_path}" >&2
         exit 1
     fi
@@ -68,11 +64,13 @@ function parse_input() {
         show_usage; exit 1
     fi
 }
+
 function copy_config() {
    if [[ $2 && -f $2 ]]; then
      find . -name "$1" | xargs -L1 cp -rf $2
    fi
 }
+
 function create_project() {
     echo ""
     echo "=> Using the following configuration"
@@ -95,6 +93,7 @@ function create_project() {
 
     $cmd
 }
+
 function main() {
     parse_input "$@"
 

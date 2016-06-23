@@ -1,10 +1,10 @@
 #!/bin/bash
 set -o errexit
 
-readonly jshomedir="/opt/gigaspaces/gigaspaces-xap-premium-10.2.1-ga"
 readonly java_home="/opt/java/jdk1.7.0_79"
 readonly ip_addr=$(/sbin/ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://')
 
+jshomedir="/opt/gigaspaces/gigaspaces-xap-premium-10.2.1-ga"
 nic_addr=$ip_addr
 lookuplocators=$ip_addr:4174
 gs_license=/tmp/gslicense.xml
@@ -43,6 +43,7 @@ main() {
 
 show_usage() {
     echo "Usage $0 [optional parameters]"
+    echo "              --xap-home     | xap home dir"
     echo "              --groups       | lookup groups"
     echo "              --locators     | lookup locators"
     echo "              --license      | path to gslicense.xml"
@@ -58,6 +59,10 @@ parse_input() {
     while [[ -n $1 ]]
     do
         case $1 in
+        "--xap-home")
+            shift
+            jshomedir="$1"
+            ;;
         "--groups")
             shift
             lookupgroups="$1"

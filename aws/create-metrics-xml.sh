@@ -67,7 +67,7 @@ function update_grafana() {
 function parse_input() {
     if [[ $# > 0 && -n "$1" ]];
     then
-        test "$1" == "--help" && ( show_usage ; exit 3 )
+        test "$1" == "--help" && ( show_usage ; exit 0 )
     fi
     while [[ $# > 0 ]]; do
         key="$1";

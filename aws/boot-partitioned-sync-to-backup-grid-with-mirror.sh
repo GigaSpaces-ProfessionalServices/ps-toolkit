@@ -48,9 +48,6 @@ readonly db_user="SA"
 readonly db_password=""
 readonly mapping_resources="<value>com.mycompany.app.common.Data</value>"
 
-number_of_instances=
-vm_count=
-
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
  

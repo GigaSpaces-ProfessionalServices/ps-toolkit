@@ -7,7 +7,6 @@ readonly ip_addr=$(/sbin/ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'
 
 nic_addr=$ip_addr
 lookuplocators=$ip_addr:4174
-lookupgroups=
 gs_license=/tmp/gslicense.xml
 
 readonly bash_profile=~/.profile

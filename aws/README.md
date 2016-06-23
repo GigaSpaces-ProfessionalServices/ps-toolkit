@@ -68,7 +68,7 @@ There are nuanced (i.e. complicated) ways of working around this, but it's easy 
 <br/>
 Browse to http://\<mgt-ui-host\>:8099/ and login (with empty username and empty password).
 Check the logs on \<mgt-ui-host\> (usually, they're at /opt/gigaspaces/current/logs/start-webui.log). 
-There **should be** a mention that a Graphana datasource is already defined.
+There **should be** a mention that a Grafana datasource is already defined.
 <br/>
 <br/>
 1. Deploy any XAP application

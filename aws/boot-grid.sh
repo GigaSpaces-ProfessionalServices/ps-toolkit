@@ -65,73 +65,64 @@ show_usage() {
     echo "Usage: $0 [--help] [OPTIONS]... <path-to-project-dir>"
     echo ""
     echo "Mandatory parameters:"
-    echo "  -s,  --stack-name          EC2 stack name"
-    echo "  -t,  --template-uri        Template URI"
+    echo "  -s,   --stack-name          EC2 stack name"
+    echo "  -t,   --template-uri        Template URI"
     echo ""
     echo "Optional parameters:"
-    echo "  -c,  --count               The number of compute nodes"
-    echo "  -g,  --groups              Lookup groups"
-    echo "  -mt, --mgt-node-type       EC2 instance type of VM with global GSA"
-    echo "  -ms, --mgt-node-size       Size of EBS volume in GiB"
-    echo "  -ct, --compute-node-type   EC2 instance type of VM with GSC"
-    echo "  -cs, --compute-node-size   Size of EBS volume in GiB"
+    echo "  -c,   --count               The number of compute nodes"
+    echo "  -g,   --groups              Lookup groups"
+    echo "  -mnt, --mgt-node-type       EC2 instance type of VM with global GSA"
+    echo "  -mns, --mgt-node-size       Size of EBS volume in GiB"
+    echo "  -cnt, --compute-node-type   EC2 instance type of VM with GSC"
+    echo "  -cns, --compute-node-size   Size of EBS volume in GiB"
     echo ""
 }
 
 parse_input() {
-    if [[ "$#" -eq 0 ]] ; then
-        show_usage; exit 1
+    if [[ $# -eq 0 ]]; then
+        show_usage; exit 2
     fi
 
-    while [[ -n $1 ]]
-    do
+    if [[ $1 == '--help' ]]; then
+        show_usage; exit 0
+    fi
+
+    while [[ $# > 0 ]]; do
         case $1 in
-        "--help")
-            show_usage; exit 0
-            ;;
-        "-s" | "--stack-name")
-            shift
-            stack_name="$1"
-            ;;
-        "-t" | "--template-uri")
-            shift
-            template_uri="$1"
-            ;;
-        "-c" | "--count")
-            shift
-            compute_node_count="$1"
-            ;;
-        "-g" | "--groups")
-            shift
-            lookup_groups="$1"
-            ;;
-        "-mt" | "--mgt-node-type")
-            shift
-            mgt_node_type="$1"
-            ;;
-        "-ms" | "--mgt-node-size")
-            shift
-            mgt_node_size="$1"
-            ;;
-        "-ct" | "--compute-node-type")
-            shift
-            compute_node_type="$1"
-            ;;
-        "-cs" | "--compute-node-size")
-            shift
-            compute_node_size="$1"
-            ;;
+        '-s' | '--stack-name')
+            stack_name="$2"
+            shift 2 ;;
+        '-t' | '--template-uri')
+            template_uri="$2"
+            shift 2 ;;
+        '-c' | '--count')
+            compute_node_count="$2"
+            shift 2 ;;
+        '-g' | '--groups')
+            lookup_groups="$2"
+            shift 2 ;;
+        '-mnt' | '--mgt-node-type')
+            mgt_node_type="$2"
+            shift 2 ;;
+        '-mns' | '--mgt-node-size')
+            mgt_node_size="$2"
+            shift 2 ;;
+        '-cnt' | '--compute-node-type')
+            compute_node_type="$2"
+            shift 2 ;;
+        '-cns' | '--compute-node-size')
+            compute_node_size="$2"
+            shift 2 ;;
         *)
             if [[ "$1" == "-"* ]]; then
                 echo "Unknown option encountered: $1" >&2
-                show_usage; exit 1
+                show_usage; exit 2
             fi
 
-            # required parameter, shift goes below
+            # required parameter
             project_dir="$1"
-            ;;
+            shift ;;
         esac
-        shift
     done
 
     if [[ ! -d "$project_dir" ]]; then

@@ -56,7 +56,7 @@ function parse_input() {
         if [[ $1 == "--help" ]];
         then
             show_usage;
-            exit 3
+            exit 0
 	    else
 	        destination_address=$1
             test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )

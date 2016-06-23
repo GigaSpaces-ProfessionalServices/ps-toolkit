@@ -32,7 +32,7 @@ function parse_input() {
           --help)
             error=1
             show_usage;
-            exit 3
+            exit 0
             ;;
           -g)
             use_grafana=1

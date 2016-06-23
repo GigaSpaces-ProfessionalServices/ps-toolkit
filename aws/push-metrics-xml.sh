@@ -22,7 +22,7 @@ function show_usage() {
     echo "     1. Receive a copy of metrics.xml at ${config_dir}metrics.xml"
     echo "     2. If there was already a metrics.xml file there, a backup will be created."
     echo ""
-    exit 3
+    exit 0
 }
 
 function backup_existing_metrics_config() {

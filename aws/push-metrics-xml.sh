@@ -8,7 +8,6 @@ readonly default_metrics_xml_path='/tmp/metrics.xml'
 local_metrics_xml_path=${default_metrics_xml_path}
 destination_xap_installation=/opt/gigaspaces/current/
 config_dir=${destination_xap_installation}config/metrics/
-key_path=~/.ssh/fe-shared.pem
 remote_user=ubuntu
 destination_address=
 
@@ -28,14 +27,14 @@ function show_usage() {
 
 function backup_existing_metrics_config() {
     destination_address=$1
-    echo ssh -i ${key_path} ${remote_user}@${destination_address} cp -f ${config_dir}metrics.xml ${config_dir}metrics.$( date "+%s" ).xml
-    ssh -i ${key_path} ${remote_user}@${destination_address} cp -f ${config_dir}metrics.xml ${config_dir}metrics.$( date "+%s" ).xml
+    echo ssh ${remote_user}@${destination_address} cp -f ${config_dir}metrics.xml ${config_dir}metrics.$( date "+%s" ).xml
+    ssh ${remote_user}@${destination_address} cp -f ${config_dir}metrics.xml ${config_dir}metrics.$( date "+%s" ).xml
 }
 
 function copy_file_to_destination() {
     destination_address=$1
-    echo scp -i ${key_path} ${local_metrics_xml_path} ${remote_user}@${destination_address}:${config_dir}metrics.xml
-    scp -i ${key_path} ${local_metrics_xml_path} ${remote_user}@${destination_address}:${config_dir}metrics.xml
+    echo scp ${local_metrics_xml_path} ${remote_user}@${destination_address}:${config_dir}metrics.xml
+    scp ${local_metrics_xml_path} ${remote_user}@${destination_address}:${config_dir}metrics.xml
 }
 
 address_list=''

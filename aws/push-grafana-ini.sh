@@ -5,7 +5,6 @@ set -o errexit
 
 readonly default_grafana_ini_path='/tmp/grafana.ini'
 readonly config_dir=/etc/grafana/
-readonly key_path=~/.ssh/fe-shared.pem
 readonly remote_user=ubuntu
 
 local_grafana_ini_path=${default_grafana_ini_path}
@@ -29,16 +28,16 @@ function show_usage() {
 
 function backup_existing_grafana_config() {
     remote_host="$1"
-    echo ssh -t -i ${key_path} ${remote_user}@${remote_host} sudo cp -f ${config_dir}grafana.ini ${config_dir}grafana.$( date "+%s" ).ini
-    ssh -t -i ${key_path} ${remote_user}@${remote_host} sudo cp -f ${config_dir}grafana.ini ${config_dir}grafana.$( date "+%s" ).ini
+    echo ssh -t ${remote_user}@${remote_host} sudo cp -f ${config_dir}grafana.ini ${config_dir}grafana.$( date "+%s" ).ini
+    ssh -t ${remote_user}@${remote_host} sudo cp -f ${config_dir}grafana.ini ${config_dir}grafana.$( date "+%s" ).ini
 }
 
 function copy_file_to_destination() {
     remote_host="$1"
-    echo scp -i ${key_path} ${local_grafana_ini_path} ${remote_user}@${remote_host}:/tmp/grafana.ini
-    scp -i ${key_path} ${local_grafana_ini_path} ${remote_user}@${remote_host}:/tmp/grafana.ini
-    echo ssh -t -i ${key_path} ${remote_user}@${remote_host} sudo cp /tmp/grafana.ini ${config_dir}grafana.ini
-    ssh -t -i ${key_path} ${remote_user}@${remote_host} sudo cp /tmp/grafana.ini ${config_dir}grafana.ini
+    echo scp ${local_grafana_ini_path} ${remote_user}@${remote_host}:/tmp/grafana.ini
+    scp ${local_grafana_ini_path} ${remote_user}@${remote_host}:/tmp/grafana.ini
+    echo ssh -t ${remote_user}@${remote_host} sudo cp /tmp/grafana.ini ${config_dir}grafana.ini
+    ssh -t ${remote_user}@${remote_host} sudo cp /tmp/grafana.ini ${config_dir}grafana.ini
 }
 
 function parse_input() {
@@ -60,7 +59,7 @@ function parse_input() {
             exit 3
 	else
 	    destination_address=$1
-            test ! -f ${local_grafana_ini_path} &&  ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
+            test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
         fi
     fi
     if [[ $# == 2 ]];
@@ -68,7 +67,7 @@ function parse_input() {
 	if [[ "$1" == "-g" ]];
 	then
             destination_address=$2
-            test ! -f ${local_grafana_ini_path} &&  ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
+            test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
         fi
     fi
     if [[ $# == 3 ]];
@@ -77,7 +76,7 @@ function parse_input() {
 	then
 	    destination_address=$3
 	    local_grafana_ini_path=$1
-            test ! -f ${local_grafana_ini_path} &&  ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
+            test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
 	fi
     fi
 }

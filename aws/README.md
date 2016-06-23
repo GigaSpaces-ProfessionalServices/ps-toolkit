@@ -51,10 +51,11 @@ There are nuanced (i.e. complicated) ways of working around this, but it's easy 
 <br/>Follow instructions.
 <br/>
 <br/>
+1. But we're not done!
 
-##### More (manual) configuration recipe
+##### More configuration (manual) recipe
 
-1. Navigate to http://<grafana-host>:3000/ then click on Datasources -> Add Datasource
+1. Navigate to http://\<grafana-host\>:3000/ then click on Datasources -> Add Datasource
 <br/>
 <br/>
 <br/>
@@ -66,17 +67,18 @@ There are nuanced (i.e. complicated) ways of working around this, but it's easy 
 1. Start WEB UI
 <br/>
 <br/>
-Browse to http://\<mgt-ui-host\>:8099/ and login (with empty username and empty password).
+Browse to http://\<mgt-ui-host\>:8099/ and login (with empty username and empty password, unless you have added them to InfluxDB).
 Check the logs on \<mgt-ui-host\> (usually, they're at /opt/gigaspaces/current/logs/start-webui.log). 
 There **should be** a mention that a Grafana datasource is already defined.
 <br/>
 <br/>
 1. Deploy any XAP application
 + `some-directory% mvn os:create -Dtemplate=basic`
-+ WEB-UI -> Processing Units -> Deploy Button -> file chooser to `some-directory/target/my-app-processor.jar`
-++ Use dialogs -> ... -> Deploy
-++ Click on Monitoring TAB 
-Congrats! It took only that much work to get montitoring working:
++ WEB-UI -> Processing Units -> Deploy Button -> file chooser to `some-directory/target/my-app-processor.jar`<br/>
+++ Use dialogs -> ... -> Deploy<br/>
+++ Click on Monitoring TAB<br/>
+<tr/>
+**Congrats!** It took only required that much work to get monitoring working in WEB UI.
 <br/>
 <br/>
 <br/>

@@ -30,9 +30,6 @@ readonly conf_dest_dir="$artifact_id/processor/src/main/resources/META-INF/sprin
 readonly cluster_schema="sync_replicated"
 readonly max_instances_per_vm=1
 
-number_of_instances=
-vm_count=
-
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
 
@@ -86,4 +83,5 @@ main() {
     create_basic_project
     boot_grid
 }
+
 main "$@"

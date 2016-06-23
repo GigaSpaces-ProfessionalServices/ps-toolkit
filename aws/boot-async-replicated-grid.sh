@@ -25,9 +25,6 @@ readonly space_url="/./space"
 readonly cluster_schema="async_replicated"
 readonly max_instances_per_vm=1
 
-number_of_instances=
-vm_count=
-
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
 

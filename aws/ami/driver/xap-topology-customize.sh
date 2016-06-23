@@ -1,11 +1,6 @@
 #!/bin/bash
 set -o errexit
 
-pu_xml_path=
-sla_xml_path=
-group_id=
-artifact_id=
-
 function show_usage() {
     echo ""
     echo "Usage: $0 [--help]"
@@ -59,7 +54,7 @@ function parse_input() {
         exit 1
     fi
 
-    if [[ $pu_xml_path && ! -f $sla_xml_path ]]; then
+    if [[ $sla_xml_path && ! -f $sla_xml_path ]]; then
         echo "Cannot locate SLA configuration: ${sla_xml_path}" >&2
         exit 1
     fi

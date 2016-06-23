@@ -11,12 +11,9 @@ if [[ "$#" -eq 0 ]] || [[ `expr $# % 2` -ne 0 ]]; then
 else
     readonly input_arr=( "$@" )
 
-    host_addr=
-    count=
-
     for i in "${!input_arr[@]}"
     do
-        if [[ `expr $i % 2` -eq 0 ]]; then
+        if [[ $(expr $i % 2) -eq 0 ]]; then
             host_addr=${input_arr[$i]}
             if [[ -z "$host_addr" ]]; then
                 echo "Cannot parse target host address parameter" >&2;

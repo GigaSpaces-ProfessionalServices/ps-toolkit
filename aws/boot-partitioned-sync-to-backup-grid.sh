@@ -30,9 +30,6 @@ readonly cluster_schema="partitioned-sync2backup"
 readonly number_of_backups=1
 readonly max_instances_per_vm=1
 
-number_of_instances=
-vm_count=
-
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
 

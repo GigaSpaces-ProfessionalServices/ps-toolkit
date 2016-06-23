@@ -1,23 +1,6 @@
 #!/bin/bash
 set -o errexit
 
-stack_name="xap-grid"
-template_uri="file://resources/boot-grid.template"
-
-# required parameters
-project_dir=
-
-# optional parameters
-mgt_node_type=
-mgt_node_size=
-
-compute_node_type=
-compute_node_size=
-compute_node_count=
-
-lookup_groups=
-lookup_locators=
-
 create_vms() {
     local create_stack_cmd="aws cloudformation create-stack --stack-name ${stack_name} \
         --template-body ${template_uri} --query 'StackId' --output text"
@@ -91,6 +74,8 @@ parse_input() {
     if [[ "$#" -eq 0 ]] ; then
         show_usage; exit 1
     fi
+
+    # required parameter
     project_dir="$1"
     shift
 
@@ -142,6 +127,9 @@ parse_input() {
 }
 
 main() {
+    stack_name="xap-grid"
+    template_uri="file://resources/boot-grid.template"
+
     parse_input "$@"
     create_vms
     deploy

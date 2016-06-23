@@ -58,16 +58,24 @@ deploy() {
 }
 
 show_usage() {
-    echo "Usage: $0 path-to-project-dir"
-    echo "              -s  | --stack_name        | stack name"
-    echo "              -t  | --template_uri      | template uri"
-    echo "              -mt | --mgt_node_type     | EC2 instance type of VM with global GSA"
-    echo "              -ms | --mgt_node_size     | size of EBS volume in GiB"
-    echo "              -ct | --compute_node_type | EC2 instance type of VM with GSC"
-    echo "              -cs | --compute_node_size | size of EBS volume in GiB"
-    echo "              --count                   | count of compute nodes"
-    echo "              -g  | --groups            | lookup groups"
-    echo "              --help                    | usage"
+    echo ""
+    echo "Creates a stack of EC2 virtual machines and starts XAP grid"
+    echo "on these boxes using XAP Maven plugin"
+    echo ""
+    echo "Usage: $0 [--help] [OPTIONS]... <path-to-project-dir>"
+    echo ""
+    echo "Mandatory parameters:"
+    echo "  -s,  --stack-name          EC2 stack name"
+    echo "  -t,  --template-uri        Template URI"
+    echo ""
+    echo "Optional parameters:"
+    echo "  -c,  --count               The number of compute nodes"
+    echo "  -g,  --groups              Lookup groups"
+    echo "  -mt, --mgt-node-type       EC2 instance type of VM with global GSA"
+    echo "  -ms, --mgt-node-size       Size of EBS volume in GiB"
+    echo "  -ct, --compute-node-type   EC2 instance type of VM with GSC"
+    echo "  -cs, --compute-node-size   Size of EBS volume in GiB"
+    echo ""
 }
 
 parse_input() {
@@ -75,55 +83,60 @@ parse_input() {
         show_usage; exit 1
     fi
 
-    # required parameter
-    project_dir="$1"
-    shift
-
-    if [[ ! -e "$project_dir" ]]; then
-        echo "${project_dir} does not exist"; exit 1 
-    fi
-
     while [[ -n $1 ]]
     do
         case $1 in
+        "--help")
+            show_usage; exit 0
+            ;;
+        "-s" | "--stack-name")
+            shift
+            stack_name="$1"
+            ;;
+        "-t" | "--template-uri")
+            shift
+            template_uri="$1"
+            ;;
+        "-c" | "--count")
+            shift
+            compute_node_count="$1"
+            ;;
         "-g" | "--groups")
             shift
             lookup_groups="$1"
             ;;
-        "-t" | "--template_uri")
-            shift
-            template_uri="$1"
-            ;;
-        "-s" | "--stack_name")
-            shift
-            stack_name="$1"
-            ;;
-        "-mt" | "--mgt_node_type")
+        "-mt" | "--mgt-node-type")
             shift
             mgt_node_type="$1"
             ;;
-        "-ms" | "--mgt_node_size")
+        "-ms" | "--mgt-node-size")
             shift
             mgt_node_size="$1"
             ;;
-        "-ct" | "--compute_node_type")
+        "-ct" | "--compute-node-type")
             shift
             compute_node_type="$1"
             ;;
-        "-cs" | "--compute_node_size")
+        "-cs" | "--compute-node-size")
             shift
             compute_node_size="$1"
             ;;
-        "--count")
-            shift
-            compute_node_count="$1"
-            ;;
-        "--help")
-            show_usage; exit 0
+        *)
+            if [[ "$1" == "-"* ]]; then
+                echo "Unknown option encountered: $1" >&2
+                show_usage; exit 1
+            fi
+
+            # required parameter, shift goes below
+            project_dir="$1"
             ;;
         esac
         shift
     done
+
+    if [[ ! -d "$project_dir" ]]; then
+        echo "The directory ${project_dir} does not exist"; exit 1
+    fi
 }
 
 main() {

@@ -1,44 +1,57 @@
 #!/bin/bash
 set -o errexit
 
-function show_usage() {
+show_usage() {
     echo ""
-    echo "Usage: $0 [--help]"
-    echo "    [-pu <pu-xml-path>]"
-    echo "    [-sla <sla-xml-path>]"
-    echo "    [-g|--groupId <package-name>]"
-    echo "    [-a|--artifactId <project-name>]"
-    echo "    -t|--template <xap-template>"
+    echo "Creates XAP project tree with custom topology specified in XML files"
+    echo ""
+    echo "Usage: $0 [--help] [OPTIONS]..."
+    echo ""
+    echo "Mandatory parameters:"
+    echo "  -t, --template     <xap-template>"
+    echo ""
+    echo "Optional parameters:"
+    echo "  -pu                <pu-xml-path>"
+    echo "  -sla               <sla-xml-path>"
+    echo "  -g, --groupId      <package-name>"
+    echo "  -a, --artifactId   <project-name>"
     echo ""
 }
 
-function parse_input() {
-    if [[ $1 == "--help" ]]; then
+parse_input() {
+    if [[ $# -eq 0 ]]; then
+        show_usage; exit 2
+    fi
+
+    if [[ $1 == '--help' ]]; then
         show_usage; exit 0
     fi
 
-    while [[ $# > 1 ]]; do
-        key="$1"
-        case $key in
-        -pu)
+    while [[ $# > 0 ]]; do
+        case $1 in
+        '-pu')
             pu_xml_path="$2"
-            shift ;;
-        -sla)
+            shift 2 ;;
+        '-sla')
             sla_xml_path="$2"
-            shift ;;
-        -g|--groupId)
+            shift 2 ;;
+        '-g' | '--groupId')
             group_id="$2"
-            shift ;;
-        -a|--artifactId)
+            shift 2 ;;
+        '-a' | '--artifactId')
             artifact_id="$2"
-            shift ;;
-        -t|--template)
+            shift 2 ;;
+        '-t' | '--template')
             xap_template="$2"
-            shift ;;
+            shift 2 ;;
         *)
-            ;; # unknown option
+            if [[ "$1" == "-"* ]]; then
+                echo "Unknown option encountered: $1" >&2
+            else
+                echo "Unknown operand encountered: $1" >&2
+            fi
+            show_usage; exit 2
         esac
-        shift
     done
 
     if [[ $pu_xml_path && -d $pu_xml_path ]]; then
@@ -65,13 +78,13 @@ function parse_input() {
     fi
 }
 
-function copy_config() {
-   if [[ $2 && -f $2 ]]; then
-     find . -name "$1" | xargs -L1 cp -rf $2
-   fi
+copy_config() {
+    if [[ $2 && -f $2 ]]; then
+        find . -name "$1" | xargs -L1 cp -rf $2
+    fi
 }
 
-function create_project() {
+create_project() {
     echo ""
     echo "=> Using the following configuration"
     echo "PU XML path: ${pu_xml_path}"
@@ -94,7 +107,7 @@ function create_project() {
     $cmd
 }
 
-function main() {
+main() {
     parse_input "$@"
 
     create_project

@@ -16,6 +16,7 @@ function show_usage() {
     echo "    -t|--template <xap-template>"
     echo ""
 }
+
 function parse_input() {
     if [[ $1 == "--help" ]]; then
         show_usage; exit 0
@@ -68,11 +69,13 @@ function parse_input() {
         show_usage; exit 1
     fi
 }
+
 function copy_config() {
    if [[ $2 && -f $2 ]]; then
      find . -name "$1" | xargs -L1 cp -rf $2
    fi
 }
+
 function create_project() {
     echo ""
     echo "=> Using the following configuration"
@@ -95,6 +98,7 @@ function create_project() {
 
     $cmd
 }
+
 function main() {
     parse_input "$@"
 

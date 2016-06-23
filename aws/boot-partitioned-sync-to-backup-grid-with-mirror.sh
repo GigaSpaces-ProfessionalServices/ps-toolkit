@@ -81,6 +81,7 @@ assemble_pu() {
         -e 's|{{redo_log_capacity}}|'"${redo_log_capacity}"'|g' \
         ${pu_template_path} > $1/pu.xml
 }
+
 assemble_sla() {
     sed -e 's|{{cluster_schema}}|'"${cluster_schema}"'|g' \
         -e 's|{{number_of_instances}}|'"${number_of_instances}"'|g' \
@@ -88,6 +89,7 @@ assemble_sla() {
         -e 's|{{max_instances_per_vm}}|'"${max_instances_per_vm}"'|g' \
         ${sla_template_path} > $1/sla.xml
 }
+
 assemble_mirror() {
     sed -e 's|{{db_path}}|'"${db_path}"'|g' \
         -e 's|{{db_name}}|'"${db_name}"'|g' \
@@ -100,36 +102,41 @@ assemble_mirror() {
         -e 's|{{space_name}}|'"${space_name}"'|g' \
         ${mirror_pu_template_path} > ${1}/pu.xml
 }
+
 create_basic_project() {
-   ./xap-topology-customize.sh -t $template -a $artifact_id
-   
-   assemble_pu $conf_dest_dir
-   assemble_sla $conf_dest_dir
-   assemble_mirror $mirror_conf_dest_dir
+    ./xap-topology-customize.sh -t $template -a $artifact_id
+
+    assemble_pu $conf_dest_dir
+    assemble_sla $conf_dest_dir
+    assemble_mirror $mirror_conf_dest_dir
 }
+
 start_hsqldb_server() {
-   wget -O /tmp/hsqldb.jar http://central.maven.org/maven2/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar
-   mkdir -p ~/hsqldb-catalogs
-   echo "server.remote_open=true" > ~/hsqldb-catalogs/server.properties
-   echo "Starting HSQLDB server: database=${db_path}, alias=${db_name}..."
-   nohup java -cp /tmp/hsqldb.jar org.hsqldb.server.Server --database.0 file:$db_path --dbname.0 $db_name --props ~/hsqldb-catalogs/server.properties >/dev/null 2>&1 &
+    wget -O /tmp/hsqldb.jar http://central.maven.org/maven2/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar
+    mkdir -p ~/hsqldb-catalogs
+    echo "server.remote_open=true" > ~/hsqldb-catalogs/server.properties
+    echo "Starting HSQLDB server: database=${db_path}, alias=${db_name}..."
+    nohup java -cp /tmp/hsqldb.jar org.hsqldb.server.Server --database.0 file:$db_path --dbname.0 $db_name --props ~/hsqldb-catalogs/server.properties >/dev/null 2>&1 &
 }
+
 boot_grid() {
-   ./boot-grid.sh $artifact_id --count $vm_count -s "partitioned-sync-replicated-grid-with-mirror"
+    ./boot-grid.sh $artifact_id --count $vm_count -s "partitioned-sync-replicated-grid-with-mirror"
 }
+
 show_usage() {
-   echo "Usage: $0 <number-of-partitions> <vm-count>"
+    echo "Usage: $0 <number-of-partitions> <vm-count>"
 }
+
 main() {
-   if [[ "$#" -ne 2 ]] ; then
-      show_usage; exit 1
-   else
-      number_of_instances=$1
-      vm_count=$2
-   fi
-   create_basic_project
-   start_hsqldb_server
-   boot_grid
+    if [[ "$#" -ne 2 ]] ; then
+        show_usage; exit 1
+    else
+        number_of_instances=$1
+        vm_count=$2
+    fi
+    create_basic_project
+    start_hsqldb_server
+    boot_grid
 }
 
 main "$@"

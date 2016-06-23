@@ -46,7 +46,7 @@ function parse_input() {
         show_usage;
         exit 3
     fi
-    if [[ $# > 3 ]];
+    if [[ $# > 2 ]];
     then
         show_usage;
         exit 3
@@ -57,28 +57,17 @@ function parse_input() {
         then
             show_usage;
             exit 3
-	else
-	    destination_address=$1
+	    else
+	        destination_address=$1
             test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
         fi
     fi
     if [[ $# == 2 ]];
-    then
-	if [[ "$1" == "-g" ]];
 	then
-            destination_address=$2
-            test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
-        fi
-    fi
-    if [[ $# == 3 ]];
-    then
-	if [[ "$2" == "-g" ]];
-	then
-	    destination_address=$3
+	    destination_address=$2
 	    local_grafana_ini_path=$1
-            test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
+        test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
 	fi
-    fi
 }
 
 function main() {

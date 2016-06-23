@@ -1,6 +1,7 @@
 #!/bin/bash
 set -o errexit
 
+
 create_vms() {
     local create_stack_cmd="aws cloudformation create-stack --stack-name ${stack_name} \
         --template-body ${template_uri} --query 'StackId' --output text"
@@ -8,6 +9,10 @@ create_vms() {
     local parameters=
     if [[ $lookup_groups ]]; then
         parameters+=" ParameterKey=LookupGroups,ParameterValue=$lookup_groups"
+    fi
+   
+    if [[ $image ]]; then
+        parameters+=" ParameterKey=ImageId,ParameterValue=$image"
     fi
 
     if [[ $mgt_node_type ]]; then
@@ -28,6 +33,14 @@ create_vms() {
 
     if [[ $compute_node_count ]]; then
         parameters+=" ParameterKey=ComputeNodesCount,ParameterValue=$compute_node_count"
+    fi
+   
+    if [[ $gsc_count ]]; then
+        parameters+=" ParameterKey=GscCount,ParameterValue=$gsc_count"
+    fi
+ 
+    if [[ $xap_version ]]; then
+        parameters+=" ParameterKey=XapVersion,ParameterValue=$xap_version"
     fi
 
     if [[ $parameters ]]; then
@@ -71,10 +84,13 @@ show_usage() {
     echo "Optional parameters:"
     echo "  -c,   --count               The number of compute nodes"
     echo "  -g,   --groups              Lookup groups"
+    echo "  -i,   --image               Id of existing AMI"
+    echo "  -v,   --xap_version         XAP home directory name"
     echo "  -mnt, --mgt-node-type       EC2 instance type of VM with global GSA"
     echo "  -mns, --mgt-node-size       Size of EBS volume in GiB"
     echo "  -cnt, --compute-node-type   EC2 instance type of VM with GSC"
     echo "  -cns, --compute-node-size   Size of EBS volume in GiB"
+    echo "  -gsc, --gsc_count           The number of GSCs per compute node"
     echo ""
 }
 
@@ -101,6 +117,12 @@ parse_input() {
         '-g' | '--groups')
             lookup_groups="$2"
             shift 2 ;;
+        '-i' | '--image')
+            image="$2"
+            shift 2 ;;
+        '-v' | '--xap_version')
+            xap_version="$2"
+            shift 2 ;;
         '-mnt' | '--mgt-node-type')
             mgt_node_type="$2"
             shift 2 ;;
@@ -112,6 +134,9 @@ parse_input() {
             shift 2 ;;
         '-cns' | '--compute-node-size')
             compute_node_size="$2"
+            shift 2 ;;
+        '-gsc' | '--gsc_count')
+            gsc_count="$2"
             shift 2 ;;
         *)
             if [[ "$1" == "-"* ]]; then

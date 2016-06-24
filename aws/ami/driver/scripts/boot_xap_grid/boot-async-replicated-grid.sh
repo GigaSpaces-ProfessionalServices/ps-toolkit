@@ -1,8 +1,9 @@
 #!/bin/bash
 set -o errexit
 
-readonly pu_source_path="resources/sync-replication-topology.template"
-readonly sla_source_path="resources/replicated-schema.template"
+readonly pu_templates="pu_configuration_templates"
+readonly pu_source_path="$pu_templates/async-replication-topology.template"
+readonly sla_source_path="$pu_templates/replicated-schema.template"
 
 #general replication params
 readonly repl_policy_type="partial-replication"
@@ -12,22 +13,17 @@ readonly replicate_notify_templates=false
 readonly trigger_notify_templates=false
 readonly on_conflicting_packets="ignore"
 
-#sync replication params
-readonly throttle_when_inactive=false
-readonly max_throttle_tp_when_inactive=50000
-readonly min_throttle_tp_when_active=1000
-readonly multiple_opers_chunk_size=10000
-readonly target_consume_timeout=10000
-
-#async replication params in case of recovery process
+#async replication params
 readonly repl_chunk_size=500
 readonly repl_interval_millis=3000
+readonly repl_interval_opers=500
+readonly async_channel_shutdown_timeout=300000
 
 readonly template="basic"
 readonly artifact_id="my-app"
-readonly space_url="/./space"
 readonly conf_dest_dir="$artifact_id/processor/src/main/resources/META-INF/spring"
-readonly cluster_schema="sync_replicated"
+readonly space_url="/./space"
+readonly cluster_schema="async_replicated"
 readonly max_instances_per_vm=1
 
 assemble_pu() {
@@ -41,13 +37,10 @@ assemble_pu() {
         -e 's|{{replicate_notify_templates}}|'"${replicate_notify_templates}"'|g' \
         -e 's|{{trigger_notify_templates}}|'"${trigger_notify_templates}"'|g' \
         -e 's|{{on_conflicting_packets}}|'"${on_conflicting_packets}"'|g' \
-        -e 's|{{throttle_when_inactive}}|'"${throttle_when_inactive}"'|' \
-        -e 's|{{max_throttle_tp_when_inactive}}|'"${max_throttle_tp_when_inactive}"'|g' \
-        -e 's|{{min_throttle_tp_when_active}}|'"${min_throttle_tp_when_active}"'|g' \
-        -e 's|{{target_consume_timeout}}|'"${target_consume_timeout}"'|g' \
         -e 's|{{repl_chunk_size}}|'"${repl_chunk_size}"'|g' \
         -e 's|{{repl_interval_millis}}|'"${repl_interval_millis}"'|g' \
-        -e 's|{{multiple_opers_chunk_size}}|'"${multiple_opers_chunk_size}"'|g' \
+        -e 's|{{repl_interval_opers}}|'"${repl_interval_opers}"'|g' \
+        -e 's|{{async_channel_shutdown_timeout}}|'"${async_channel_shutdown_timeout}"'|g' \
         ${pu_source_path} > $1/pu.xml
 }
 
@@ -66,7 +59,7 @@ create_basic_project() {
 }
 
 boot_grid() {
-    ./boot-grid.sh $artifact_id --count $vm_count -s "sync-replicated-grid"
+    ./boot-grid.sh $artifact_id --count $vm_count -s "async-replicated-grid"
 }
 
 show_usage() {

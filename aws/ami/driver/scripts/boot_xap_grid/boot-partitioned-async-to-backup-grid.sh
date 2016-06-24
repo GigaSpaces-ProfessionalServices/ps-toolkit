@@ -1,8 +1,9 @@
 #!/bin/bash
 set -o errexit
 
-readonly pu_source_path="resources/partitioned-async-replication-topology.template"
-readonly sla_source_path="resources/partitioned-schema.template"
+readonly pu_templates="pu_configuration_templates"
+readonly pu_source_path="$pu_templates/partitioned-async-replication-topology.template"
+readonly sla_source_path="$pu_templates/partitioned-schema.template"
 
 #general replication params
 readonly repl_policy_type="partial-replication"

@@ -16,15 +16,19 @@ export PATH=${JSHOMEDIR}/bin:${PATH}
 export GSA_JAVA_OPTIONS="$GSA_JAVA_OPTIONS -Dprocess.marker=computing-agent-marker"
 
 if [[ "$1" -ge 1 ]] 2>/dev/null; then
-    readonly log_file="${JSHOMEDIR}/logs/start-gscs.log"
+    readonly log_dir="${JSHOMEDIR}/logs"
+    mkdir -p ${log_dir}
+    
+    readonly log_file="${log_dir}/start-gscs.log"
+    
     if [[ -e "${log_file}" ]]; then
         readonly script_mod_date=$(date +%Y-%m-%d~%H.%M.%S -r ${log_file})
-        readonly log_file_zip="${JSHOMEDIR}/logs/${script_mod_date}-start-gscs.zip"
+        readonly log_file_zip="${log_dir}/${script_mod_date}-start-gscs.zip"
 
         zip ${log_file_zip} ${log_file}
     fi
 
-    nohup ${JSHOMEDIR}/bin/gs-agent.sh gsa.global.lus 0 gsa.lus 0 gsa.gsm.global 0 gsa.gsm 0 gsa.gsc $1 >${log_file} 2>&1 &
+    nohup ${JSHOMEDIR}/bin/gs-agent.sh gsa.global.lus 0 gsa.lus 0 gsa.global.gsm 0 gsa.gsm 0 gsa.gsc $1 >${log_file} 2>&1 &
     echo "Starting $1 GSC(s)... See ${log_file}"
 else
     echo "Invalid number of GSCs: $1" >&2;

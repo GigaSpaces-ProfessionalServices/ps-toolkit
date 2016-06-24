@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "AWS CloudFormation Template, that creates one EC2 instance for service grid management components: 1 GSA, 1 LUS, 1 GSM and 1 WEB UI and requested count of EC2 instances for compute primary and backup nodes with one running GSC per node.",
+  "Description": "AWS CloudFormation Template, that creates 2 EC2 instances for service grid management components with 1 GSA, 1 LUS and 1 GSM and requested count of EC2 instances for compute nodes with specific count of running GSC per node.",
   "Parameters": {
     "AvailabilityZone": {
       "Description": "Availability zone of the stack resources",
@@ -150,7 +150,7 @@
       "ConstraintDescription": "must be the size of the EC2 root volume."
     },
     "ComputeNodesCount": {
-      "Description": "Count of EC2 instances that run one GSC per instance.",
+      "Description": "Count of EC2 instances that run GSCs.",
       "Type": "Number",
       "Default": "1",
       "MinValue": "0",
@@ -179,7 +179,7 @@
     "LookupGroups": {
       "Description": "Lookup group, may be any string",
       "Type": "String",
-      "Default": "gigaspaces-xap-premium-10.2.1-ga"
+      "Default": ""
     },
     "KeyName": {
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
@@ -231,7 +231,7 @@
     }
   },
   "Resources": {
-    "ManagementNode": {
+    "ManagementNode1": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
         "AvailabilityZone": {
@@ -262,7 +262,7 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "Mgt VM"
+            "Value": "Mgt VM 1"
           }
         ],
         "BlockDeviceMappings": [
@@ -301,7 +301,7 @@
                 {
                   "Ref": "AWS::StackName"
                 },
-                "         --resource ManagementNode ",
+                "         --resource ManagementNode1 ",
                 "         --region ",
                 {
                   "Ref": "AWS::Region"
@@ -312,7 +312,163 @@
                 {
                   "Ref": "AWS::StackName"
                 },
-                "         --resource ManagementNode ",
+                "         --resource ManagementNode1 ",
+                "         --region ",
+                {
+                  "Ref": "AWS::Region"
+                }
+              ]
+            ]
+          }
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Init": {
+          "config": {
+            "packages": {
+              "apt": {
+                "zip": []
+              }
+            },
+            "groups": {},
+            "users": {},
+            "sources": {},
+            "files": {
+              "/tmp/start-mgt-node": {
+                "content": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "#!/bin/bash -xe\n",
+                      "cd /opt/gigaspaces/scripts\n",
+                      "ip_addr=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)\n",
+                      ". configure.sh",
+                      " --groups ",
+                      {
+                        "Fn::If": [
+                          "LookupGroupsIsEmpty",
+                          {
+                            "Ref": "XapVersion"
+                          },
+                          {
+                            "Ref": "LookupGroups"
+                          }
+                        ]
+                      },
+                      " --locators ${ip_addr}",
+                      " --nic-address ${ip_addr}",
+                      " --xap-home /opt/gigaspaces/",
+                      {
+                        "Ref": "XapVersion"
+                      },
+                      "\n",
+                      "./start-mgt.sh\n",
+                      "./start-webui.sh\n"
+                    ]
+                  ]
+                },
+                "mode": "000755",
+                "owner": "ubuntu",
+                "group": "ubuntu"
+              }
+            },
+            "commands": {
+              "start_mgt_node": {
+                "command": "sudo -u ubuntu /tmp/start-mgt-node"
+              }
+            },
+            "services": {}
+          }
+        }
+      },
+      "CreationPolicy": {
+        "ResourceSignal": {
+          "Timeout": "PT5M"
+        }
+      }
+    },
+    "ManagementNode2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "AvailabilityZone": {
+          "Ref": "AvailabilityZone"
+        },
+        "InstanceType": {
+          "Ref": "MgtNodeInstanceType"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "SecurityGroupId"
+          }
+        ],
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "ImageId": {
+          "Ref": "ImageId"
+        },
+        "SubnetId": {
+          "Fn::Select": [
+            "0",
+            {
+              "Ref": "Subnets"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Mgt VM 2"
+          }
+        ],
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": {
+              "Fn::FindInMap": [
+                "AmiBlockDevice",
+                {
+                  "Ref": "ImageId"
+                },
+                "root"
+              ]
+            },
+            "Ebs": {
+              "VolumeSize": {
+                "Ref": "MgtNodeSize"
+              }
+            }
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#!/bin/bash -xe\n",
+                "apt-get update\n",
+                "apt-get -y install python-pip\n",
+                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                "cp /usr/local/init/ubuntu/cfn-hup /etc/init.d/cfn-hup \n",
+                "chmod +x /etc/init.d/cfn-hup \n",
+                "update-rc.d cfn-hup defaults \n ",
+                "service cfn-hup start \n",
+                "cfn-init -v ",
+                "         --stack ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "         --resource ManagementNode2 ",
+                "         --region ",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "\n",
+                "cfn-signal -e $? ",
+                "         --stack ",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "         --resource ManagementNode2 ",
                 "         --region ",
                 {
                   "Ref": "AWS::Region"
@@ -389,7 +545,10 @@
     },
     "ComputeNodesGroup": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
-      "DependsOn": "ManagementNode",
+      "DependsOn": [
+        "ManagementNode1",
+        "ManagementNode2"
+      ],
       "Properties": {
         "AvailabilityZones": [
           {
@@ -522,7 +681,7 @@
                       "#!/bin/bash -xe\n",
                       "cd /opt/gigaspaces/scripts\n",
                       "ip_addr=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)\n",
-                       ". configure.sh",
+                      ". configure.sh",
                       " --groups ",
                       {
                         "Fn::If": [
@@ -538,7 +697,14 @@
                       " --locators ",
                       {
                         "Fn::GetAtt": [
-                          "ManagementNode",
+                          "ManagementNode1",
+                          "PrivateIp"
+                        ]
+                      },
+                      ",",
+                      {
+                        "Fn::GetAtt": [
+                          "ManagementNode2",
                           "PrivateIp"
                         ]
                       },
@@ -572,17 +738,32 @@
     }
   },
   "Outputs": {
-    "MgtInstanceId": {
-      "Description": "InstanceId of the newly created Management Node",
+    "MgtInstanceId1": {
+      "Description": "InstanceId of the newly created Management Node 1",
       "Value": {
-        "Ref": "ManagementNode"
+        "Ref": "ManagementNode1"
       }
     },
-    "MgtPrivateIP": {
-      "Description": "Private IP address of the newly created Management Node",
+    "MgtPrivateIP1": {
+      "Description": "Private IP address of the newly created Management Node 1",
       "Value": {
         "Fn::GetAtt": [
-          "ManagementNode",
+          "ManagementNode1",
+          "PrivateIp"
+        ]
+      }
+    },
+    "MgtInstanceId2": {
+      "Description": "InstanceId of the newly created Management Node 2",
+      "Value": {
+        "Ref": "ManagementNode2"
+      }
+    },
+    "MgtPrivateIP2": {
+      "Description": "Private IP address of the newly created Management Node 2",
+      "Value": {
+        "Fn::GetAtt": [
+          "ManagementNode2",
           "PrivateIp"
         ]
       }

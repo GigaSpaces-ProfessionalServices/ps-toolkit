@@ -69,8 +69,8 @@ show_usage() {
     echo "  -t,   --template-uri        Template URI"
     echo ""
     echo "Optional parameters:"
-    echo "  -c,   --count               The number of compute nodes"
-    echo "  -g,   --groups              Lookup groups"
+    echo "  -c,   --node-count          The number of compute nodes"
+    echo "  -g,   --lookup-groups       Lookup groups"
     echo "  -mnt, --mgt-node-type       EC2 instance type of VM with global GSA"
     echo "  -mns, --mgt-node-size       Size of EBS volume in GiB"
     echo "  -cnt, --compute-node-type   EC2 instance type of VM with GSC"
@@ -95,10 +95,10 @@ parse_input() {
         '-t' | '--template-uri')
             template_uri="$2"
             shift 2 ;;
-        '-c' | '--count')
+        '-c' | '--node-count')
             compute_node_count="$2"
             shift 2 ;;
-        '-g' | '--groups')
+        '-g' | '--lookup-groups')
             lookup_groups="$2"
             shift 2 ;;
         '-mnt' | '--mgt-node-type')

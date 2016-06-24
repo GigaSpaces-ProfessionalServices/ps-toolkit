@@ -117,7 +117,7 @@ start_hsqldb_server() {
 }
 
 boot_grid() {
-    ./boot-grid.sh $artifact_id --count $vm_count -s "partitioned-sync-replicated-grid-with-mirror"
+    ./boot-grid.sh --node-count $vm_count -s "partitioned-sync-replicated-grid-with-mirror" $artifact_id
 }
 
 show_usage() {

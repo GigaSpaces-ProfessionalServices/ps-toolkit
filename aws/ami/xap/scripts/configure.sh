@@ -4,9 +4,9 @@ set -o errexit
 readonly java_home="/opt/java/jdk1.7.0_79"
 readonly ip_addr=$(/sbin/ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://')
 
-jshomedir="/opt/gigaspaces/gigaspaces-xap-premium-10.2.1-ga"
+jshomedir="/opt/gigaspaces/current"
 nic_addr=$ip_addr
-lookuplocators=$ip_addr:4174
+lookuplocators=$ip_addr
 gs_license=/tmp/gslicense.xml
 
 readonly bash_profile=~/.profile

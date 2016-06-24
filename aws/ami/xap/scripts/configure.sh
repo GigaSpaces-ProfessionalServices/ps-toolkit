@@ -1,92 +1,103 @@
 #!/bin/bash
 set -o errexit
 
-readonly java_home="/opt/java/jdk1.7.0_79"
-readonly ip_addr=$(/sbin/ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://')
-
-jshomedir="/opt/gigaspaces/current"
-nic_addr=$ip_addr
-lookuplocators=$ip_addr
-gs_license=/tmp/gslicense.xml
-
-readonly bash_profile=~/.profile
-
-main() {
-    if [[ ${jshomedir} ]] ; then
-        grep -q -F "JSHOMEDIR" $bash_profile || echo "export JSHOMEDIR=\"${jshomedir}\"" >>$bash_profile
-    fi
-
-    if [[ ${java_home} ]] ; then
-        grep -q -F "JAVA_HOME" $bash_profile || echo "export JAVA_HOME=\"${java_home}\" PATH=\"${PATH}:${java_home}/bin\"" >>$bash_profile
-    fi
-
-    if [[ ${nic_addr} ]] ; then
-        grep -q -F "NIC_ADDR" $bash_profile || echo "export NIC_ADDR=\"${nic_addr}\"" >>$bash_profile
-    fi
-
-    if [[ ${lookupgroups} ]] ; then
-        grep -q -F "LOOKUPGROUPS" $bash_profile || echo "export LOOKUPGROUPS=\"${lookupgroups}\"" >>$bash_profile
-    fi
-
-    if [[ ${lookuplocators} ]] ; then
-        grep -q -F "LOOKUPLOCATORS" $bash_profile || echo "export LOOKUPLOCATORS=\"${lookuplocators}\"" >>$bash_profile
-    fi
-
-    source ${bash_profile}
-
-    if [[ -e "${gs_license}" ]]; then
-        cp -rf ${gs_license} ${JSHOMEDIR}
-    else
-        echo "License ${gs_license} does not exist. No license was installed."
-    fi
-}
-
 show_usage() {
-    echo "Usage $0 [optional parameters]"
-    echo "              --xap-home     | xap home dir"
-    echo "              --groups       | lookup groups"
-    echo "              --locators     | lookup locators"
-    echo "              --license      | path to gslicense.xml"
-    echo "              --nic-address  | ip address"
-    echo "              --help         | usage"
+    echo ""
+    echo "Configures the startup environment for running XAP EC2 grid"
+    echo ""
+    echo "Usage $0 [--help] [OPTIONS]..."
+    echo ""
+    echo "Optional parameters:"
+    echo "  -h,   --xap-home          <xap-home-dir>" 
+    echo "  -g,   --lookup-groups     <lookup-groups>"
+    echo "  -l,   --lookup-locators   <lookup-locators>"
+    echo "  -nic, --nic-address       <nic-ip-address>"
+    echo "  -lic, --xap-license       <path-to-gslicense-xml>"
+    echo ""
 }
 
 parse_input() {
-    if [[ "$#" -eq 0 ]] ; then
-        return 0
+    if [[ $# -eq 0 ]]; then
+        show_usage; exit 2
     fi
 
-    while [[ -n $1 ]]
-    do
+    if [[ $1 == '--help' ]]; then
+        show_usage; exit 0
+    fi
+
+    while [[ $# > 0 ]]; do
         case $1 in
-        "--xap-home")
-            shift
-            jshomedir="$1"
-            ;;
-        "--groups")
-            shift
-            lookupgroups="$1"
-            ;;
-        "--locators")
-            shift
-            lookuplocators="$1"
-            ;;
-        "--license")
-            shift
-            gs_license="$1"
-            ;;
-        "--nic-address")
-            shift
-            nic_addr="$1"
-            ;;
-        "--help")
-            shift
-            show_usage; exit 1
-            ;;
+        '-h' | '--xap-home')  
+            jshomedir="$2"  
+            shift 2 ;;
+        '-g' | '--lookup-groups')
+            lookup_groups="$2"
+            shift 2 ;;
+        '-l' | '--lookup-locators')
+            lookup_locators="$2"
+            shift 2 ;;
+        '-nic' | '--nic-address')
+            nic_address="$2"
+            shift 2 ;;
+        '-lic' | '--xap-license')
+            gs_license="$2"
+            shift 2 ;;
+        *)
+            if [[ "$1" == "-"* ]]; then
+                echo "Unknown option encountered: $1" >&2
+            else
+                echo "Unknown operand encountered: $1" >&2
+            fi
+            show_usage; exit 2
         esac
         shift
     done
 }
 
-parse_input "$@"
-main
+configure() {
+    if [[ ${jshomedir} ]]; then
+        grep -q -F "JSHOMEDIR" $bash_profile || echo "export JSHOMEDIR=\"${jshomedir}\"" >>$bash_profile
+    fi
+
+    if [[ ${java_home} ]]; then
+        grep -q -F "JAVA_HOME" $bash_profile || echo "export JAVA_HOME=\"${java_home}\" PATH=\"${PATH}:${java_home}/bin\"" >>$bash_profile
+    fi
+
+    if [[ ${lookup_groups} ]]; then
+        grep -q -F "LOOKUPGROUPS" $bash_profile || echo "export LOOKUPGROUPS=\"${lookup_groups}\"" >>$bash_profile
+    fi
+
+    if [[ ${lookup_locators} ]]; then
+        grep -q -F "LOOKUPLOCATORS" $bash_profile || echo "export LOOKUPLOCATORS=\"${lookup_locators}\"" >>$bash_profile
+    fi
+
+    if [[ ${nic_address} ]]; then
+        grep -q -F "NIC_ADDR" $bash_profile || echo "export NIC_ADDR=\"${nic_address}\"" >>$bash_profile
+    fi
+
+    source ${bash_profile}
+
+    if [[ ${gs_license} ]]; then
+        if [[ -f "${gs_license}" ]]; then
+            cp -rf ${gs_license} ${JSHOMEDIR}
+        else
+            echo "License ${gs_license} does not exist. No license was installed." 1>&2
+        fi
+    fi
+}
+
+main() {
+    readonly java_home="/opt/java/jdk1.7.0_79"
+    readonly ip_address=$(/sbin/ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://')
+    readonly bash_profile=~/.profile
+
+    jshomedir="/opt/gigaspaces/current"
+    lookup_locators=$ip_address
+    nic_address=$ip_address
+    gs_license=/tmp/gslicense.xml
+
+    parse_input "$@"
+    configure
+}
+
+main "$@"

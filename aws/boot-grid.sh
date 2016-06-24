@@ -1,7 +1,6 @@
 #!/bin/bash
 set -o errexit
 
-
 create_vms() {
     local create_stack_cmd="aws cloudformation create-stack --stack-name ${stack_name} \
         --template-body ${template_uri} --query 'StackId' --output text"
@@ -10,9 +9,9 @@ create_vms() {
     if [[ $lookup_groups ]]; then
         parameters+=" ParameterKey=LookupGroups,ParameterValue=$lookup_groups"
     fi
-   
-    if [[ $image ]]; then
-        parameters+=" ParameterKey=ImageId,ParameterValue=$image"
+
+    if [[ $image_id ]]; then
+        parameters+=" ParameterKey=ImageId,ParameterValue=$image_id"
     fi
 
     if [[ $mgt_node_type ]]; then
@@ -82,15 +81,15 @@ show_usage() {
     echo "  -t,   --template-uri        Template URI"
     echo ""
     echo "Optional parameters:"
-    echo "  -c,   --count               The number of compute nodes"
-    echo "  -g,   --groups              Lookup groups"
-    echo "  -i,   --image               Id of existing AMI"
-    echo "  -v,   --xap_version         XAP home directory name"
+    echo "  -c,   --node-count          The number of compute nodes"
+    echo "  -g,   --lookup-groups       Lookup groups"
+    echo "  -i,   --image-id            Id of existing AMI"
+    echo "  -v,   --xap-version         XAP home directory name"
     echo "  -mnt, --mgt-node-type       EC2 instance type of VM with global GSA"
     echo "  -mns, --mgt-node-size       Size of EBS volume in GiB"
     echo "  -cnt, --compute-node-type   EC2 instance type of VM with GSC"
     echo "  -cns, --compute-node-size   Size of EBS volume in GiB"
-    echo "  -gsc, --gsc_count           The number of GSCs per compute node"
+    echo "  -gsc, --gsc-count           The number of GSCs per compute node"
     echo ""
 }
 
@@ -111,16 +110,16 @@ parse_input() {
         '-t' | '--template-uri')
             template_uri="$2"
             shift 2 ;;
-        '-c' | '--count')
+        '-c' | '--node-count')
             compute_node_count="$2"
             shift 2 ;;
-        '-g' | '--groups')
+        '-g' | '--lookup-groups')
             lookup_groups="$2"
             shift 2 ;;
-        '-i' | '--image')
-            image="$2"
+        '-i' | '--image-id')
+            image_id="$2"
             shift 2 ;;
-        '-v' | '--xap_version')
+        '-v' | '--xap-version')
             xap_version="$2"
             shift 2 ;;
         '-mnt' | '--mgt-node-type')
@@ -135,7 +134,7 @@ parse_input() {
         '-cns' | '--compute-node-size')
             compute_node_size="$2"
             shift 2 ;;
-        '-gsc' | '--gsc_count')
+        '-gsc' | '--gsc-count')
             gsc_count="$2"
             shift 2 ;;
         *)

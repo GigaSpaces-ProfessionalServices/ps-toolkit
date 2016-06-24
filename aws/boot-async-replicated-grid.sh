@@ -58,7 +58,7 @@ create_basic_project() {
 }
 
 boot_grid() {
-    ./boot-grid.sh $artifact_id --count $vm_count -s "async-replicated-grid"
+    ./boot-grid.sh --node-count $vm_count -s "async-replicated-grid" $artifact_id
 }
 
 show_usage() {

@@ -10,6 +10,10 @@ create_vms() {
         parameters+=" ParameterKey=LookupGroups,ParameterValue=$lookup_groups"
     fi
 
+    if [[ $image_id ]]; then
+        parameters+=" ParameterKey=ImageId,ParameterValue=$image_id"
+    fi
+
     if [[ $mgt_node_type ]]; then
         parameters+=" ParameterKey=MgtNodeInstanceType,ParameterValue=$mgt_node_type"
     fi
@@ -28,6 +32,14 @@ create_vms() {
 
     if [[ $compute_node_count ]]; then
         parameters+=" ParameterKey=ComputeNodesCount,ParameterValue=$compute_node_count"
+    fi
+   
+    if [[ $gsc_count ]]; then
+        parameters+=" ParameterKey=GscCount,ParameterValue=$gsc_count"
+    fi
+ 
+    if [[ $xap_version ]]; then
+        parameters+=" ParameterKey=XapVersion,ParameterValue=$xap_version"
     fi
 
     if [[ $parameters ]]; then
@@ -71,10 +83,13 @@ show_usage() {
     echo "Optional parameters:"
     echo "  -c,   --node-count          The number of compute nodes"
     echo "  -g,   --lookup-groups       Lookup groups"
+    echo "  -i,   --image-id            Id of existing AMI"
+    echo "  -v,   --xap-version         XAP home directory name"
     echo "  -mnt, --mgt-node-type       EC2 instance type of VM with global GSA"
     echo "  -mns, --mgt-node-size       Size of EBS volume in GiB"
     echo "  -cnt, --compute-node-type   EC2 instance type of VM with GSC"
     echo "  -cns, --compute-node-size   Size of EBS volume in GiB"
+    echo "  -gsc, --gsc-count           The number of GSCs per compute node"
     echo ""
 }
 
@@ -101,6 +116,12 @@ parse_input() {
         '-g' | '--lookup-groups')
             lookup_groups="$2"
             shift 2 ;;
+        '-i' | '--image-id')
+            image_id="$2"
+            shift 2 ;;
+        '-v' | '--xap-version')
+            xap_version="$2"
+            shift 2 ;;
         '-mnt' | '--mgt-node-type')
             mgt_node_type="$2"
             shift 2 ;;
@@ -112,6 +133,9 @@ parse_input() {
             shift 2 ;;
         '-cns' | '--compute-node-size')
             compute_node_size="$2"
+            shift 2 ;;
+        '-gsc' | '--gsc-count')
+            gsc_count="$2"
             shift 2 ;;
         *)
             if [[ "$1" == "-"* ]]; then

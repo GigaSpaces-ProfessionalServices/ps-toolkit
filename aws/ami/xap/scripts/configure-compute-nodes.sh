@@ -7,6 +7,6 @@ else
     readonly ip_addr=( "$@" ) 
     for host_dest in "${ip_addr[@]}"
     do
-        ssh ${host_dest} ${JSHOMEDIR}/scripts/configure.sh --groups ${LOOKUPGROUPS}
+        ssh ${host_dest} ${JSHOMEDIR}/scripts/configure.sh --lookup-groups ${LOOKUPGROUPS}
     done
 fi

@@ -1,9 +1,10 @@
 #!/bin/bash
 set -o errexit
 
-readonly pu_template_path="resources/partitioned-sync-replication-with-mirror-topology.template"
-readonly mirror_pu_template_path="resources/mirror.template"
-readonly sla_template_path="resources/partitioned-schema.template"
+readonly pu_templates="pu_configuration_templates"
+readonly pu_template_path="$pu_templates/partitioned-sync-replication-with-mirror-topology.template"
+readonly mirror_pu_template_path="$pu_templates/mirror.template"
+readonly sla_template_path="$pu_templates/partitioned-schema.template"
 
 #general replication params
 readonly repl_policy_type="partial-replication"
@@ -50,7 +51,7 @@ readonly mapping_resources="<value>com.mycompany.app.common.Data</value>"
 
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
- 
+
     sed -e 's|{{imported_pu_xml}}|'"META-INF/spring/pu_old.xml"'|g' \
         -e 's|{{space_name}}|'"${space_name}"'|g' \
         -e 's|{{db_host}}|'"${db_host}"'|g' \

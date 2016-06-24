@@ -76,7 +76,7 @@
     "MgtNodeSize": {
       "Description": "Size of the EC2 root volume for management node",
       "Type": "Number",
-      "Default": "8",
+      "Default": "32",
       "MinValue": "0",
       "ConstraintDescription": "must be the size of the EC2 root volume."
     },
@@ -145,7 +145,7 @@
     "ComputeNodeSize": {
       "Description": "Size of the EC2 root volume for compute node",
       "Type": "Number",
-      "Default": "8",
+      "Default": "32",
       "MinValue": "0",
       "ConstraintDescription": "must be the size of the EC2 root volume."
     },
@@ -166,8 +166,9 @@
     "XapVersion": {
       "Description": "Xap home directory name",
       "Type": "String",
-      "Default": "gigaspaces-xap-premium-10.2.1-ga",
+      "Default": "current",
       "AllowedValues": [
+        "current",
         "gigaspaces-xap-premium-10.2.1-ga",
         "gigaspaces-xap-premium-10.2.0-ga-b13812",
         "gigaspaces-xap-premium-10.2.0-ga-b13814",
@@ -189,10 +190,10 @@
     "ImageId": {
       "Description": "Id of an existing image",
       "Type": "String",
-      "Default": "ami-76c90d1b",
+      "Default": "ami-f5549498",
       "AllowedValues": [
-        "ami-76c90d1b",
-        "ami-f873b195"
+        "ami-f5549498",
+        "ami-1e2be673"
       ],
       "ConstraintDescription": "must be the id of an existing AMI."
     },
@@ -211,10 +212,10 @@
   },
   "Mappings": {
     "AmiBlockDevice": {
-      "ami-76c90d1b": {
+      "ami-f5549498": {
         "root": "/dev/sda1"
       },
-      "ami-f873b195": {
+      "ami-1e2be673": {
         "root": "/dev/sda1"
       }
     }
@@ -354,7 +355,7 @@
                           }
                         ]
                       },
-                      " --locators ${ip_addr}:4174",
+                      " --locators ${ip_addr}",
                       " --nic-address ${ip_addr}",
                       " --xap-home /opt/gigaspaces/",
                       {
@@ -510,7 +511,7 @@
                           }
                         ]
                       },
-                      " --locators ${ip_addr}:4174",
+                      " --locators ${ip_addr}",
                       " --nic-address ${ip_addr}",
                       " --xap-home /opt/gigaspaces/",
                       {
@@ -700,14 +701,13 @@
                           "PrivateIp"
                         ]
                       },
-                      ":4174,",
+                      ",",
                       {
                         "Fn::GetAtt": [
                           "ManagementNode2",
                           "PrivateIp"
                         ]
                       },
-                      ":4174",
                       " --nic-address ${ip_addr}",
                       " --xap-home /opt/gigaspaces/",
                       {

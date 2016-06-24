@@ -30,9 +30,6 @@ readonly conf_dest_dir="$artifact_id/processor/src/main/resources/META-INF/sprin
 readonly cluster_schema="sync_replicated"
 readonly max_instances_per_vm=1
 
-number_of_instances=
-vm_count=
-
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
 
@@ -53,32 +50,38 @@ assemble_pu() {
         -e 's|{{multiple_opers_chunk_size}}|'"${multiple_opers_chunk_size}"'|g' \
         ${pu_source_path} > $1/pu.xml
 }
+
 assemble_sla() {
     sed -e 's|{{cluster_schema}}|'"${cluster_schema}"'|g' \
         -e 's|{{number_of_instances}}|'"${number_of_instances}"'|g' \
         -e 's|{{max_instances_per_vm}}|'"${max_instances_per_vm}"'|g' \
         ${sla_source_path} > $1/sla.xml
 }
-create_basic_project() {
-   ./xap-topology-customize.sh -t $template -a $artifact_id
 
-   assemble_pu $conf_dest_dir
-   assemble_sla $conf_dest_dir
+create_basic_project() {
+    ./xap-topology-customize.sh -t $template -a $artifact_id
+
+    assemble_pu $conf_dest_dir
+    assemble_sla $conf_dest_dir
 }
+
 boot_grid() {
-   ./boot-grid.sh $artifact_id --count $vm_count -s "sync-replicated-grid"
+    ./boot-grid.sh $artifact_id --count $vm_count -s "sync-replicated-grid"
 }
+
 show_usage() {
-   echo "Usage: $0 <number-of-instances> <vm-count>"
+    echo "Usage: $0 <number-of-instances> <vm-count>"
 }
+
 main() {
-   if [[ "$#" -ne 2 ]] ; then
-      show_usage; exit 1
-   else
-      number_of_instances=$1
-      vm_count=$2
-   fi
-   create_basic_project
-   boot_grid
+    if [[ "$#" -ne 2 ]] ; then
+        show_usage; exit 1
+    else
+        number_of_instances=$1
+        vm_count=$2
+    fi
+    create_basic_project
+    boot_grid
 }
+
 main "$@"

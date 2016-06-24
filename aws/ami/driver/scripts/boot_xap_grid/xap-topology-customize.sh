@@ -109,6 +109,7 @@ create_project() {
 
 main() {
     parse_input "$@"
+
     create_project
 
     copy_config "pu.xml" ${pu_xml_path}

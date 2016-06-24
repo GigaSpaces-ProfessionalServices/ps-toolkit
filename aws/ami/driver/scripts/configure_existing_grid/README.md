@@ -1,10 +1,10 @@
 ### Driver scripts
 
-This directory contains scripts that are found on Driver AMIs in the FE/PS Sandbox account on EC2. 
+This directory contains scripts that are found on Driver AMIs in the FE/PS Sandbox. On Driver AMIs, this directory maps directly to /home/ubuntu/scripts/configxap/.
 
-This README is partial, as of this commit.
+The scripts in this directory help with tasks related to updating XAP/MGT VM state or XAP grids running on XAP/MGT AMIs.
 
-There is some overlap with those scripts stored in the **ami/driver** directory. This, and the incompleteness of this README will be addressed as part of [PST-40](http://10.8.1.184:8080/issue/PST-40).  
+Each one should also provide a description of its behavior in its help output: `./script.sh --help`
 
 ### InfluxDB / Grafana installation 
 

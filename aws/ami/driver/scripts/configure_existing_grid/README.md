@@ -1,12 +1,10 @@
 ### Driver scripts
 
-This directory contains scripts that are found on Driver AMIs in the FE/PS Sandbox. On Driver AMIs, this directory maps directly to /home/ubuntu/scripts/configxap/.
+This directory contains scripts that configure existing XAP grids by generating configuration files that are external to Processing Units and pushing them out to XAP/MGT VMs.
 
-The scripts in this directory help with tasks related to updating XAP/MGT VM state or XAP grids running on XAP/MGT AMIs.
+Each script should also provide a description of its behavior in its help output: `./script.sh --help`
 
-Each one should also provide a description of its behavior in its help output: `./script.sh --help`
-
-### InfluxDB / Grafana installation 
+#### InfluxDB / Grafana installation 
 
 ##### Considerations before you start
 

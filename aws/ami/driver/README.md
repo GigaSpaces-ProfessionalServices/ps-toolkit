@@ -1,9 +1,9 @@
-# Driver VM
+# Driver AMI
 
-The driver server for starting XAP grids on AWS cloud. It can be started using the following script:
+The contents of this directory are used to build a Driver AMI, which is capable of building and starting various XAP topologies on EC2.
+
+A Driver VM can be started using the following script:
 
 ```bash
 ./start-driver.sh
 ```
-
-If you need more details navigate to [PST-19](http://10.8.1.184:8080/issue/PST-19)

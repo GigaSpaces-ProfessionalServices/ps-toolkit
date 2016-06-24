@@ -8,6 +8,7 @@ show_usage() {
     echo "Usage $0 [--help] [OPTIONS]..."
     echo ""
     echo "Optional parameters:"
+    echo "  -h,   --xap-home          <xap-home-dir>" 
     echo "  -g,   --lookup-groups     <lookup-groups>"
     echo "  -l,   --lookup-locators   <lookup-locators>"
     echo "  -nic, --nic-address       <nic-ip-address>"
@@ -26,6 +27,9 @@ parse_input() {
 
     while [[ $# > 0 ]]; do
         case $1 in
+        '-h' | '--xap-home')  
+            jshomedir="$2"  
+            shift 2 ;;
         '-g' | '--lookup-groups')
             lookup_groups="$2"
             shift 2 ;;
@@ -83,12 +87,12 @@ configure() {
 }
 
 main() {
-    readonly jshomedir="/opt/gigaspaces/gigaspaces-xap-premium-10.2.1-ga"
     readonly java_home="/opt/java/jdk1.7.0_79"
     readonly ip_address=$(/sbin/ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://')
     readonly bash_profile=~/.profile
 
-    lookup_locators=$ip_address:4174
+    jshomedir="/opt/gigaspaces/current"
+    lookup_locators=$ip_address
     nic_address=$ip_address
     gs_license=/tmp/gslicense.xml
 

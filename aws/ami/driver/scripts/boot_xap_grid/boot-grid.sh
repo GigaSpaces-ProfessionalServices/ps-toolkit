@@ -132,7 +132,7 @@ parse_input() {
 
 main() {
     stack_name="xap-grid"
-    template_uri="file://resources/boot-grid.template"
+    template_uri="file://pu_configuration_templates/boot-grid.template"
 
     parse_input "$@"
     create_vms

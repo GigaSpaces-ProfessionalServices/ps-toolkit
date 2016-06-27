@@ -30,6 +30,35 @@ readonly conf_dest_dir="$artifact_id/processor/src/main/resources/META-INF/sprin
 readonly cluster_schema="sync_replicated"
 readonly max_instances_per_vm=1
 
+show_usage() {
+    echo ""
+    echo "Starts XAP grid with synchronous data replication topology "
+    echo "on specified number of virtual machines"
+    echo ""
+    echo "Usage: $0"
+    echo "  [--help] <number-of-gsc-instances> <number-of-vms>"
+    echo ""
+}
+
+parse_input() {
+    if [[ $1 == '--help' ]]; then
+        show_usage; exit 0
+    fi
+
+    if [[ $# -lt 2 ]]; then
+        echo "No grid startup details were provided" >&2
+        show_usage; exit 2
+    fi
+
+    if [[ $# -gt 2 ]]; then
+        echo "Invalid arguments encountered for script $0" >&2
+        show_usage; exit 2
+    fi
+
+    number_of_instances=$1
+    vm_count=$2
+}
+
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
 
@@ -69,17 +98,8 @@ boot_grid() {
     ./boot-grid.sh --node-count $vm_count -s "sync-replicated-grid" $artifact_id
 }
 
-show_usage() {
-    echo "Usage: $0 <number-of-instances> <vm-count>"
-}
-
 main() {
-    if [[ "$#" -ne 2 ]] ; then
-        show_usage; exit 1
-    else
-        number_of_instances=$1
-        vm_count=$2
-    fi
+    parse_input "$@"
     create_basic_project
     boot_grid
 }

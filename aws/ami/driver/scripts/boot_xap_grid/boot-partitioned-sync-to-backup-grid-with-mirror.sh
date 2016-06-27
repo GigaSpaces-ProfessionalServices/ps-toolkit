@@ -49,6 +49,35 @@ readonly db_user="SA"
 readonly db_password=""
 readonly mapping_resources="<value>com.mycompany.app.common.Data</value>"
 
+show_usage() {
+    echo ""
+    echo "Starts XAP grid with partitioned topology, synchronous backup and"
+    echo "async database mirroring on specified number of virtual machines"
+    echo ""
+    echo "Usage: $0"
+    echo "  [--help] <number-of-gsc-partitions> <number-of-vms>"
+    echo ""
+}
+
+parse_input() {
+    if [[ $1 == '--help' ]]; then
+        show_usage; exit 0
+    fi
+
+    if [[ $# -lt 2 ]]; then
+        echo "No grid startup details were provided" >&2
+        show_usage; exit 2
+    fi
+
+    if [[ $# -gt 2 ]]; then
+        echo "Invalid arguments encountered for script $0" >&2
+        show_usage; exit 2
+    fi
+
+    number_of_instances=$1
+    vm_count=$2
+}
+
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
 
@@ -102,7 +131,7 @@ assemble_mirror() {
 }
 
 create_basic_project() {
-    ./xap-topology-customize.sh -t $template -a $artifact_id
+    ./customize-topology.sh -t $template -a $artifact_id
 
     assemble_pu $conf_dest_dir
     assemble_sla $conf_dest_dir
@@ -121,17 +150,8 @@ boot_grid() {
     ./boot-grid.sh --node-count $vm_count -s "partitioned-sync-replicated-grid-with-mirror" $artifact_id
 }
 
-show_usage() {
-    echo "Usage: $0 <number-of-partitions> <vm-count>"
-}
-
 main() {
-    if [[ "$#" -ne 2 ]] ; then
-        show_usage; exit 1
-    else
-        number_of_instances=$1
-        vm_count=$2
-    fi
+    parse_input "$@"
     create_basic_project
     start_hsqldb_server
     boot_grid

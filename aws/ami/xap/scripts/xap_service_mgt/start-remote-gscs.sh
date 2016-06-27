@@ -2,13 +2,30 @@
 set -o errexit
 
 show_usage() {
-    echo "Usage $0 <host1> <count-of-GSCs> [<host2> <count-of-GSCs>]..."
+    echo ""
+    echo "Starts XAP data containers (GSCs) on remote machine(s)"
+    echo ""
+    echo "Usage: $0 [--help] <host1> <number1-of-GSCs> [<host2> <number2-of-GSCs>]..."
+    echo ""
 }
 
-if [[ "$#" -eq 0 ]] || [[ `expr $# % 2` -ne 0 ]]; then
-    echo "Wrong number of parameters provided to $0" >&2;
-    show_usage; exit 1
-else
+parse_input() {
+    if [[ $# -eq 0 ]]; then
+        echo "The hosts and numbers of remote GSCs are not specified" >&2
+        show_usage; exit 2
+    fi
+
+    if [[ $1 == '--help' ]]; then
+        show_usage; exit 0
+    fi
+
+    if [[ $(expr $# % 2) -ne 0 ]]; then
+        echo "The script $0 expects even number of parameters" >&2;
+        show_usage; exit 2
+    fi
+}
+
+start_remote_gscs() {
     readonly input_arr=( "$@" )
 
     for i in "${!input_arr[@]}"
@@ -29,4 +46,11 @@ else
             ssh ${host_addr} /bin/bash -l ${JSHOMEDIR}/scripts/start-gscs.sh ${count}
         fi
     done
-fi
+}
+
+main() {
+    parse_input "$@"
+    start_remote_gscs "$@"
+}
+
+main "$@"

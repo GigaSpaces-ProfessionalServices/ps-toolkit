@@ -31,6 +31,35 @@ readonly cluster_schema="partitioned-sync2backup"
 readonly number_of_backups=1
 readonly max_instances_per_vm=1
 
+show_usage() {
+    echo ""
+    echo "Starts XAP grid with partitioned topology and synchronous backup"
+    echo "on specified number of virtual machines"
+    echo ""
+    echo "Usage: $0"
+    echo "  [--help] <number-of-gsc-partitions> <number-of-vms>"
+    echo ""
+}
+
+parse_input() {
+    if [[ $1 == '--help' ]]; then
+        show_usage; exit 0
+    fi
+
+    if [[ $# -lt 2 ]]; then
+        echo "No grid startup details were provided" >&2
+        show_usage; exit 2
+    fi
+
+    if [[ $# -gt 2 ]]; then
+        echo "Invalid arguments encountered for script $0" >&2
+        show_usage; exit 2
+    fi
+
+    number_of_instances=$1
+    vm_count=$2
+}
+
 assemble_pu() {
     mv $1/pu.xml $1/pu_old.xml
 
@@ -60,7 +89,7 @@ assemble_sla() {
 }
 
 create_basic_project() {
-    ./xap-topology-customize.sh -t $template -a $artifact_id
+    ./customize-topology.sh -t $template -a $artifact_id
 
     assemble_pu $conf_dest_dir
     assemble_sla $conf_dest_dir
@@ -70,17 +99,8 @@ boot_grid() {
     ./boot-grid.sh --node-count $vm_count -s "partitioned-sync-replicated-grid" $artifact_id
 }
 
-show_usage() {
-    echo "Usage: $0 <number-of-partitions> <vm-count>"
-}
-
 main() {
-    if [[ "$#" -ne 2 ]] ; then
-        show_usage; exit 1
-    else
-        number_of_instances=$1
-        vm_count=$2
-    fi
+    parse_input "$@"
     create_basic_project
     boot_grid
 }

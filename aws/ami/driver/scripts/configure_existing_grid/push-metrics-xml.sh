@@ -5,24 +5,64 @@ set -o errexit
 
 readonly default_metrics_xml_path='/tmp/metrics.xml'
 
-local_metrics_xml_path=${default_metrics_xml_path}
-destination_xap_installation=/opt/gigaspaces/current/
-config_dir=${destination_xap_installation}config/metrics/
-remote_user=ubuntu
-destination_address=
-
 function show_usage() {
     echo ""
-    echo "   Usage: $0 [metrics.xml file path] <comma-delimited list of destination ips & hostnames>"
+    echo "Deploys Grafana metrics file to the specified destination machines"
     echo ""
-    echo "   A list of destination hosts is required, even if it's single destination."
-    echo "   File path will default to $default_metrics_xml_path if another path is not provided."
-    echo "   The destination file path is not configurable. All destination machines will:"
+    echo "Usage: $0 [--help]"
+    echo "   Or: $0 [OPTIONS]... <comma-delimited-hostname-list>"
     echo ""
-    echo "     1. Receive a copy of metrics.xml at ${config_dir}metrics.xml"
-    echo "     2. If there was already a metrics.xml file there, a backup will be created."
+    echo "Options are from the following:"
+    echo "  [-s, --source-file <local-metrics-xml-file-path>]"
     echo ""
-    exit 0
+    echo "A list of destination hosts is required, even if it is a single target machine."
+    echo "Destination IP addresses can be used in place of hostnames interchangeably."
+    echo "File path will default to $default_metrics_xml_path if another path is not provided."
+    echo "The destination file path is not configurable. All destination machines will:"
+    echo ""
+    echo "  1. Receive a copy of metrics.xml at ${config_dir}metrics.xml"
+    echo "  2. If there was already a metrics.xml file there, a backup will be created."
+    echo ""
+}
+
+function parse_input() {
+    if [[ $# == 0 ]]; then
+        echo "No destination hostnames or IP addresses provided" >&2
+        show_usage; exit 2
+    fi
+
+    if [[ $# > 3 ]]; then
+        echo "Invalid arguments encountered for script $0" >&2
+        show_usage; exit 2
+    fi
+
+    if [[ $1 == '--help' ]]; then
+        show_usage; exit 0
+    fi
+
+    while [[ $# > 0 ]]; do
+        case $1 in
+        '-s' | '--source-file')
+            local_metrics_xml_path="$2"
+            shift 2 ;;
+        *)
+            if [[ "$1" == "-"* ]]; then
+                echo "Unknown option encountered: $1" >&2
+                show_usage; exit 2
+            fi
+
+            # required parameter
+            address_list="$1"
+            shift ;;
+        esac
+    done
+
+    if [[ ! -f ${local_metrics_xml_path} ]]; then
+        echo "The source file is not available: ${local_metrics_xml_path}" >&2
+        exit 1
+    fi
+
+    update_addresses;
 }
 
 function backup_existing_metrics_config() {
@@ -36,9 +76,6 @@ function copy_file_to_destination() {
     echo scp ${local_metrics_xml_path} ${remote_user}@${destination_address}:${config_dir}metrics.xml
     scp ${local_metrics_xml_path} ${remote_user}@${destination_address}:${config_dir}metrics.xml
 }
-
-address_list=''
-addresses=()
 
 function has_comma() {
     commas=$(echo ${address_list} | grep "," | wc -l | tr -d " " )
@@ -58,45 +95,37 @@ function update_addresses() {
             tail=$(echo $address_list | sed 's#^\([^,]*\),\([^a-zA-Z0-9]*\)#\2#')
             head_len=$((${len}-${#tail}-1))
             head=${address_list:0:${head_len}}
+
+            if [[ -z "$head" ]]; then
+                echo "Empty hostname is encountered at index $cnt" >&2
+                exit 1
+            fi
+
             addresses[$cnt]=${head}
             address_list=${tail}
             cnt=$((${cnt}+1))
         done
+
+        if [[ -z "$tail" ]]; then
+            echo "Empty hostname is encountered at index $cnt" >&2
+            exit 1
+        fi
+
         addresses[$cnt]=${tail}
     fi
 }
 
-function parse_input() {
-    if [[ $# == 0 ]];
-    then
-        show_usage;
-    fi
-    if [[ $# > 2 ]];
-    then
-        show_usage;
-    fi
-    if [[ $# == 1 ]];
-    then
-        if [[ $1 == "--help" ]];
-        then
-            show_usage;
-        else
-            address_list=$1
-        fi
-    fi
-    if [[ $# == 2 ]];
-    then
-        address_list=$2
-        local_metrics_xml_file_path=$1
-        test ! -f ${local_metrics_xml_file_path} || echo "Bad file path: ${local_metrics_xml_file_path} ."; show_usage;
-    fi
-    update_addresses;
-}
-
 function main() {
+    local_metrics_xml_path=${default_metrics_xml_path}
+    destination_xap_installation=/opt/gigaspaces/current/
+    config_dir=${destination_xap_installation}config/metrics/
+    remote_user=ubuntu
+    addresses=()
+
     parse_input $*
     len=${#addresses[*]}
     count=0
+
     while [[ ${len} > ${count} ]];
     do
         local destination=${addresses[$count]}

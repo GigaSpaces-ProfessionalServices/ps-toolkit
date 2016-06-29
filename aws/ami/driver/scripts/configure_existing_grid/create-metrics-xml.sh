@@ -2,18 +2,74 @@
 set -o nounset
 set -o errexit
 
-readonly influx_username_default='';
-readonly influx_password_default='';
-readonly metrics_config_file=./resources/metrics.xml ;
-readonly metrics_temp_file=/tmp/metrics.xml ;
+readonly metrics_config_file=./resources/metrics.xml
+readonly metrics_temp_file=/tmp/metrics.xml
 
-influx_username="${influx_username_default}"
-influx_password="${influx_password_default}"
-use_security=0
-use_metrics=0
-use_grafana=0
-influx_host=''
-grafana_host=''
+function show_usage() {
+    echo ""
+    echo "Configures Grafana metrics file for the specified hostname"
+    echo ""
+    echo "Usage: $0 [--help]"
+    echo "   Or: $0 [OPTIONS]..."
+    echo ""
+    echo "Options are from the following:"
+    echo "  [-m, --use-metrics]"
+    echo "  [-u, --influx-username <influx-db-username>]"
+    echo "  [-p, --influx-password <influx-db-password>]"
+    echo "  [-i, --influx-host <influx-db-hostname-or-ip-address>]"
+    echo "  -g, --grafana-host <grafana-hostname-or-ip-address>"
+    echo ""
+    echo "To have XAP report metrics to InfluxDB, use -m and -i."
+    echo "To use InfluxDB security, pass username and password."
+    echo "To enable dashboard support in WEB-UI, pass the -g flag and"
+    echo "a hostname or IP where Grafana is running/will run."
+    echo ""
+}
+
+function parse_input() {
+    if [[ $1 == '--help' ]]; then
+        show_usage; exit 0
+    fi
+
+    while [[ $# > 0 ]]; do
+        key="$1";
+        case ${key} in
+        '-m' | '--use-metrics')
+            use_metrics=1
+            shift ;;
+        '-u' | '--influx-username')
+            influx_username="$2"
+            use_security=1
+            use_metrics=1
+            shift; shift ;;
+        '-p' | '--influx-password')
+            influx_password="$2"
+            shift; shift ;;
+        '-i' | '--influx-host')
+            influx_host="$2"
+            shift; shift ;;
+        '-g' | '--grafana-host')
+            echo "XXX"
+            echo "parsing g, host = $2"
+            echo "XXX"
+            use_grafana=1
+            use_metrics=1
+            grafana_host="$2"
+            shift; shift;;
+        *)
+            echo "ERROR: Illegal argument to script: $key"
+            echo ""
+            show_usage;
+            exit 3
+            shift ;;
+        esac
+    done
+
+    if [[ ${#grafana_host} -eq 0 ]]; then
+        echo "No Grafana hostname or IP address was provided" >&2
+        show_usage; exit 2
+    fi
+}
 
 function update_security() {
   if [[ ${use_security} == 1 ]];
@@ -64,67 +120,6 @@ function update_grafana() {
     fi
 }
 
-function parse_input() {
-    if [[ $# > 0 && -n "$1" ]];
-    then
-        test "$1" == "--help" && ( show_usage ; exit 0 )
-    fi
-    while [[ $# > 0 ]]; do
-        key="$1";
-        case ${key} in
-          -u)
-            influx_username="$2"
-            shift; shift ;;
-          -p)
-            influx_password="$2"
-            shift; shift ;;
-          -m)
-            use_metrics=1
-            shift ;;
-          -i)
-            influx_host="$2"
-            shift; shift ;;
-          -s)
-            use_security=1
-            use_metrics=1
-            shift ;;
-          -g)
-            echo "XXX"
-            echo "parsing g, host = $2"
-            echo "XXX"
-            use_grafana=1
-            use_metrics=1
-            grafana_host="$2"
-            shift; shift;;
-          *)
-            echo "ERROR: Illegal argument to script: $key"
-            echo ""
-            show_usage;
-            exit 3
-            shift ;;
-        esac
-    done
-}
-
-function show_usage() {
-    echo "";
-    echo "   Usage: $0 [--help]";
-    echo "";
-    echo "      Or: $0 [<options>]";
-    echo "";
-    echo "   Options are from the following:"
-    echo "";
-    echo "   [-m -i <InfluxDB host IP or name>]";
-    echo "   [-s -u <InfluxDB username> -p <InfluxDB password>]";
-    echo "   [-g <grafana hostname or ip>]"
-    echo "";
-    echo "   To have XAP report metrics to InfluxDB, use -m and -i.";
-    echo "   To use InfluxDB security, pass the -s flag and username and password.";
-    echo "   To enable dashboard support in WEB-UI, pass the -g flag and a hostname or ip where Grafana is running/will run.";
-    echo "";
-}
-
-
 function make_sure() {
     if [[ ${use_metrics} == 0 && ${use_security} == 0 && ${use_grafana} == 0 ]];
     then
@@ -132,11 +127,23 @@ function make_sure() {
     fi
 }
 
-parse_input $*
-update_security;
-update_metrics;
-update_grafana;
-make_sure;
+main() {
+    influx_username=''
+    influx_password=''
+    use_security=0
+    use_metrics=0
+    use_grafana=0
+    influx_host=''
+    grafana_host=''
 
-echo ""
-echo "The metrics.xml file has been updated and written to ${metrics_temp_file}.";
+    parse_input $*
+    update_security;
+    update_metrics;
+    update_grafana;
+    make_sure;
+
+    echo ""
+    echo "The metrics.xml file has been updated and written to ${metrics_temp_file}.";
+}
+
+main "$@"

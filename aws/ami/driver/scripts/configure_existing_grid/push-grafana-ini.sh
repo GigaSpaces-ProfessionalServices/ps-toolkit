@@ -7,23 +7,62 @@ readonly default_grafana_ini_path='/tmp/grafana.ini'
 readonly config_dir=/etc/grafana/
 readonly remote_user=ubuntu
 
-local_grafana_ini_path=${default_grafana_ini_path}
-destination_address=
-
 function show_usage() {
     echo ""
-    echo "   Usage: $0 [local grafana.ini file path] <hostname or ip of grafana installation>"
+    echo "Deploys Grafana initialization file to the specified destination machine"
     echo ""
-    echo "          $0 [--help] # to print this usage output"
+    echo "Usage: $0 [--help]"
+    echo "   Or: $0 [OPTIONS]... <grafana-hostname-or-ip-address>"
     echo ""
-    echo "   A destination host is required."
-    echo "   File path will default to $config_dir if another path is not provided."
-    echo "   The destination file path is not configurable. Destination machines will:"
+    echo "Options are from the following:"
+    echo "  [-s, --source-file <local-grafana-ini-file-path>]"
     echo ""
-    echo "     1. Receive a copy of grafana.ini at ${config_dir}grafana.ini"
-    echo "     2. If there was already a grafana.ini file there, a backup will be created."
+    echo "A destination host is required."
+    echo "Source file location will default to $config_dir if another path is not provided."
+    echo "The destination file path is not configurable. Destination machines will:"
     echo ""
-    exit 3
+    echo "  1. Receive a copy of grafana.ini at ${config_dir}grafana.ini"
+    echo "  2. If there was already a grafana.ini file there, a backup will be created."
+    echo ""
+}
+
+function parse_input() {
+    if [[ $# == 0 ]];
+    then
+        echo "No Grafana hostname or IP address provided" >&2
+        show_usage; exit 2
+    fi
+
+    if [[ $# > 3 ]]; then
+        echo "Invalid arguments encountered for script $0" >&2
+        show_usage; exit 2
+    fi
+
+    if [[ $1 == '--help' ]]; then
+        show_usage; exit 0
+    fi
+
+    while [[ $# > 0 ]]; do
+        case $1 in
+        '-s' | '--source-file')
+            local_grafana_ini_path="$2"
+            shift 2 ;;
+        *)
+            if [[ "$1" == "-"* ]]; then
+                echo "Unknown option encountered: $1" >&2
+                show_usage; exit 2
+            fi
+
+            # required parameter
+            destination_address="$1"
+            shift ;;
+        esac
+    done
+
+    if [[ ! -f ${local_grafana_ini_path} ]]; then
+        echo "The source file is not available: ${local_grafana_ini_path}" >&2
+        exit 1
+    fi
 }
 
 function backup_existing_grafana_config() {
@@ -40,37 +79,9 @@ function copy_file_to_destination() {
     ssh -t ${remote_user}@${remote_host} sudo cp /tmp/grafana.ini ${config_dir}grafana.ini
 }
 
-function parse_input() {
-    if [[ $# == 0 ]];
-    then
-        show_usage;
-        exit 3
-    fi
-    if [[ $# > 2 ]];
-    then
-        show_usage;
-        exit 3
-    fi
-    if [[ $# == 1 ]];
-    then
-        if [[ $1 == "--help" ]];
-        then
-            show_usage;
-            exit 0
-	    else
-	        destination_address=$1
-            test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
-        fi
-    fi
-    if [[ $# == 2 ]];
-	then
-	    destination_address=$2
-	    local_grafana_ini_path=$1
-        test ! -f ${local_grafana_ini_path} && ( echo "Bad file path: ${local_grafana_ini_path} ."; show_usage; exit 3 )
-	fi
-}
-
 function main() {
+    local_grafana_ini_path=${default_grafana_ini_path}
+
     parse_input $*
     backup_existing_grafana_config ${destination_address}
     copy_file_to_destination ${destination_address}

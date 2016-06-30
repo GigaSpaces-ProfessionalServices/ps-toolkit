@@ -36,7 +36,7 @@ function parse_input() {
         show_usage; exit 2
     fi
 
-    if [[ $1 == '--help' ]]; then
+    if [[ $# -eq 1 && $1 == '--help' ]]; then
         show_usage; exit 0
     fi
 

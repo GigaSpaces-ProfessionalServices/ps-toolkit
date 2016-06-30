@@ -42,7 +42,7 @@ show_usage() {
 }
 
 parse_input() {
-    if [[ $1 == '--help' ]]; then
+    if [[ $# -eq 1 && $1 == '--help' ]]; then
         show_usage; exit 0
     fi
 

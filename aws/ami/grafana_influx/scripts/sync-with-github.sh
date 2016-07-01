@@ -6,9 +6,12 @@ readonly github_repo="https://github.com/GigaSpaces-ProfessionalServices/ps-tool
 readonly github_root="/var/github"
 readonly ps_toolkit="ps-toolkit"
 
+readonly grafana_source="$github_root/$ps_toolkit/aws/ami/grafana_influx/scripts"
+readonly grafana_target=~
+
 show_usage() {
     echo ""
-    echo "Retrieves \"Grafana\" machine scripts from GitHub and deploys them"
+    echo "Retrieves 'Grafana' machine scripts from GitHub and deploys them"
     echo ""
     echo "Usage: $0 [--help]"
     echo ""
@@ -56,7 +59,11 @@ pull_scripts() {
 }
 
 copy_grafana_scripts() {
-    echo ""
+    echo "Copying 'Grafana' script files from local repo clone to target location"
+
+    # Below command is supposed to preserve Linux file permissions
+    # Only the files missing in source tree are being deleted
+    sudo rsync -av --delete $grafana_source $grafana_target
 }
 
 main() {

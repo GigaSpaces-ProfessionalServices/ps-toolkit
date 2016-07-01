@@ -2,7 +2,9 @@
 set -o errexit
 set -o nounset
 
-readonly github_root="/var/github/ps-toolkit"
+readonly github_repo="https://github.com/GigaSpaces-ProfessionalServices/ps-toolkit.git"
+readonly github_root="/var/github"
+readonly ps_toolkit="ps-toolkit"
 
 show_usage() {
     echo ""
@@ -23,16 +25,35 @@ parse_input() {
     fi
 }
 
-pull_grafana_scripts() {
+pull_scripts() {
     if [[ ! -d $github_root ]]; then
         echo "The local source tree directory '$github_root' is missing" >&2
         exit 1
     fi
+
+    cd $github_root
+
+    git_version=$(git --version)
+    if [[ ! $git_version == "git version"* ]]; then
+        echo "Git is not installed on current machine, cannot continue" >&2
+    fi
+
+    if [[ ! -d "$ps_toolkit" ]]; then
+        sudo git clone $github_repo $ps_toolkit
+    fi
+
+    cd $ps_toolkit
+    sudo git fetch $github_repo
+}
+
+copy_grafana_scripts() {
+    echo ""
 }
 
 main() {
     parse_input "$@"
-    pull_grafana_scripts
+    pull_scripts
+    copy_grafana_scripts
 }
 
 main "$@"

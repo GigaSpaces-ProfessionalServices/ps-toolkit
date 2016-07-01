@@ -39,10 +39,19 @@ pull_scripts() {
     fi
 
     if [[ ! -d "$ps_toolkit" ]]; then
+        echo "Retrieving 'ps-toolkit' repository from GitHub"
         sudo git clone $github_repo $ps_toolkit
+
+        cd $ps_toolkit
+
+        # Below line assumes that git credentials to be entered manually
+        # at least once - this should happen before AMI is generated
+        sudo git config credential.helper store
+    else
+        cd $ps_toolkit
     fi
 
-    cd $ps_toolkit
+    echo "Fetching the most recent version of 'ps-toolkit' repository"
     sudo git fetch $github_repo
 }
 

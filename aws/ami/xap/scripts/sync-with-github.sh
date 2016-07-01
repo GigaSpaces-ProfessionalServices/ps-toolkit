@@ -6,9 +6,12 @@ readonly github_repo="https://github.com/GigaSpaces-ProfessionalServices/ps-tool
 readonly github_root="/var/github"
 readonly ps_toolkit="ps-toolkit"
 
+readonly xap_source="$github_root/$ps_toolkit/aws/ami/xap/scripts"
+readonly xap_target="/opt/gigaspaces"
+
 show_usage() {
     echo ""
-    echo "Retrieves \"XAP\" machine scripts from GitHub and deploys them"
+    echo "Retrieves 'XAP' machine scripts from GitHub and deploys them"
     echo ""
     echo "Usage: $0 [--help]"
     echo ""
@@ -56,7 +59,11 @@ pull_scripts() {
 }
 
 copy_xap_scripts() {
-    echo ""
+    echo "Copying 'XAP' script files from local repo clone to target location"
+
+    # Below command is supposed to preserve Linux file permissions
+    # Only the files missing in source tree are being deleted
+    sudo rsync -av --delete $xap_source $xap_target
 }
 
 main() {

@@ -6,9 +6,12 @@ readonly github_repo="https://github.com/GigaSpaces-ProfessionalServices/ps-tool
 readonly github_root="/var/github"
 readonly ps_toolkit="ps-toolkit"
 
+readonly driver_source="$github_root/$ps_toolkit/aws/ami/driver/scripts"
+readonly driver_target=~
+
 show_usage() {
     echo ""
-    echo "Retrieves \"Driver\" machine scripts from GitHub and deploys them"
+    echo "Retrieves 'Driver' machine scripts from GitHub and deploys them"
     echo ""
     echo "Usage: $0 [--help]"
     echo ""
@@ -56,7 +59,11 @@ pull_scripts() {
 }
 
 copy_driver_scripts() {
-    echo ""
+    echo "Copying 'Driver' script files from local repo clone to target location"
+
+    # Below command is supposed to preserve Linux file permissions
+    # Only the files missing in source tree are being deleted
+    sudo rsync -av --delete $driver_source $driver_target
 }
 
 main() {

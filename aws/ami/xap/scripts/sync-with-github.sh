@@ -54,8 +54,8 @@ pull_scripts() {
         cd $ps_toolkit
     fi
 
-    echo "Fetching the most recent version of 'ps-toolkit' repository"
-    sudo git fetch $github_repo
+    echo "Pulling the most recent version of 'ps-toolkit' repository"
+    sudo git pull $github_repo
 }
 
 copy_xap_scripts() {

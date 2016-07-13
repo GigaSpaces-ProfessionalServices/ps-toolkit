@@ -43,7 +43,7 @@ start_remote_gscs() {
                 echo "Cannot parse the number of GSCs to be started" >&2;
                 show_usage; exit 1
             fi
-            ssh ${host_addr} /bin/bash -l ${JSHOMEDIR}/scripts/start-gscs.sh ${count}
+            ssh ${host_addr} /bin/bash -l ${JSHOMEDIR}/scripts/xap_service_mgt/start-gscs.sh ${count}
         fi
     done
 }

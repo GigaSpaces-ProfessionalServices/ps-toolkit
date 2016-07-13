@@ -28,6 +28,8 @@ public class GridInfo {
     @PropertyKey("gsc_host_addresses")
     private Map<String, Integer> gscAddresses = new HashMap<>();
 
+    private transient Map<String, ClusterReplicationPolicy> replPolicyMap = new HashMap<>();
+
     public Set<String> getIpAddresses() {
         return ipAddresses;
     }
@@ -90,5 +92,13 @@ public class GridInfo {
 
     public void setSecuredSpaces(Set<String> securedSpaces) {
         this.securedSpaces = securedSpaces;
+    }
+
+    public Map<String, ClusterReplicationPolicy> getReplPolicyMap() {
+        return replPolicyMap;
+    }
+
+    public void setReplPolicyMap(Map<String, ClusterReplicationPolicy> replPolicyMap) {
+        this.replPolicyMap = replPolicyMap;
     }
 }

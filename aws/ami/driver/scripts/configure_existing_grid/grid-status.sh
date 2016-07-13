@@ -2,12 +2,13 @@
 set -o errexit
 
 show_usage() {
-    echo ""
+    echo 
     echo "Creates output with XAP grid information, that is up and running on specific AWS stack of VMs"
     echo 
     echo "Usage: $0 [--help] <stack-name>"
     echo
     echo "Optional parameters:"
+    echo
     echo "  -d      The directory where the output file will be created"
     echo "  -p      The output file name prefix"
     echo 
@@ -84,9 +85,9 @@ describe_stack() {
 }
 
 describe_grid() {
-    readonly grid_inspector_dir=tools/grid-inspector
+    readonly tools_dir=tools/grid-info-service
    
-    java -cp $grid_inspector_dir/lib/*:$grid_inspector_dir/grid-inspector.jar com.gigaspaces.gigapro.GridInspector ${#private_ips[@]} $(IFS=',';echo "${lookup_locators[*]}") | tee -a $1
+    java -cp $tools_dir/lib/*:$tools_dir/grid-info-service.jar com.gigaspaces.gigapro.GridInfoServcies ${#private_ips[@]} $(IFS=',';echo "${lookup_locators[*]}") | tee -a $1
 }
 
 find_webui() {
@@ -105,7 +106,7 @@ find_webui() {
 main() {
     parse_input "$@"
     
-    local output_file=${dest_dir}/${file_name_prefix}-output-$(date +%Y-%m-%d~%H.%M.%S)
+    readonly output_file=${dest_dir}/${file_name_prefix}-output-$(date +%Y-%m-%d~%H.%M.%S)
     
     describe_stack $output_file
     find_webui $output_file

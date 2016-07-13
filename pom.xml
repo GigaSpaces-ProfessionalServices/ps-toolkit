@@ -10,7 +10,7 @@
         <module>rebalancer</module>
         <module>script-creator</module>
         <module>rebalancer-od</module>
-        <module>grid-inspector</module>
+        <module>grid-info-service</module>
     </modules>
 
     <properties>

@@ -8,9 +8,9 @@
         <artifactId>toolkit</artifactId>
         <version>1.1-SNAPSHOT</version>
     </parent>
-    <artifactId>grid-inspector</artifactId>
+    <artifactId>grid-info-service</artifactId>
     <version>1.1-SNAPSHOT</version>
-    <name>grid-inspector</name>
+    <name>grid-info-service</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -24,10 +24,15 @@
             <groupId>com.gigaspaces</groupId>
             <artifactId>gs-openspaces</artifactId>
         </dependency>
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
-        <finalName>grid-inspector</finalName>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -47,7 +52,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/grid-inspector/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}/lib</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
@@ -64,10 +69,10 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.gigaspaces.gigapro.GridInspector</mainClass>
+                            <mainClass>com.gigaspaces.gigapro.GridInfoService</mainClass>
                         </manifest>
                     </archive>
-                    <finalName>grid-inspector/grid-inspector</finalName>
+                    <finalName>${project.artifactId}/${project.artifactId}</finalName>
                     <outputDirectory>target</outputDirectory>
                 </configuration>
             </plugin>

@@ -1,6 +1,5 @@
 package com.gigaspaces.gigapro.convert;
 
-
 /**
  * @author Svitlana_Pogrebna
  *
@@ -8,6 +7,6 @@ package com.gigaspaces.gigapro.convert;
 public interface Converter {
 
     <T> String convert(T data);
-    
+
     <T> String convert(String keyPrefix, T data);
 }

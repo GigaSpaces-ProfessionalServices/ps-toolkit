@@ -11,11 +11,11 @@ import static java.lang.annotation.ElementType.*;
  * @author Svitlana_Pogrebna
  *
  */
-@Target({FIELD})
+@Target({ FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface PropertyKey {
 
     String value();
-    
+
 }

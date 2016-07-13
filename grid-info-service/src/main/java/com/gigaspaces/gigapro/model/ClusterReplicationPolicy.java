@@ -7,7 +7,7 @@ import com.gigaspaces.gigapro.convert.PropertyKey;
  *
  */
 public class ClusterReplicationPolicy {
-    
+
     @PropertyKey("replication_mode")
     private String replicationMode;
     @PropertyKey("repl_policy_type")
@@ -54,7 +54,7 @@ public class ClusterReplicationPolicy {
     private String onRedoLogCapacityExceeded;
     @PropertyKey("redo_log_capacity")
     private Long redoLogCapacity;
-    
+
     public String getReplicationMode() {
         return replicationMode;
     }

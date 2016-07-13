@@ -1,6 +1,8 @@
 package com.gigaspaces.gigapro.convert;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -14,12 +16,12 @@ public class PropertiesFormatConverter implements Converter {
     private static final char MULTI_VALUES_SEPARATOR = ',';
     private static final char KEY_VALUE_SEPARATOR = ':';
     private static final char KEY_SEPARATOR = '_';
-    
+
     @Override
     public <T> String convert(T data) {
-       return convert("", data);
+        return convert("", data);
     }
-        
+
     @Override
     public <T> String convert(String keyPrefix, T data) {
         if (data == null) {
@@ -30,6 +32,11 @@ public class PropertiesFormatConverter implements Converter {
         StringBuilder output = new StringBuilder();
         for (Field field : fields) {
             field.setAccessible(true);
+
+            if (field.isSynthetic() || Modifier.isTransient(field.getModifiers())) {
+                continue;
+            }
+
             try {
                 Class<? extends Object> fieldType = field.getType();
                 Object value = field.get(data);
@@ -44,6 +51,8 @@ public class PropertiesFormatConverter implements Converter {
                     convertMapValue(key, (Map<?, ?>) value, output);
                 } else if (isIterable(fieldType)) {
                     convertIterableValue(key, (Iterable<?>) value, output);
+                } else if (fieldType.isArray()) {
+                    convertIterableValue(key, Arrays.asList((Object[]) value), output);
                 } else {
                     output.append(value == null ? "" : value).append("\n");
                 }

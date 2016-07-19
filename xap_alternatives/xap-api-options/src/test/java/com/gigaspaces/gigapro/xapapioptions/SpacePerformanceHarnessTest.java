@@ -1,4 +1,4 @@
-package com.gigaspaces.pstoolkit.xapapioptions;
+package com.gigaspaces.gigapro.xapapioptions;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

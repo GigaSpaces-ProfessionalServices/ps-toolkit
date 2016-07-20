@@ -11,20 +11,26 @@ public class ToolkitJavaBean implements Serializable {
     private double _objectData;
     private boolean _objectFlag;
 
+    static String GetRandomHexString(int length) {
+        Random random = DataObjectFactory.ToolkitRandom;
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < length; i++) {
+            int symbol = random.nextInt(16);
+            if (symbol >= 10)
+                symbol = 'a' + (symbol - 10);
+            else
+                symbol = '0' + symbol;
+            stringBuilder.append((char) symbol);
+        }
+        return stringBuilder.toString();
+    }
+
     public ToolkitJavaBean() {
         Random random = DataObjectFactory.ToolkitRandom;
+        _objectId = GetRandomHexString(16);
         _objectType = random.nextInt() % 256;
         _objectData = random.nextDouble();
         _objectFlag = random.nextBoolean();
-
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < 16; i++) {
-            int symbol = random.nextInt(16) + '0';
-            if (symbol > '9')
-                symbol = 'a' + (symbol - '9');
-            stringBuilder.append((char) symbol);
-        }
-        _objectId = stringBuilder.toString();
     }
 
     public String getObjectId() {

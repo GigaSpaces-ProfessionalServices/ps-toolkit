@@ -10,6 +10,7 @@
         <module>rebalancer</module>
         <module>script-creator</module>
         <module>rebalancer-od</module>
+        <module>xap_alternatives/xap-api-options</module>
     </modules>
 
     <properties>

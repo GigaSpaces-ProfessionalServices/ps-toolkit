@@ -6,14 +6,16 @@ package com.gigaspaces.gigapro.xapapioptions;
 public interface SpacePerformanceHarness {
     // generic?
 
-    public enum SpaceAccessMode {
+    enum SpaceAccessMode {
         CLUSTERED_PROXY,
-        REMOTE_EXECUTOR
+        REMOTE_EXECUTOR,
+        COLLOCATED_SPACE
     }
 
-    public enum ObjectTypeMode {
+    enum ObjectTypeMode {
+        JAVA_BEAN,
         SPACE_CLASS,
-        JAVA_BEAN
+        SPACE_DOCUMENT
     }
 
     //SpaceClass[] readSpaceClassObjects(String[] ids, ... );

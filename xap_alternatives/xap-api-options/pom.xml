@@ -11,8 +11,10 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>xap-api-options</artifactId>
     <packaging>jar</packaging>
-    <!--name>xap-api-options</name-->
-    <description>TODO</description>
+
+    <description>The project provides basic interface and implementation classes
+        that help to measure XAP space performance for different data objects.
+    </description>
 
     <properties>
         <!--gsType>PU</gsType-->
@@ -21,15 +23,16 @@
     </properties>
 
     <dependencies>
+        <!-- Make sure the dependencies match the parent pom list -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <!--version>3.8.1</version-->
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.gigaspaces</groupId>
             <artifactId>gs-openspaces</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

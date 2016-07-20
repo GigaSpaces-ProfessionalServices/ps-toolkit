@@ -1,4 +1,4 @@
-package com.gigaspaces.gigapro.xapapioptions;
+package com.gigaspaces.gigapro.xapapi.options;
 
 //import java.util.concurrent.Executor;
 //import java.util.concurrent.Executors;
@@ -12,17 +12,13 @@ public interface SpacePerformanceHarness {
         COLLOCATED_SPACE
     }
 
-    enum ObjectTypeMode {
-        JAVA_BEAN,
-        SPACE_CLASS,
-        SPACE_DOCUMENT
-    }
-
     //SpaceClass[] readSpaceClassObjects(String[] ids, ... );
     //Object[] writeSpaceClassObjects(@SpaceClass[] objects, ...);
 
     Object[] readObjectsFromSpace(String[] objectIds,
-        SpaceAccessMode spaceAccessMode, ObjectTypeMode objectTypeMode);
+        SpaceAccessMode spaceAccessMode,
+        DataObjectFactory.ToolkitObjectType objectTypeMode);
     void writeObjectsToSpace(Object[] dataObjects,
-        SpaceAccessMode spaceAccessMode, ObjectTypeMode objectTypeMode);
+        SpaceAccessMode spaceAccessMode,
+        DataObjectFactory.ToolkitObjectType objectTypeMode);
 }

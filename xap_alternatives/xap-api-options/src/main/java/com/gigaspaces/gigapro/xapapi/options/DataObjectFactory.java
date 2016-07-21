@@ -2,6 +2,9 @@ package com.gigaspaces.gigapro.xapapi.options;
 
 import java.util.*;
 
+import com.gigaspaces.metadata.*;
+import com.gigaspaces.metadata.index.SpaceIndexType;
+
 import com.gigaspaces.gigapro.xapapi.entities.*;
 
 public class DataObjectFactory {
@@ -12,10 +15,16 @@ public class DataObjectFactory {
     }
 
     public static Random ToolkitRandom;
+    public static SpaceTypeDescriptor TypeDescriptor;
 
     static {
         ToolkitRandom = new Random();
         ToolkitRandom.setSeed(System.currentTimeMillis());
+
+        // Below descriptor is used for space documents
+        TypeDescriptor = new SpaceTypeDescriptorBuilder("ToolkitSpaceDocument")
+            .idProperty("ObjectId").routingProperty("ObjectId")
+            .addPropertyIndex("ObjectType", SpaceIndexType.EXTENDED, false).create();
     }
 
     public Object GenerateInstance(ToolkitObjectType objectType) {
@@ -25,7 +34,7 @@ public class DataObjectFactory {
         case SPACE_CLASS:
             return new ToolkitSpaceClass();
         case SPACE_DOCUMENT:
-            return null;
+            return new ToolkitSpaceDocument();
         default:
             throw new IllegalArgumentException();
         }
@@ -45,8 +54,12 @@ public class DataObjectFactory {
                     spaceClassArray[i] = new ToolkitSpaceClass();
                 return spaceClassArray;
             }
-            case SPACE_DOCUMENT:
-                return null; // TODO:
+            case SPACE_DOCUMENT: {
+                ToolkitSpaceDocument[] spaceDocumentArray = new ToolkitSpaceDocument[arraySize];
+                for (int i = 0; i < arraySize; i++)
+                    spaceDocumentArray[i] = new ToolkitSpaceDocument();
+                return spaceDocumentArray;
+            }
             default:
                 throw new IllegalArgumentException();
         }

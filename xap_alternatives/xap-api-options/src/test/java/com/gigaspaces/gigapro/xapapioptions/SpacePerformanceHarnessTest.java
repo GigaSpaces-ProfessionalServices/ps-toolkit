@@ -39,6 +39,16 @@ public class SpacePerformanceHarnessTest extends TestCase
             javaBeanArray[0] != null);
 
         ToolkitJavaBean javaBean = (ToolkitJavaBean) javaBeanArray[0];
+        System.out.print("First java bean id: ");
         System.out.println(javaBean.getObjectId());
+
+        Object[] spaceClassArray = _factory.GenerateArray
+                (DataObjectFactory.ToolkitObjectType.SPACE_CLASS, 10);
+        assertTrue("Failed to initialize space class object instance",
+                spaceClassArray[0] != null);
+
+        ToolkitSpaceClass spaceClass = (ToolkitSpaceClass) spaceClassArray[0];
+        System.out.print("First space class id: ");
+        System.out.println(spaceClass.getObjectId());
     }
 }

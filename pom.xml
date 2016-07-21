@@ -10,6 +10,7 @@
         <module>rebalancer</module>
         <module>script-creator</module>
         <module>rebalancer-od</module>
+        <module>load-simulator</module>
         <module>grid-info-service</module>
     </modules>
 
@@ -26,12 +27,18 @@
         <guava.version>18.0</guava.version>
         <junit.version>4.12</junit.version>
     </properties>
-	
+
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.gigaspaces</groupId>
                 <artifactId>gs-openspaces</artifactId>
+                <version>${gsVersion}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.gigaspaces</groupId>
+                <artifactId>gs-runtime</artifactId>
                 <version>${gsVersion}</version>
                 <scope>provided</scope>
             </dependency>
@@ -102,7 +109,7 @@
             </plugins>
         </pluginManagement>
     </build>
-    
+
     <repositories>
         <repository>
             <id>org.openspaces</id>

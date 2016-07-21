@@ -31,7 +31,7 @@ parse_input() {
         show_usage; exit 2
     fi
 
-    if [[ $1 == '--help' ]]; then
+    if [[ $# -eq 1 && $1 == '--help' ]]; then
         show_usage; exit 0
     fi
 
@@ -157,7 +157,7 @@ deploy() {
 
 main() {
     stack_name="xap-grid"
-    template_uri="file://pu_configuration_templates/boot-grid.template"
+    template_uri="file://cloud_formation_templates/boot-grid.template"
 
     parse_input "$@"
     create_vms

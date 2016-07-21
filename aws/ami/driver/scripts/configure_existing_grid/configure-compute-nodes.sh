@@ -15,7 +15,7 @@ parse_input() {
         show_usage; exit 2
     fi
 
-    if [[ $1 == '--help' ]]; then
+    if [[ $# -eq 1 && $1 == '--help' ]]; then
         show_usage; exit 0
     fi
 }
@@ -26,7 +26,7 @@ main() {
     readonly ip_addr=( "$@" )
     for host_dest in "${ip_addr[@]}"
     do
-        ssh ${host_dest} ${JSHOMEDIR}/scripts/configure.sh --lookup-groups ${LOOKUPGROUPS}
+        ssh ${host_dest} ${JSHOMEDIR}/scripts/update_local_configuration/local-configure.sh --lookup-groups ${LOOKUPGROUPS}
     done
 }
 

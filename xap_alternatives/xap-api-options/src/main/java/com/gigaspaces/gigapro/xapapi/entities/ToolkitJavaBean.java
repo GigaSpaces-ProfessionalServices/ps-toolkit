@@ -1,9 +1,12 @@
 package com.gigaspaces.gigapro.xapapi.entities;
 
-import com.gigaspaces.gigapro.xapapi.options.DataObjectFactory;
 
 import java.io.*;
 import java.util.*;
+
+import com.gigaspaces.annotation.pojo.*;
+import com.gigaspaces.metadata.index.SpaceIndexType;
+import com.gigaspaces.gigapro.xapapi.options.*;
 
 public class ToolkitJavaBean implements Serializable {
     private String _objectId;
@@ -28,11 +31,12 @@ public class ToolkitJavaBean implements Serializable {
     public ToolkitJavaBean() {
         Random random = DataObjectFactory.ToolkitRandom;
         _objectId = GetRandomHexString(16);
-        _objectType = random.nextInt() % 256;
+        _objectType = random.nextInt(256);
         _objectData = random.nextDouble();
         _objectFlag = random.nextBoolean();
     }
 
+    @SpaceId(autoGenerate = false) @SpaceRouting
     public String getObjectId() {
         return _objectId;
     }
@@ -41,7 +45,7 @@ public class ToolkitJavaBean implements Serializable {
         _objectId = objectId;
     }
 
-
+	@SpaceIndex(type = SpaceIndexType.EXTENDED, unique = false)
     public int getObjectType() {
         return _objectType;
     }
@@ -65,4 +69,6 @@ public class ToolkitJavaBean implements Serializable {
     public void setObjectFlag(boolean objectFlag) {
         _objectFlag = objectFlag;
     }
+
+    // Other popular annotations: SpaceProperty, SpaceExclude
 }

@@ -26,7 +26,9 @@ public class ToolkitBaseEntity implements Serializable {
         return stringBuilder.toString();
     }
 
-    public ToolkitBaseEntity() {
+    public ToolkitBaseEntity() {}
+
+    public void RandomInitialize() {
         Random random = DataObjectFactory.ToolkitRandom;
         _objectId = GetRandomHexString(16);
         _objectType = random.nextInt(256);

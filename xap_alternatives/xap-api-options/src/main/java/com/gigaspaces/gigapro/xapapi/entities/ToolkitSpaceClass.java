@@ -16,11 +16,11 @@ public class ToolkitSpaceClass extends ToolkitBaseEntity {
     }
 
     @SpaceIndex(type = SpaceIndexType.EXTENDED, unique = false)
-    public int getObjectType() {
+    public Integer getObjectType() {
         return _objectType;
     }
 
-    public void setObjectType(int objectType) {
+    public void setObjectType(Integer objectType) {
         _objectType = objectType;
     }
 }

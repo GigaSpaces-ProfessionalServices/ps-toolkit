@@ -13,11 +13,11 @@ public class ToolkitJavaBean extends ToolkitBaseEntity {
         _objectId = objectId;
     }
 
-    public int getObjectType() {
+    public Integer getObjectType() {
         return _objectType;
     }
 
-    public void setObjectType(int objectType) {
+    public void setObjectType(Integer objectType) {
         _objectType = objectType;
     }
 }

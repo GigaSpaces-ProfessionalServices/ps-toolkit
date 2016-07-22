@@ -8,11 +8,9 @@ import com.gigaspaces.gigapro.xapapi.options.DataObjectFactory;
 public class ToolkitBaseEntity implements Serializable {
 
     protected String _objectId;
-
-    // Note: Standard approach is to use nullable types for properties
-    protected int _objectType;
-    protected double _objectData;
-    protected boolean _objectFlag;
+    protected Integer _objectType;
+    protected Double _objectData;
+    protected Boolean _objectFlag;
 
     static String GetRandomHexString(int length) {
         Random random = DataObjectFactory.ToolkitRandom;
@@ -36,19 +34,19 @@ public class ToolkitBaseEntity implements Serializable {
         _objectFlag = random.nextBoolean();
     }
 
-    public double getObjectData() {
+    public Double getObjectData() {
         return _objectData;
     }
 
-    public void setObjectData(double objectData) {
+    public void setObjectData(Double objectData) {
         _objectData = objectData;
     }
 
-    public boolean getObjectFlag() {
+    public Boolean getObjectFlag() {
         return _objectFlag;
     }
 
-    public void setObjectFlag(boolean objectFlag) {
+    public void setObjectFlag(Boolean objectFlag) {
         _objectFlag = objectFlag;
     }
 }

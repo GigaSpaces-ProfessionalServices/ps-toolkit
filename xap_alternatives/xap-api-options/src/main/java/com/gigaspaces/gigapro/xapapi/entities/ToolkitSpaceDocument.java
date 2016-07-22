@@ -9,7 +9,7 @@ public class ToolkitSpaceDocument extends SpaceDocument {
 
     public ToolkitSpaceDocument() {}
 
-    public void RandomInitialize() {
+    public ToolkitSpaceDocument RandomInitialize() {
         Random random = DataObjectFactory.ToolkitRandom;
         setProperty(DataObjectFactory.OBJECT_ID,
             ToolkitBaseEntity.GetRandomHexString(16));
@@ -19,5 +19,6 @@ public class ToolkitSpaceDocument extends SpaceDocument {
         setProperty(DataObjectFactory.OBJECT_DATA, random.nextDouble());
         setProperty(DataObjectFactory.OBJECT_FLAG, random.nextBoolean());
         setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
+        return this;
     }
 }

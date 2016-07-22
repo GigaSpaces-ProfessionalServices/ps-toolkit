@@ -39,12 +39,18 @@ public class DataObjectFactory {
 
     public Object GenerateInstance(ToolkitObjectType objectType) {
         switch (objectType) {
-        case JAVA_BEAN:
-            return new ToolkitJavaBean();
-        case SPACE_CLASS:
-            return new ToolkitSpaceClass();
-        case SPACE_DOCUMENT:
-            return new ToolkitSpaceDocument();
+        case JAVA_BEAN: {
+            ToolkitJavaBean javaBean = new ToolkitJavaBean();
+            return javaBean.RandomInitialize();
+        }
+        case SPACE_CLASS: {
+            ToolkitSpaceClass spaceClass = new ToolkitSpaceClass();
+            return spaceClass.RandomInitialize();
+        }
+        case SPACE_DOCUMENT: {
+            ToolkitSpaceDocument spaceDocument = new ToolkitSpaceDocument();
+            return spaceDocument.RandomInitialize();
+        }
         default:
             throw new IllegalArgumentException();
         }

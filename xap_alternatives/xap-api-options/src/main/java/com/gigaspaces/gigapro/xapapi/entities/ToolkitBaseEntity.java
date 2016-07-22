@@ -28,12 +28,13 @@ public class ToolkitBaseEntity implements Serializable {
 
     public ToolkitBaseEntity() {}
 
-    public void RandomInitialize() {
+    public ToolkitBaseEntity RandomInitialize() {
         Random random = DataObjectFactory.ToolkitRandom;
         _objectId = GetRandomHexString(16);
         _objectType = random.nextInt(256);
         _objectData = random.nextDouble();
         _objectFlag = random.nextBoolean();
+        return this;
     }
 
     public Double getObjectData() {

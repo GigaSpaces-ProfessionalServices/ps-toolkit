@@ -1,7 +1,10 @@
 package com.gigaspaces.gigapro.xapapi.entities;
 
+import com.gigaspaces.annotation.pojo.SpaceId;
+
 public class ToolkitJavaBean extends ToolkitBaseEntity {
 
+    @SpaceId // Unavoidable annotation
     public String getObjectId() {
         return _objectId;
     }

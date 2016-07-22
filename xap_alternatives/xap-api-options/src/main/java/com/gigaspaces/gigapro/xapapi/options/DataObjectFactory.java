@@ -8,6 +8,7 @@ import com.gigaspaces.metadata.index.SpaceIndexType;
 import com.gigaspaces.gigapro.xapapi.entities.*;
 
 public class DataObjectFactory {
+
     public enum ToolkitObjectType {
         JAVA_BEAN,
         SPACE_CLASS,
@@ -17,14 +18,23 @@ public class DataObjectFactory {
     public static Random ToolkitRandom;
     public static SpaceTypeDescriptor TypeDescriptor;
 
+    public static final String OBJECT_ID = "objectId";
+    public static final String OBJECT_TYPE = "objectType";
+    public static final String OBJECT_DATA = "objectData";
+    public static final String OBJECT_FLAG = "objectFlag";
+
+    public static final String TOOLKIT_SPACE_NAME = "Toolkit";
+    public static final String TOOLKIT_SPACE_DOCUMENT_TYPE =
+        "com.gigaspaces.gigapro.xapapi.entities.ToolkitSpaceDocument";
+
     static {
         ToolkitRandom = new Random();
         ToolkitRandom.setSeed(System.currentTimeMillis());
 
         // Below descriptor is used for space documents
-        TypeDescriptor = new SpaceTypeDescriptorBuilder("ToolkitSpaceDocument")
-            .idProperty("ObjectId").routingProperty("ObjectId")
-            .addPropertyIndex("ObjectType", SpaceIndexType.EXTENDED, false).create();
+        TypeDescriptor = new SpaceTypeDescriptorBuilder(TOOLKIT_SPACE_DOCUMENT_TYPE)
+            .idProperty(OBJECT_ID).routingProperty(OBJECT_ID)
+            .addPropertyIndex(OBJECT_TYPE, SpaceIndexType.EXTENDED, false).create();
     }
 
     public Object GenerateInstance(ToolkitObjectType objectType) {

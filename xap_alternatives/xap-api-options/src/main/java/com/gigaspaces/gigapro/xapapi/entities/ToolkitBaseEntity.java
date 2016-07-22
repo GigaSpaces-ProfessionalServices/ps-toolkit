@@ -8,6 +8,8 @@ import com.gigaspaces.gigapro.xapapi.options.DataObjectFactory;
 public class ToolkitBaseEntity implements Serializable {
 
     protected String _objectId;
+
+    // Note: Standard approach is to use nullable types for properties
     protected int _objectType;
     protected double _objectData;
     protected boolean _objectFlag;

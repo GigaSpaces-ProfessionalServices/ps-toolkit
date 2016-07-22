@@ -9,11 +9,13 @@ public class ToolkitSpaceDocument extends SpaceDocument {
 
     public ToolkitSpaceDocument() {
         Random random = DataObjectFactory.ToolkitRandom;
-        setProperty("ObjectId", ToolkitBaseEntity.GetRandomHexString(16));
-        setProperty("ObjectType", random.nextInt(256));
-        setProperty("ObjectData", random.nextDouble());
-        setProperty("ObjectFlag", random.nextBoolean());
+        setProperty(DataObjectFactory.OBJECT_ID,
+            ToolkitBaseEntity.GetRandomHexString(16));
 
-        // SpaceTypeDescriptor?
+        // Random methods return primitives that are wrapped anyway
+        setProperty(DataObjectFactory.OBJECT_TYPE, random.nextInt(256));
+        setProperty(DataObjectFactory.OBJECT_DATA, random.nextDouble());
+        setProperty(DataObjectFactory.OBJECT_FLAG, random.nextBoolean());
+        setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
     }
 }

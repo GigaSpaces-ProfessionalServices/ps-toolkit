@@ -54,20 +54,26 @@ public class DataObjectFactory {
         switch (objectType) {
             case JAVA_BEAN: {
                 ToolkitJavaBean[] javaBeanArray = new ToolkitJavaBean[arraySize];
-                for (int i = 0; i < arraySize; i++)
+                for (int i = 0; i < arraySize; i++) {
                     javaBeanArray[i] = new ToolkitJavaBean();
+                    javaBeanArray[i].RandomInitialize();
+                }
                 return javaBeanArray;
             }
             case SPACE_CLASS: {
                 ToolkitSpaceClass[] spaceClassArray = new ToolkitSpaceClass[arraySize];
-                for (int i = 0; i < arraySize; i++)
+                for (int i = 0; i < arraySize; i++) {
                     spaceClassArray[i] = new ToolkitSpaceClass();
+                    spaceClassArray[i].RandomInitialize();
+                }
                 return spaceClassArray;
             }
             case SPACE_DOCUMENT: {
                 ToolkitSpaceDocument[] spaceDocumentArray = new ToolkitSpaceDocument[arraySize];
-                for (int i = 0; i < arraySize; i++)
+                for (int i = 0; i < arraySize; i++) {
                     spaceDocumentArray[i] = new ToolkitSpaceDocument();
+                    spaceDocumentArray[i].RandomInitialize();
+                }
                 return spaceDocumentArray;
             }
             default:

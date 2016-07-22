@@ -7,7 +7,9 @@ import java.util.Random;
 
 public class ToolkitSpaceDocument extends SpaceDocument {
 
-    public ToolkitSpaceDocument() {
+    public ToolkitSpaceDocument() {}
+
+    public void RandomInitialize() {
         Random random = DataObjectFactory.ToolkitRandom;
         setProperty(DataObjectFactory.OBJECT_ID,
             ToolkitBaseEntity.GetRandomHexString(16));

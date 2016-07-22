@@ -7,11 +7,16 @@ public class NanoTimeHelper {
         _startTime = System.nanoTime();
     }
 
+    public void reset() {
+        _startTime = System.nanoTime();
+    }
+
     public void printElapsedTime(String messagePrefix) {
         long finishTime = System.nanoTime();
         long nanoSeconds = finishTime - _startTime;
         Double milliSeconds = nanoSeconds / 1000000.0;
         System.out.println(messagePrefix + ": " +
             milliSeconds.toString() + " milliseconds");
+        _startTime = System.nanoTime();
     }
 }

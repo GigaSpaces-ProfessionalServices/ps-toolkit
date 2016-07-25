@@ -16,6 +16,8 @@ public class SpacePerformanceHarnessTest
     private static final int LOOP_SIZE = 5000;
     private static final int ARRAY_SIZE = 100000;
 
+    private static final String AVERAGE_FORMAT = "0.#########";
+
     private static final String WRITE_JAVA_BEAN_ARRAY = "Writing java bean array";
     private static final String WRITE_SPACE_CLASS_ARRAY = "Writing space class array";
     private static final String WRITE_SPACE_DOCUMENT_ARRAY = "Writing space document array";
@@ -183,29 +185,28 @@ public class SpacePerformanceHarnessTest
         System.out.println("AVERAGE RESULTS: SPACE PROXY MODE");
         System.out.println();
 
-        dataSpreadsheet.printAverage(WRITE_JAVA_BEAN_ARRAY);
-        dataSpreadsheet.printAverage(READ_JAVA_BEAN_ARRAY);
+        dataSpreadsheet.printAverage(WRITE_JAVA_BEAN_ARRAY, AVERAGE_FORMAT);
+        dataSpreadsheet.printAverage(READ_JAVA_BEAN_ARRAY, AVERAGE_FORMAT);
         System.out.println();
 
-        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_ARRAY);
-        dataSpreadsheet.printAverage(READ_SPACE_CLASS_ARRAY);
+        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_ARRAY, AVERAGE_FORMAT);
+        dataSpreadsheet.printAverage(READ_SPACE_CLASS_ARRAY, AVERAGE_FORMAT);
         System.out.println();
 
-        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_ARRAY);
-        dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_ARRAY);
+        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_ARRAY, AVERAGE_FORMAT);
+        dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_ARRAY, AVERAGE_FORMAT);
         System.out.println();
 
-        dataSpreadsheet.printAverage(WRITE_JAVA_BEAN_LOOP);
-        dataSpreadsheet.printAverage(READ_JAVA_BEAN_LOOP);
+        dataSpreadsheet.printAverage(WRITE_JAVA_BEAN_LOOP, AVERAGE_FORMAT);
+        dataSpreadsheet.printAverage(READ_JAVA_BEAN_LOOP, AVERAGE_FORMAT);
         System.out.println();
 
-        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_LOOP);
-        dataSpreadsheet.printAverage(READ_SPACE_CLASS_LOOP);
+        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_LOOP, AVERAGE_FORMAT);
+        dataSpreadsheet.printAverage(READ_SPACE_CLASS_LOOP, AVERAGE_FORMAT);
         System.out.println();
 
-        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_LOOP);
-        dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_LOOP);
-        System.out.println();
+        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_LOOP, AVERAGE_FORMAT);
+        dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_LOOP, AVERAGE_FORMAT);
     }
 
     public void testSpaceProxyPerformance(ActionSpreadsheet spreadsheet)

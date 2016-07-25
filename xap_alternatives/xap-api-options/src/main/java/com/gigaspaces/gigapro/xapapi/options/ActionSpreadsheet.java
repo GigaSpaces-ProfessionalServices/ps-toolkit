@@ -1,5 +1,6 @@
 package com.gigaspaces.gigapro.xapapi.options;
 
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class ActionSpreadsheet {
@@ -26,7 +27,7 @@ public class ActionSpreadsheet {
             measurement.toString() + " " + _unitName + "(s)");
     }
 
-    public void printAverage(String actionTag) {
+    public void printAverage(String actionTag, String decimalFormat) {
         ArrayList<Double> currentList = _actionMap.get(actionTag);
         if (currentList == null) {
             System.out.println("Wrong action tag encountered: " + actionTag);
@@ -39,7 +40,8 @@ public class ActionSpreadsheet {
             sum += currentList.get(i);
 
         Double average = sum / listSize;
-        System.out.println(actionTag + ": " +
-                average.toString() + " " + _unitName + "(s)");
+        String result = (decimalFormat == null) ? average.toString() :
+            new DecimalFormat(decimalFormat).format(average);
+        System.out.println(actionTag + ": " + result + " " + _unitName + "(s)");
     }
 }

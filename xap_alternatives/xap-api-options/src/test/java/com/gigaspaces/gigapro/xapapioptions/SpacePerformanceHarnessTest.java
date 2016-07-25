@@ -12,7 +12,7 @@ import com.gigaspaces.gigapro.xapapi.options.*;
 
 public class SpacePerformanceHarnessTest
 {
-    private static final int BATCH_SIZE = 100;
+    private static final int BATCH_SIZE = 10000;
 
     private DataObjectFactory _factory;
     private GigaSpace _gigaSpace;
@@ -69,6 +69,22 @@ public class SpacePerformanceHarnessTest
         System.out.println((String) spaceDocument.getProperty("objectId")); */
     }
 
+    public void checkObjectCounts() {
+        int javaBeanCount = _gigaSpace.count(new ToolkitJavaBean());
+        assertTrue("Incorrect number of java beans stored in the space",
+            javaBeanCount == BATCH_SIZE);
+
+        int spaceClassCount = _gigaSpace.count(new ToolkitSpaceClass());
+        assertTrue("Incorrect number of space classes stored in the space",
+            spaceClassCount == BATCH_SIZE);
+
+        ToolkitSpaceDocument emptySpaceDocument = new ToolkitSpaceDocument();
+        emptySpaceDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
+        int spaceDocumentCount = _gigaSpace.count(emptySpaceDocument);
+        assertTrue("Incorrect number of space documents stored in the space",
+            spaceDocumentCount == BATCH_SIZE);
+    }
+
     @Before
     public void prepareObjectFactory()
     {
@@ -95,7 +111,13 @@ public class SpacePerformanceHarnessTest
         testSpaceProxyPerformance();
 
         System.out.println();
-        System.out.println("MEASUREMENT: SPACE PROXY MODE");
+        System.out.println("MEASUREMENT #1: SPACE PROXY MODE");
+        System.out.println();
+
+        testSpaceProxyPerformance();
+
+        System.out.println();
+        System.out.println("MEASUREMENT #2: SPACE PROXY MODE");
         System.out.println();
 
         testSpaceProxyPerformance();
@@ -115,6 +137,7 @@ public class SpacePerformanceHarnessTest
         timeChecker.printElapsedTime("Writing space document array");
 
         System.out.println();
+        checkObjectCounts();
         timeChecker.reset();
 
         ToolkitJavaBean[] targetJavaBeanArray =
@@ -135,21 +158,45 @@ public class SpacePerformanceHarnessTest
 
         for (int i = 0; i < BATCH_SIZE; i++)
             _gigaSpace.write(_sourceJavaBeanArray[i]);
-        timeChecker.printElapsedTime("Writing java beans in loop");
+        timeChecker.printElapsedTime("Writing java beans in a loop");
 
         for (int i = 0; i < BATCH_SIZE; i++)
             _gigaSpace.write(_sourceSpaceClassArray[i]);
-        timeChecker.printElapsedTime("Writing space classes in loop");
+        timeChecker.printElapsedTime("Writing space classes in a loop");
 
         for (int i = 0; i < BATCH_SIZE; i++)
             _gigaSpace.write(_sourceSpaceDocumentArray[i]);
-        timeChecker.printElapsedTime("Writing space documents in loop");
+        timeChecker.printElapsedTime("Writing space documents in a loop");
 
-        //System.out.println();
-        clearSpaceObjects();
+        System.out.println();
+        checkObjectCounts();
         timeChecker.reset();
 
-        // TODO: Reading in the loop
+        ToolkitJavaBean templateJavaBean = new ToolkitJavaBean();
+        for (int i = 0; i < BATCH_SIZE; i++) {
+            ToolkitJavaBean sourceJavaBean = (ToolkitJavaBean) _sourceJavaBeanArray[i];
+            templateJavaBean.setObjectId(sourceJavaBean.getObjectId());
+            ToolkitJavaBean readJavaBean = _gigaSpace.read(templateJavaBean);
+        }
+        timeChecker.printElapsedTime("Reading java beans in a loop");
+
+        ToolkitSpaceClass templateSpaceClass = new ToolkitSpaceClass();
+        for (int i = 0; i < BATCH_SIZE; i++) {
+            ToolkitSpaceClass sourceSpaceClass = (ToolkitSpaceClass) _sourceSpaceClassArray[i];
+            templateSpaceClass.setObjectId(sourceSpaceClass.getObjectId());
+            ToolkitSpaceClass readSpaceClass = _gigaSpace.read(templateSpaceClass);
+        }
+        timeChecker.printElapsedTime("Reading space classes in a loop");
+
+        ToolkitSpaceDocument templateSpaceDocument = new ToolkitSpaceDocument();
+        templateSpaceDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
+        for (int i = 0; i < BATCH_SIZE; i++) {
+            ToolkitSpaceDocument sourceSpaceDocument = (ToolkitSpaceDocument) _sourceSpaceDocumentArray[i];
+            templateSpaceDocument.setProperty(DataObjectFactory.OBJECT_ID,
+                sourceSpaceDocument.getProperty(DataObjectFactory.OBJECT_ID));
+            SpaceDocument readSpaceDocument = _gigaSpace.read(templateSpaceDocument);
+        }
+        timeChecker.printElapsedTime("Reading space documents in a loop");
 
         clearSpaceObjects();
     }

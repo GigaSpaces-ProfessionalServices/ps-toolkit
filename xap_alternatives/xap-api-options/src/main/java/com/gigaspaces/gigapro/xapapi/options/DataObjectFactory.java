@@ -9,12 +9,6 @@ import com.gigaspaces.gigapro.xapapi.entities.*;
 
 public class DataObjectFactory {
 
-    public enum ToolkitObjectType {
-        JAVA_BEAN,
-        SPACE_CLASS,
-        SPACE_DOCUMENT
-    }
-
     public static Random ToolkitRandom;
     public static SpaceTypeDescriptor TypeDescriptor;
 

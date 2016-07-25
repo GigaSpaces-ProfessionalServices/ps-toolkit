@@ -13,8 +13,21 @@ import com.gigaspaces.gigapro.xapapi.options.*;
 public class SpacePerformanceHarnessTest
 {
     private static final int EPOCH_COUNT = 10;
-    private static final int LOOP_SIZE = 10000;
-    private static final int ARRAY_SIZE = 200000;
+    private static final int LOOP_SIZE = 5000;
+    private static final int ARRAY_SIZE = 100000;
+
+    private static final String WRITE_JAVA_BEAN_ARRAY = "Writing java bean array";
+    private static final String WRITE_SPACE_CLASS_ARRAY = "Writing space class array";
+    private static final String WRITE_SPACE_DOCUMENT_ARRAY = "Writing space document array";
+    private static final String READ_JAVA_BEAN_ARRAY = "Reading java bean array";
+    private static final String READ_SPACE_CLASS_ARRAY = "Reading space class array";
+    private static final String READ_SPACE_DOCUMENT_ARRAY = "Reading space document array";
+    private static final String WRITE_JAVA_BEAN_LOOP = "Writing java beans in a loop";
+    private static final String WRITE_SPACE_CLASS_LOOP = "Writing space classes in a loop";
+    private static final String WRITE_SPACE_DOCUMENT_LOOP = "Writing space documents in a loop";
+    private static final String READ_JAVA_BEAN_LOOP = "Reading java beans in a loop";
+    private static final String READ_SPACE_CLASS_LOOP = "Reading space classes in a loop";
+    private static final String READ_SPACE_DOCUMENT_LOOP = "Reading space documents in a loop";
 
     private DataObjectFactory _factory;
     private GigaSpace _gigaSpace;
@@ -40,7 +53,7 @@ public class SpacePerformanceHarnessTest
             AbstractUtilities.NiceInteger(ARRAY_SIZE) + ", Loop size " +
             AbstractUtilities.NiceInteger(LOOP_SIZE));
         System.out.println();
-        NanoTimeHelper timeChecker = new NanoTimeHelper();
+        NanoTimeHelper timeChecker = new NanoTimeHelper(null);
 
         timeChecker.reset();
         _sourceJavaBeanArray = _factory.GenerateArray
@@ -114,31 +127,53 @@ public class SpacePerformanceHarnessTest
         System.out.println();
         System.out.println("WARMING PHASE: SPACE PROXY MODE");
         System.out.println();
-        testSpaceProxyPerformance();
+        testSpaceProxyPerformance(null);
+
+        ActionSpreadsheet dataSpreadsheet = new ActionSpreadsheet("unit");
+        for (int i = 0; i < EPOCH_COUNT; i++) {
+            System.out.println();
+            System.out.println("MEASUREMENT #" +
+                String.valueOf(i + 1) + ": SPACE PROXY MODE");
+            System.out.println();
+            testSpaceProxyPerformance(dataSpreadsheet);
+        }
 
         System.out.println();
-        System.out.println("MEASUREMENT #1: SPACE PROXY MODE");
+        System.out.println("AVERAGE RESULTS: SPACE PROXY MODE");
         System.out.println();
-        testSpaceProxyPerformance();
 
+        dataSpreadsheet.printAverage(WRITE_JAVA_BEAN_ARRAY);
+        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_ARRAY);
+        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_ARRAY);
         System.out.println();
-        System.out.println("MEASUREMENT #2: SPACE PROXY MODE");
+
+        dataSpreadsheet.printAverage(READ_JAVA_BEAN_ARRAY);
+        dataSpreadsheet.printAverage(READ_SPACE_CLASS_ARRAY);
+        dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_ARRAY);
         System.out.println();
-        testSpaceProxyPerformance();
+
+        dataSpreadsheet.printAverage(WRITE_JAVA_BEAN_LOOP);
+        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_LOOP);
+        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_LOOP);
+        System.out.println();
+
+        dataSpreadsheet.printAverage(READ_JAVA_BEAN_LOOP);
+        dataSpreadsheet.printAverage(READ_SPACE_CLASS_LOOP);
+        dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_LOOP);
     }
 
-    public void testSpaceProxyPerformance()
+    public void testSpaceProxyPerformance(ActionSpreadsheet spreadsheet)
     {
-        NanoTimeHelper timeChecker = new NanoTimeHelper();
+        NanoTimeHelper timeChecker = new NanoTimeHelper(spreadsheet);
 
         _gigaSpace.writeMultiple(_sourceJavaBeanArray);
-        timeChecker.printElapsedTime("Writing java bean array");
+        timeChecker.printElapsedTime(WRITE_JAVA_BEAN_ARRAY);
 
         _gigaSpace.writeMultiple(_sourceSpaceClassArray);
-        timeChecker.printElapsedTime("Writing space class array");
+        timeChecker.printElapsedTime(WRITE_SPACE_CLASS_ARRAY);
 
         _gigaSpace.writeMultiple(_sourceSpaceDocumentArray);
-        timeChecker.printElapsedTime("Writing space document array");
+        timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_ARRAY);
 
         System.out.println();
         checkObjectCounts(ARRAY_SIZE);
@@ -146,15 +181,15 @@ public class SpacePerformanceHarnessTest
 
         ToolkitJavaBean[] readJavaBeanArray =
             _gigaSpace.readMultiple(_blankJavaBean, ARRAY_SIZE);
-        timeChecker.printElapsedTime("Reading java bean array");
+        timeChecker.printElapsedTime(READ_JAVA_BEAN_ARRAY);
 
         ToolkitSpaceClass[] readSpaceClassArray =
             _gigaSpace.readMultiple(_blankSpaceClass, ARRAY_SIZE);
-        timeChecker.printElapsedTime("Reading space class array");
+        timeChecker.printElapsedTime(READ_SPACE_CLASS_ARRAY);
 
         SpaceDocument[] readSpaceDocumentArray =
             _gigaSpace.readMultiple(_blankSpaceDocument, ARRAY_SIZE);
-        timeChecker.printElapsedTime("Reading space document array");
+        timeChecker.printElapsedTime(READ_SPACE_DOCUMENT_ARRAY);
 
         System.out.println();
         clearSpaceObjects();
@@ -162,15 +197,15 @@ public class SpacePerformanceHarnessTest
 
         for (int i = 0; i < LOOP_SIZE; i++)
             _gigaSpace.write(_sourceJavaBeanArray[i]);
-        timeChecker.printElapsedTime("Writing java beans in a loop");
+        timeChecker.printElapsedTime(WRITE_JAVA_BEAN_LOOP);
 
         for (int i = 0; i < LOOP_SIZE; i++)
             _gigaSpace.write(_sourceSpaceClassArray[i]);
-        timeChecker.printElapsedTime("Writing space classes in a loop");
+        timeChecker.printElapsedTime(WRITE_SPACE_CLASS_LOOP);
 
         for (int i = 0; i < LOOP_SIZE; i++)
             _gigaSpace.write(_sourceSpaceDocumentArray[i]);
-        timeChecker.printElapsedTime("Writing space documents in a loop");
+        timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_LOOP);
 
         System.out.println();
         checkObjectCounts(LOOP_SIZE);
@@ -182,7 +217,7 @@ public class SpacePerformanceHarnessTest
             templateJavaBean.setObjectId(sourceJavaBean.getObjectId());
             ToolkitJavaBean readJavaBean = _gigaSpace.read(templateJavaBean);
         }
-        timeChecker.printElapsedTime("Reading java beans in a loop");
+        timeChecker.printElapsedTime(READ_JAVA_BEAN_LOOP);
 
         ToolkitSpaceClass templateSpaceClass = new ToolkitSpaceClass();
         for (int i = 0; i < LOOP_SIZE; i++) {
@@ -190,7 +225,7 @@ public class SpacePerformanceHarnessTest
             templateSpaceClass.setObjectId(sourceSpaceClass.getObjectId());
             ToolkitSpaceClass readSpaceClass = _gigaSpace.read(templateSpaceClass);
         }
-        timeChecker.printElapsedTime("Reading space classes in a loop");
+        timeChecker.printElapsedTime(READ_SPACE_CLASS_LOOP);
 
         ToolkitSpaceDocument templateSpaceDocument = new ToolkitSpaceDocument();
         templateSpaceDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
@@ -200,7 +235,7 @@ public class SpacePerformanceHarnessTest
                 sourceSpaceDocument.getProperty(DataObjectFactory.OBJECT_ID));
             SpaceDocument readSpaceDocument = _gigaSpace.read(templateSpaceDocument);
         }
-        timeChecker.printElapsedTime("Reading space documents in a loop");
+        timeChecker.printElapsedTime(READ_SPACE_DOCUMENT_LOOP);
 
         clearSpaceObjects();
     }

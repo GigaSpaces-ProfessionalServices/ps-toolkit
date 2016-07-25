@@ -16,9 +16,7 @@ public interface SpacePerformanceHarness {
     //Object[] writeSpaceClassObjects(@SpaceClass[] objects, ...);
 
     Object[] readObjectsFromSpace(String[] objectIds,
-        SpaceAccessMode spaceAccessMode,
-        DataObjectFactory.ToolkitObjectType objectTypeMode);
+        SpaceAccessMode spaceAccessMode, ToolkitObjectType objectTypeMode);
     void writeObjectsToSpace(Object[] dataObjects,
-        SpaceAccessMode spaceAccessMode,
-        DataObjectFactory.ToolkitObjectType objectTypeMode);
+        SpaceAccessMode spaceAccessMode, ToolkitObjectType objectTypeMode);
 }

@@ -3,7 +3,7 @@ package com.gigaspaces.gigapro.xapapi.entities;
 import java.io.*;
 import java.util.Random;
 
-import com.gigaspaces.gigapro.xapapi.options.DataObjectFactory;
+import com.gigaspaces.gigapro.xapapi.options.*;
 
 public class ToolkitBaseEntity implements Serializable {
 
@@ -12,25 +12,11 @@ public class ToolkitBaseEntity implements Serializable {
     protected Double _objectData;
     protected Boolean _objectFlag;
 
-    static String GetRandomHexString(int length) {
-        Random random = DataObjectFactory.ToolkitRandom;
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int i = 0; i < length; i++) {
-            int symbol = random.nextInt(16);
-            if (symbol >= 10)
-                symbol = 'a' + (symbol - 10);
-            else
-                symbol = '0' + symbol;
-            stringBuilder.append((char) symbol);
-        }
-        return stringBuilder.toString();
-    }
-
     public ToolkitBaseEntity() {}
 
     public ToolkitBaseEntity RandomInitialize() {
         Random random = DataObjectFactory.ToolkitRandom;
-        _objectId = GetRandomHexString(16);
+        _objectId = AbstractUtilities.GetRandomHexString(16);
         _objectType = random.nextInt(256);
         _objectData = random.nextDouble();
         _objectFlag = random.nextBoolean();

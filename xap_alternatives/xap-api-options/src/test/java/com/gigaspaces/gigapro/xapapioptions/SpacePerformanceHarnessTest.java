@@ -46,6 +46,22 @@ public class SpacePerformanceHarnessTest
         _gigaSpace.clear(_blankSpaceDocument);
     }
 
+    private void clearSpaceObjects(DataObjectFactory.ToolkitObjectType objectType) {
+        switch (objectType) {
+            case JAVA_BEAN:
+                _gigaSpace.clear(_blankJavaBean);
+                return;
+            case SPACE_CLASS:
+                _gigaSpace.clear(_blankSpaceClass);
+                return;
+            case SPACE_DOCUMENT:
+                _gigaSpace.clear(_blankSpaceDocument);
+                return;
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
     private void generateSourceArrays() {
 
         System.out.println();
@@ -105,6 +121,31 @@ public class SpacePerformanceHarnessTest
             spaceDocumentCount == expectedCount);
     }
 
+    public void checkObjectCounts(int expectedCount,
+        DataObjectFactory.ToolkitObjectType objectType) {
+
+        Object templateObject;
+        switch (objectType) {
+            case JAVA_BEAN:
+                templateObject = new ToolkitJavaBean();
+                break;
+            case SPACE_CLASS:
+                templateObject = new ToolkitSpaceClass();
+                break;
+            case SPACE_DOCUMENT:
+                ToolkitSpaceDocument emptyDocument = new ToolkitSpaceDocument();
+                emptyDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
+                templateObject = emptyDocument;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
+        int objectCount = _gigaSpace.count(templateObject);
+        assertTrue("Incorrect number of objects stored in the space: " +
+            objectType.toString(), objectCount == expectedCount);
+    }
+
     @Before
     public void prepareObjectFactory()
     {
@@ -143,23 +184,28 @@ public class SpacePerformanceHarnessTest
         System.out.println();
 
         dataSpreadsheet.printAverage(WRITE_JAVA_BEAN_ARRAY);
-        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_ARRAY);
-        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_ARRAY);
+        dataSpreadsheet.printAverage(READ_JAVA_BEAN_ARRAY);
         System.out.println();
 
-        dataSpreadsheet.printAverage(READ_JAVA_BEAN_ARRAY);
+        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_ARRAY);
         dataSpreadsheet.printAverage(READ_SPACE_CLASS_ARRAY);
+        System.out.println();
+
+        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_ARRAY);
         dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_ARRAY);
         System.out.println();
 
         dataSpreadsheet.printAverage(WRITE_JAVA_BEAN_LOOP);
-        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_LOOP);
-        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_LOOP);
+        dataSpreadsheet.printAverage(READ_JAVA_BEAN_LOOP);
         System.out.println();
 
-        dataSpreadsheet.printAverage(READ_JAVA_BEAN_LOOP);
+        dataSpreadsheet.printAverage(WRITE_SPACE_CLASS_LOOP);
         dataSpreadsheet.printAverage(READ_SPACE_CLASS_LOOP);
+        System.out.println();
+
+        dataSpreadsheet.printAverage(WRITE_SPACE_DOCUMENT_LOOP);
         dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_LOOP);
+        System.out.println();
     }
 
     public void testSpaceProxyPerformance(ActionSpreadsheet spreadsheet)
@@ -169,47 +215,42 @@ public class SpacePerformanceHarnessTest
         _gigaSpace.writeMultiple(_sourceJavaBeanArray);
         timeChecker.printElapsedTime(WRITE_JAVA_BEAN_ARRAY);
 
+        ToolkitJavaBean[] readJavaBeanArray =
+                _gigaSpace.readMultiple(_blankJavaBean, ARRAY_SIZE);
+        timeChecker.printElapsedTime(READ_JAVA_BEAN_ARRAY);
+
+        checkObjectCounts(ARRAY_SIZE, DataObjectFactory.ToolkitObjectType.JAVA_BEAN);
+        clearSpaceObjects(DataObjectFactory.ToolkitObjectType.JAVA_BEAN);
+        System.out.println();
+        timeChecker.reset();
+
         _gigaSpace.writeMultiple(_sourceSpaceClassArray);
         timeChecker.printElapsedTime(WRITE_SPACE_CLASS_ARRAY);
 
-        _gigaSpace.writeMultiple(_sourceSpaceDocumentArray);
-        timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_ARRAY);
+        ToolkitSpaceClass[] readSpaceClassArray =
+                _gigaSpace.readMultiple(_blankSpaceClass, ARRAY_SIZE);
+        timeChecker.printElapsedTime(READ_SPACE_CLASS_ARRAY);
 
+        checkObjectCounts(ARRAY_SIZE, DataObjectFactory.ToolkitObjectType.SPACE_CLASS);
+        clearSpaceObjects(DataObjectFactory.ToolkitObjectType.SPACE_CLASS);
         System.out.println();
-        checkObjectCounts(ARRAY_SIZE);
         timeChecker.reset();
 
-        ToolkitJavaBean[] readJavaBeanArray =
-            _gigaSpace.readMultiple(_blankJavaBean, ARRAY_SIZE);
-        timeChecker.printElapsedTime(READ_JAVA_BEAN_ARRAY);
-
-        ToolkitSpaceClass[] readSpaceClassArray =
-            _gigaSpace.readMultiple(_blankSpaceClass, ARRAY_SIZE);
-        timeChecker.printElapsedTime(READ_SPACE_CLASS_ARRAY);
+        _gigaSpace.writeMultiple(_sourceSpaceDocumentArray);
+        timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_ARRAY);
 
         SpaceDocument[] readSpaceDocumentArray =
             _gigaSpace.readMultiple(_blankSpaceDocument, ARRAY_SIZE);
         timeChecker.printElapsedTime(READ_SPACE_DOCUMENT_ARRAY);
 
+        checkObjectCounts(ARRAY_SIZE, DataObjectFactory.ToolkitObjectType.SPACE_DOCUMENT);
+        clearSpaceObjects(DataObjectFactory.ToolkitObjectType.SPACE_DOCUMENT);
         System.out.println();
-        clearSpaceObjects();
         timeChecker.reset();
 
         for (int i = 0; i < LOOP_SIZE; i++)
             _gigaSpace.write(_sourceJavaBeanArray[i]);
         timeChecker.printElapsedTime(WRITE_JAVA_BEAN_LOOP);
-
-        for (int i = 0; i < LOOP_SIZE; i++)
-            _gigaSpace.write(_sourceSpaceClassArray[i]);
-        timeChecker.printElapsedTime(WRITE_SPACE_CLASS_LOOP);
-
-        for (int i = 0; i < LOOP_SIZE; i++)
-            _gigaSpace.write(_sourceSpaceDocumentArray[i]);
-        timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_LOOP);
-
-        System.out.println();
-        checkObjectCounts(LOOP_SIZE);
-        timeChecker.reset();
 
         ToolkitJavaBean templateJavaBean = new ToolkitJavaBean();
         for (int i = 0; i < LOOP_SIZE; i++) {
@@ -219,6 +260,15 @@ public class SpacePerformanceHarnessTest
         }
         timeChecker.printElapsedTime(READ_JAVA_BEAN_LOOP);
 
+        checkObjectCounts(LOOP_SIZE, DataObjectFactory.ToolkitObjectType.JAVA_BEAN);
+        clearSpaceObjects(DataObjectFactory.ToolkitObjectType.JAVA_BEAN);
+        System.out.println();
+        timeChecker.reset();
+
+        for (int i = 0; i < LOOP_SIZE; i++)
+            _gigaSpace.write(_sourceSpaceClassArray[i]);
+        timeChecker.printElapsedTime(WRITE_SPACE_CLASS_LOOP);
+
         ToolkitSpaceClass templateSpaceClass = new ToolkitSpaceClass();
         for (int i = 0; i < LOOP_SIZE; i++) {
             ToolkitSpaceClass sourceSpaceClass = (ToolkitSpaceClass) _sourceSpaceClassArray[i];
@@ -226,6 +276,15 @@ public class SpacePerformanceHarnessTest
             ToolkitSpaceClass readSpaceClass = _gigaSpace.read(templateSpaceClass);
         }
         timeChecker.printElapsedTime(READ_SPACE_CLASS_LOOP);
+
+        checkObjectCounts(LOOP_SIZE, DataObjectFactory.ToolkitObjectType.SPACE_CLASS);
+        clearSpaceObjects(DataObjectFactory.ToolkitObjectType.SPACE_CLASS);
+        System.out.println();
+        timeChecker.reset();
+
+        for (int i = 0; i < LOOP_SIZE; i++)
+            _gigaSpace.write(_sourceSpaceDocumentArray[i]);
+        timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_LOOP);
 
         ToolkitSpaceDocument templateSpaceDocument = new ToolkitSpaceDocument();
         templateSpaceDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
@@ -237,6 +296,7 @@ public class SpacePerformanceHarnessTest
         }
         timeChecker.printElapsedTime(READ_SPACE_DOCUMENT_LOOP);
 
-        clearSpaceObjects();
+        checkObjectCounts(LOOP_SIZE, DataObjectFactory.ToolkitObjectType.SPACE_DOCUMENT);
+        clearSpaceObjects(DataObjectFactory.ToolkitObjectType.SPACE_DOCUMENT);
     }
 }

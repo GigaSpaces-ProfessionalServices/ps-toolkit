@@ -31,24 +31,24 @@ public class SpacePerformanceHarnessTest
     private static final String READ_SPACE_CLASS_LOOP = "Reading space classes in a loop";
     private static final String READ_SPACE_DOCUMENT_LOOP = "Reading space documents in a loop";
 
-    private DataObjectFactory _factory;
-    private GigaSpace _gigaSpace;
+    private static DataObjectFactory _factory;
+    private static GigaSpace _gigaSpace;
 
-    private ToolkitJavaBean _blankJavaBean = new ToolkitJavaBean();
-    private ToolkitSpaceClass _blankSpaceClass = new ToolkitSpaceClass();
-    private ToolkitSpaceDocument _blankSpaceDocument = new ToolkitSpaceDocument();
+    private static ToolkitJavaBean _blankJavaBean = new ToolkitJavaBean();
+    private static ToolkitSpaceClass _blankSpaceClass = new ToolkitSpaceClass();
+    private static ToolkitSpaceDocument _blankSpaceDocument = new ToolkitSpaceDocument();
 
-    private Object[] _sourceJavaBeanArray = null;
-    private Object[] _sourceSpaceClassArray = null;
-    private Object[] _sourceSpaceDocumentArray = null;
+    private static Object[] _sourceJavaBeanArray = null;
+    private static Object[] _sourceSpaceClassArray = null;
+    private static Object[] _sourceSpaceDocumentArray = null;
 
-    private void clearSpaceObjects() {
+    private static void clearSpaceObjects() {
         _gigaSpace.clear(_blankJavaBean);
         _gigaSpace.clear(_blankSpaceClass);
         _gigaSpace.clear(_blankSpaceDocument);
     }
 
-    private void clearSpaceObjects(ToolkitObjectType objectType) {
+    private static void clearSpaceObjects(ToolkitObjectType objectType) {
         switch (objectType) {
             case JAVA_BEAN:
                 _gigaSpace.clear(_blankJavaBean);
@@ -64,63 +64,10 @@ public class SpacePerformanceHarnessTest
         }
     }
 
-    private void generateSourceArrays() {
-
-        System.out.println();
-        System.out.println("=> Array size " +
-            AbstractUtilities.NiceInteger(ARRAY_SIZE) + ", Loop size " +
-            AbstractUtilities.NiceInteger(LOOP_SIZE));
-        System.out.println();
-        NanoTimeHelper timeChecker = new NanoTimeHelper(null);
-
-        timeChecker.reset();
-        _sourceJavaBeanArray = _factory.GenerateArray
-            (ToolkitObjectType.JAVA_BEAN, ARRAY_SIZE);
-        timeChecker.printElapsedTime("Generating java bean array");
-
-        ToolkitJavaBean javaBean = (ToolkitJavaBean) _sourceJavaBeanArray[0];
-        assertTrue("Failed to initialize java bean object instance", javaBean != null);
-
-        /* System.out.print("First java bean id: ");
-        System.out.println(javaBean.getObjectId()); */
-
-        timeChecker.reset();
-        _sourceSpaceClassArray = _factory.GenerateArray
-            (ToolkitObjectType.SPACE_CLASS, ARRAY_SIZE);
-        timeChecker.printElapsedTime("Generating space class array");
-
-        ToolkitSpaceClass spaceClass = (ToolkitSpaceClass) _sourceSpaceClassArray[0];
-        assertTrue("Failed to initialize space class object instance", spaceClass != null);
-
-        /* System.out.print("First space class id: ");
-        System.out.println(spaceClass.getObjectId()); */
-
-        timeChecker.reset();
-        _sourceSpaceDocumentArray = _factory.GenerateArray
-            (ToolkitObjectType.SPACE_DOCUMENT, ARRAY_SIZE);
-        timeChecker.printElapsedTime("Generating space document array");
-
-        ToolkitSpaceDocument spaceDocument = (ToolkitSpaceDocument) _sourceSpaceDocumentArray[0];
-        assertTrue("Failed to initialize space document instance", spaceDocument != null);
-
-        /* System.out.print("First space document id: ");
-        System.out.println((String) spaceDocument.getProperty("objectId")); */
-    }
-
     public void checkObjectCounts(int expectedCount) {
-        int javaBeanCount = _gigaSpace.count(new ToolkitJavaBean());
-        assertTrue("Incorrect number of java beans stored in the space",
-            javaBeanCount == expectedCount);
-
-        int spaceClassCount = _gigaSpace.count(new ToolkitSpaceClass());
-        assertTrue("Incorrect number of space classes stored in the space",
-            spaceClassCount == expectedCount);
-
-        ToolkitSpaceDocument emptySpaceDocument = new ToolkitSpaceDocument();
-        emptySpaceDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
-        int spaceDocumentCount = _gigaSpace.count(emptySpaceDocument);
-        assertTrue("Incorrect number of space documents stored in the space",
-            spaceDocumentCount == expectedCount);
+        checkObjectCounts(expectedCount, ToolkitObjectType.JAVA_BEAN);
+        checkObjectCounts(expectedCount, ToolkitObjectType.SPACE_CLASS);
+        checkObjectCounts(expectedCount, ToolkitObjectType.SPACE_DOCUMENT);
     }
 
     public void checkObjectCounts(int expectedCount, ToolkitObjectType objectType) {
@@ -147,8 +94,38 @@ public class SpacePerformanceHarnessTest
             objectType.toString(), objectCount == expectedCount);
     }
 
-    @Before
-    public void prepareObjectFactory()
+    private static void generateSourceArrays() {
+        System.out.println();
+        System.out.println("=> Array size " +
+                AbstractUtilities.NiceInteger(ARRAY_SIZE) + ", Loop size " +
+                AbstractUtilities.NiceInteger(LOOP_SIZE));
+        System.out.println();
+        NanoTimeHelper timeChecker = new NanoTimeHelper(null);
+
+        timeChecker.reset();
+        _sourceJavaBeanArray = _factory.GenerateArray
+                (ToolkitObjectType.JAVA_BEAN, ARRAY_SIZE);
+        timeChecker.printElapsedTime("Generating java bean array");
+        assertTrue("Failed to initialize java bean object instance",
+            _sourceJavaBeanArray[0] != null);
+
+        timeChecker.reset();
+        _sourceSpaceClassArray = _factory.GenerateArray
+                (ToolkitObjectType.SPACE_CLASS, ARRAY_SIZE);
+        timeChecker.printElapsedTime("Generating space class array");
+        assertTrue("Failed to initialize space class object instance",
+            _sourceSpaceClassArray[0] != null);
+
+        timeChecker.reset();
+        _sourceSpaceDocumentArray = _factory.GenerateArray
+                (ToolkitObjectType.SPACE_DOCUMENT, ARRAY_SIZE);
+        timeChecker.printElapsedTime("Generating space document array");
+        assertTrue("Failed to initialize space document instance",
+            _sourceSpaceDocumentArray[0] != null);
+    }
+
+    @BeforeClass
+    public static void prepareObjectFactory()
     {
         _factory = new DataObjectFactory();
 
@@ -165,23 +142,28 @@ public class SpacePerformanceHarnessTest
     }
 
     @Test
-    public void testBatch() {
+    public void testRemoteExecutor() {
+        // TODO:
+    }
+
+    @Test
+    public void testClusteredProxy() {
         System.out.println();
-        System.out.println("WARMING PHASE: SPACE PROXY MODE");
+        System.out.println("WARMING PHASE: CLUSTERED PROXY MODE");
         System.out.println();
-        testSpaceProxyPerformance(null);
+        testProxySteps(null);
 
         ActionSpreadsheet dataSpreadsheet = new ActionSpreadsheet("unit");
         for (int i = 0; i < EPOCH_COUNT; i++) {
             System.out.println();
             System.out.println("MEASUREMENT #" +
-                String.valueOf(i + 1) + ": SPACE PROXY MODE");
+                String.valueOf(i + 1) + ": CLUSTERED PROXY MODE");
             System.out.println();
-            testSpaceProxyPerformance(dataSpreadsheet);
+            testProxySteps(dataSpreadsheet);
         }
 
         System.out.println();
-        System.out.println("AVERAGE RESULTS: SPACE PROXY MODE");
+        System.out.println("AVERAGE RESULTS: CLUSTERED PROXY MODE");
         System.out.println();
 
         dataSpreadsheet.printAverage(WRITE_JAVA_BEAN_ARRAY, AVERAGE_FORMAT);
@@ -208,7 +190,7 @@ public class SpacePerformanceHarnessTest
         dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_LOOP, AVERAGE_FORMAT);
     }
 
-    public void testSpaceProxyPerformance(ActionSpreadsheet spreadsheet)
+    public void testProxySteps(ActionSpreadsheet spreadsheet)
     {
         NanoTimeHelper timeChecker = new NanoTimeHelper(spreadsheet);
 

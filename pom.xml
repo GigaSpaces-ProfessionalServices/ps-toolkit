@@ -12,6 +12,7 @@
         <module>rebalancer-od</module>
         <module>load-simulator</module>
         <module>grid-info-service</module>
+        <module>xap_alternatives/xap-api-options</module>
     </modules>
 
     <properties>

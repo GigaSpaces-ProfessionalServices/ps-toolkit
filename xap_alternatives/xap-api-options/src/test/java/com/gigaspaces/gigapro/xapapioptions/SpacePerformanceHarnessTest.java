@@ -31,8 +31,8 @@ public class SpacePerformanceHarnessTest
     private static final String READ_SPACE_CLASS_LOOP = "Reading space classes in a loop";
     private static final String READ_SPACE_DOCUMENT_LOOP = "Reading space documents in a loop";
 
-    private static DataObjectFactory _factory;
-    private static GigaSpace _gigaSpace;
+    private static GigaSpace _gigaSpace = null;
+    private static DataObjectFactory _dataFactory = new DataObjectFactory();
 
     private static ToolkitJavaBean _blankJavaBean = new ToolkitJavaBean();
     private static ToolkitSpaceClass _blankSpaceClass = new ToolkitSpaceClass();
@@ -42,10 +42,14 @@ public class SpacePerformanceHarnessTest
     private static Object[] _sourceSpaceClassArray = null;
     private static Object[] _sourceSpaceDocumentArray = null;
 
+    static {
+        _blankSpaceDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
+    }
+
     private static void clearSpaceObjects() {
-        _gigaSpace.clear(_blankJavaBean);
-        _gigaSpace.clear(_blankSpaceClass);
-        _gigaSpace.clear(_blankSpaceDocument);
+        clearSpaceObjects(ToolkitObjectType.JAVA_BEAN);
+        clearSpaceObjects(ToolkitObjectType.SPACE_CLASS);
+        clearSpaceObjects(ToolkitObjectType.SPACE_DOCUMENT);
     }
 
     private static void clearSpaceObjects(ToolkitObjectType objectType) {
@@ -64,26 +68,24 @@ public class SpacePerformanceHarnessTest
         }
     }
 
-    public void checkObjectCounts(int expectedCount) {
+    public static void checkObjectCounts(int expectedCount) {
         checkObjectCounts(expectedCount, ToolkitObjectType.JAVA_BEAN);
         checkObjectCounts(expectedCount, ToolkitObjectType.SPACE_CLASS);
         checkObjectCounts(expectedCount, ToolkitObjectType.SPACE_DOCUMENT);
     }
 
-    public void checkObjectCounts(int expectedCount, ToolkitObjectType objectType) {
+    public static void checkObjectCounts(int expectedCount, ToolkitObjectType objectType) {
 
         Object templateObject;
         switch (objectType) {
             case JAVA_BEAN:
-                templateObject = new ToolkitJavaBean();
+                templateObject = _blankJavaBean;
                 break;
             case SPACE_CLASS:
-                templateObject = new ToolkitSpaceClass();
+                templateObject = _blankSpaceClass;
                 break;
             case SPACE_DOCUMENT:
-                ToolkitSpaceDocument emptyDocument = new ToolkitSpaceDocument();
-                emptyDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
-                templateObject = emptyDocument;
+                templateObject = _blankSpaceDocument;
                 break;
             default:
                 throw new IllegalArgumentException();
@@ -103,21 +105,21 @@ public class SpacePerformanceHarnessTest
         NanoTimeHelper timeChecker = new NanoTimeHelper(null);
 
         timeChecker.reset();
-        _sourceJavaBeanArray = _factory.GenerateArray
+        _sourceJavaBeanArray = _dataFactory.GenerateArray
                 (ToolkitObjectType.JAVA_BEAN, ARRAY_SIZE);
         timeChecker.printElapsedTime("Generating java bean array");
         assertTrue("Failed to initialize java bean object instance",
             _sourceJavaBeanArray[0] != null);
 
         timeChecker.reset();
-        _sourceSpaceClassArray = _factory.GenerateArray
+        _sourceSpaceClassArray = _dataFactory.GenerateArray
                 (ToolkitObjectType.SPACE_CLASS, ARRAY_SIZE);
         timeChecker.printElapsedTime("Generating space class array");
         assertTrue("Failed to initialize space class object instance",
             _sourceSpaceClassArray[0] != null);
 
         timeChecker.reset();
-        _sourceSpaceDocumentArray = _factory.GenerateArray
+        _sourceSpaceDocumentArray = _dataFactory.GenerateArray
                 (ToolkitObjectType.SPACE_DOCUMENT, ARRAY_SIZE);
         timeChecker.printElapsedTime("Generating space document array");
         assertTrue("Failed to initialize space document instance",
@@ -127,8 +129,6 @@ public class SpacePerformanceHarnessTest
     @BeforeClass
     public static void prepareObjectFactory()
     {
-        _factory = new DataObjectFactory();
-
         // Initialize gigaspace interface to target grid
         SpaceProxyConfigurer spaceProxyConfigurer = new
             SpaceProxyConfigurer(DataObjectFactory.TOOLKIT_SPACE_NAME);

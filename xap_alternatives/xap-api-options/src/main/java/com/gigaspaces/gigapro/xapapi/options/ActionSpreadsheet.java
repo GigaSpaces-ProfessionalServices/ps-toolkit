@@ -6,7 +6,7 @@ import javax.annotation.Nullable;
 
 public class ActionSpreadsheet {
     private String _unitName;
-    private Map<String, ArrayList<Double>> _actionMap = new HashMap();
+    private Map<String, ArrayList<Double>> _actionMap = new HashMap<>();
 
     public ActionSpreadsheet(String unitName) {
         _unitName = unitName;
@@ -50,6 +50,7 @@ public class ActionSpreadsheet {
 
         if (listSize == 1) {
             String averageTag = format(average, decimalFormat);
+
             System.out.println(actionTag + ": " + averageTag + " " + _unitName + "(s)");
         }
         else // listSize > 1
@@ -58,11 +59,15 @@ public class ActionSpreadsheet {
             Double variance = squareSum / (listSize - 1);
             // Corrected sample standard deviation
             Double deviation = Math.sqrt(variance);
+            Double error = deviation / Math.sqrt(listSize);
 
             String averageTag = format(average, decimalFormat);
             String deviationTag = format(deviation, decimalFormat);
+            String errorTag = format(error, decimalFormat);
+
             System.out.println(actionTag + ": " + averageTag + " " +
-                _unitName + "(s), standard deviation " + deviationTag);
+                _unitName + "(s), standard deviation " + deviationTag +
+                ", standard error " + errorTag);
         }
     }
 

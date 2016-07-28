@@ -12,7 +12,7 @@ import com.gigaspaces.gigapro.xapapi.options.*;
 
 public class SpacePerformanceHarnessTest
 {
-    private static final int EPOCH_COUNT = 10;
+    private static final int EPOCH_COUNT = ToolkitObjectType.Permutations * 2;
     private static final int LOOP_SIZE = 5000;
     private static final int ARRAY_SIZE = 100000;
 
@@ -124,6 +124,8 @@ public class SpacePerformanceHarnessTest
         timeChecker.printElapsedTime("Generating space document array");
         assertTrue("Failed to initialize space document instance",
             _sourceSpaceDocumentArray[0] != null);
+
+        System.out.println();
     }
 
     @BeforeClass
@@ -148,21 +150,18 @@ public class SpacePerformanceHarnessTest
 
     @Test
     public void testClusteredProxy() {
-        System.out.println();
         System.out.println("WARMING PHASE: CLUSTERED PROXY MODE");
         System.out.println();
-        testProxySteps(null);
+        testProxySteps(null, 0);
 
         ActionSpreadsheet dataSpreadsheet = new ActionSpreadsheet("unit");
         for (int i = 0; i < EPOCH_COUNT; i++) {
-            System.out.println();
             System.out.println("MEASUREMENT #" +
                 String.valueOf(i + 1) + ": CLUSTERED PROXY MODE");
             System.out.println();
-            testProxySteps(dataSpreadsheet);
+            testProxySteps(dataSpreadsheet, i);
         }
 
-        System.out.println();
         System.out.println("AVERAGE RESULTS: CLUSTERED PROXY MODE");
         System.out.println();
 
@@ -190,95 +189,123 @@ public class SpacePerformanceHarnessTest
         dataSpreadsheet.printAverage(READ_SPACE_DOCUMENT_LOOP, AVERAGE_FORMAT);
     }
 
-    public void testProxySteps(ActionSpreadsheet spreadsheet)
+    public void testProxySteps(ActionSpreadsheet spreadsheet, int seedNumber)
     {
+        ToolkitObjectType[] typeArray = ToolkitObjectType.GetPermutation(seedNumber);
+
+        for (ToolkitObjectType objectType : typeArray) {
+            testProxyArrays(spreadsheet, objectType);
+        }
+
+        for (ToolkitObjectType objectType : typeArray) {
+            testProxyLoops(spreadsheet, objectType);
+        }
+    }
+
+    public void testProxyArrays(ActionSpreadsheet spreadsheet, ToolkitObjectType objectType) {
+
         NanoTimeHelper timeChecker = new NanoTimeHelper(spreadsheet);
+        switch (objectType) {
+            case JAVA_BEAN:
+                _gigaSpace.writeMultiple(_sourceJavaBeanArray);
+                timeChecker.printElapsedTime(WRITE_JAVA_BEAN_ARRAY);
 
-        _gigaSpace.writeMultiple(_sourceJavaBeanArray);
-        timeChecker.printElapsedTime(WRITE_JAVA_BEAN_ARRAY);
+                ToolkitJavaBean[] readJavaBeanArray =
+                        _gigaSpace.readMultiple(_blankJavaBean, ARRAY_SIZE);
+                timeChecker.printElapsedTime(READ_JAVA_BEAN_ARRAY);
 
-        ToolkitJavaBean[] readJavaBeanArray =
-                _gigaSpace.readMultiple(_blankJavaBean, ARRAY_SIZE);
-        timeChecker.printElapsedTime(READ_JAVA_BEAN_ARRAY);
+                checkObjectCounts(ARRAY_SIZE, ToolkitObjectType.JAVA_BEAN);
+                clearSpaceObjects(ToolkitObjectType.JAVA_BEAN);
+                System.out.println();
+                return;
 
-        checkObjectCounts(ARRAY_SIZE, ToolkitObjectType.JAVA_BEAN);
-        clearSpaceObjects(ToolkitObjectType.JAVA_BEAN);
-        System.out.println();
-        timeChecker.reset();
+            case SPACE_CLASS:
+                _gigaSpace.writeMultiple(_sourceSpaceClassArray);
+                timeChecker.printElapsedTime(WRITE_SPACE_CLASS_ARRAY);
 
-        _gigaSpace.writeMultiple(_sourceSpaceClassArray);
-        timeChecker.printElapsedTime(WRITE_SPACE_CLASS_ARRAY);
+                ToolkitSpaceClass[] readSpaceClassArray =
+                        _gigaSpace.readMultiple(_blankSpaceClass, ARRAY_SIZE);
+                timeChecker.printElapsedTime(READ_SPACE_CLASS_ARRAY);
 
-        ToolkitSpaceClass[] readSpaceClassArray =
-                _gigaSpace.readMultiple(_blankSpaceClass, ARRAY_SIZE);
-        timeChecker.printElapsedTime(READ_SPACE_CLASS_ARRAY);
+                checkObjectCounts(ARRAY_SIZE, ToolkitObjectType.SPACE_CLASS);
+                clearSpaceObjects(ToolkitObjectType.SPACE_CLASS);
+                System.out.println();
+                return;
 
-        checkObjectCounts(ARRAY_SIZE, ToolkitObjectType.SPACE_CLASS);
-        clearSpaceObjects(ToolkitObjectType.SPACE_CLASS);
-        System.out.println();
-        timeChecker.reset();
+            case SPACE_DOCUMENT:
+                _gigaSpace.writeMultiple(_sourceSpaceDocumentArray);
+                timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_ARRAY);
 
-        _gigaSpace.writeMultiple(_sourceSpaceDocumentArray);
-        timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_ARRAY);
+                SpaceDocument[] readSpaceDocumentArray =
+                        _gigaSpace.readMultiple(_blankSpaceDocument, ARRAY_SIZE);
+                timeChecker.printElapsedTime(READ_SPACE_DOCUMENT_ARRAY);
 
-        SpaceDocument[] readSpaceDocumentArray =
-            _gigaSpace.readMultiple(_blankSpaceDocument, ARRAY_SIZE);
-        timeChecker.printElapsedTime(READ_SPACE_DOCUMENT_ARRAY);
-
-        checkObjectCounts(ARRAY_SIZE, ToolkitObjectType.SPACE_DOCUMENT);
-        clearSpaceObjects(ToolkitObjectType.SPACE_DOCUMENT);
-        System.out.println();
-        timeChecker.reset();
-
-        for (int i = 0; i < LOOP_SIZE; i++)
-            _gigaSpace.write(_sourceJavaBeanArray[i]);
-        timeChecker.printElapsedTime(WRITE_JAVA_BEAN_LOOP);
-
-        ToolkitJavaBean templateJavaBean = new ToolkitJavaBean();
-        for (int i = 0; i < LOOP_SIZE; i++) {
-            ToolkitJavaBean sourceJavaBean = (ToolkitJavaBean) _sourceJavaBeanArray[i];
-            templateJavaBean.setObjectId(sourceJavaBean.getObjectId());
-            ToolkitJavaBean readJavaBean = _gigaSpace.read(templateJavaBean);
+                checkObjectCounts(ARRAY_SIZE, ToolkitObjectType.SPACE_DOCUMENT);
+                clearSpaceObjects(ToolkitObjectType.SPACE_DOCUMENT);
+                System.out.println();
+                return;
         }
-        timeChecker.printElapsedTime(READ_JAVA_BEAN_LOOP);
+    }
 
-        checkObjectCounts(LOOP_SIZE, ToolkitObjectType.JAVA_BEAN);
-        clearSpaceObjects(ToolkitObjectType.JAVA_BEAN);
-        System.out.println();
-        timeChecker.reset();
+    public void testProxyLoops(ActionSpreadsheet spreadsheet, ToolkitObjectType objectType) {
 
-        for (int i = 0; i < LOOP_SIZE; i++)
-            _gigaSpace.write(_sourceSpaceClassArray[i]);
-        timeChecker.printElapsedTime(WRITE_SPACE_CLASS_LOOP);
+        NanoTimeHelper timeChecker = new NanoTimeHelper(spreadsheet);
+        switch (objectType) {
+            case JAVA_BEAN:
+                for (int i = 0; i < LOOP_SIZE; i++)
+                    _gigaSpace.write(_sourceJavaBeanArray[i]);
+                timeChecker.printElapsedTime(WRITE_JAVA_BEAN_LOOP);
 
-        ToolkitSpaceClass templateSpaceClass = new ToolkitSpaceClass();
-        for (int i = 0; i < LOOP_SIZE; i++) {
-            ToolkitSpaceClass sourceSpaceClass = (ToolkitSpaceClass) _sourceSpaceClassArray[i];
-            templateSpaceClass.setObjectId(sourceSpaceClass.getObjectId());
-            ToolkitSpaceClass readSpaceClass = _gigaSpace.read(templateSpaceClass);
+                ToolkitJavaBean templateJavaBean = new ToolkitJavaBean();
+                for (int i = 0; i < LOOP_SIZE; i++) {
+                    ToolkitJavaBean sourceJavaBean = (ToolkitJavaBean) _sourceJavaBeanArray[i];
+                    templateJavaBean.setObjectId(sourceJavaBean.getObjectId());
+                    ToolkitJavaBean readJavaBean = _gigaSpace.read(templateJavaBean);
+                }
+                timeChecker.printElapsedTime(READ_JAVA_BEAN_LOOP);
+
+                checkObjectCounts(LOOP_SIZE, ToolkitObjectType.JAVA_BEAN);
+                clearSpaceObjects(ToolkitObjectType.JAVA_BEAN);
+                System.out.println();
+                return;
+
+            case SPACE_CLASS:
+                for (int i = 0; i < LOOP_SIZE; i++)
+                    _gigaSpace.write(_sourceSpaceClassArray[i]);
+                timeChecker.printElapsedTime(WRITE_SPACE_CLASS_LOOP);
+
+                ToolkitSpaceClass templateSpaceClass = new ToolkitSpaceClass();
+                for (int i = 0; i < LOOP_SIZE; i++) {
+                    ToolkitSpaceClass sourceSpaceClass = (ToolkitSpaceClass) _sourceSpaceClassArray[i];
+                    templateSpaceClass.setObjectId(sourceSpaceClass.getObjectId());
+                    ToolkitSpaceClass readSpaceClass = _gigaSpace.read(templateSpaceClass);
+                }
+                timeChecker.printElapsedTime(READ_SPACE_CLASS_LOOP);
+
+                checkObjectCounts(LOOP_SIZE, ToolkitObjectType.SPACE_CLASS);
+                clearSpaceObjects(ToolkitObjectType.SPACE_CLASS);
+                System.out.println();
+                return;
+
+            case SPACE_DOCUMENT:
+                for (int i = 0; i < LOOP_SIZE; i++)
+                    _gigaSpace.write(_sourceSpaceDocumentArray[i]);
+                timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_LOOP);
+
+                ToolkitSpaceDocument templateSpaceDocument = new ToolkitSpaceDocument();
+                templateSpaceDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
+                for (int i = 0; i < LOOP_SIZE; i++) {
+                    ToolkitSpaceDocument sourceSpaceDocument = (ToolkitSpaceDocument) _sourceSpaceDocumentArray[i];
+                    templateSpaceDocument.setProperty(DataObjectFactory.OBJECT_ID,
+                            sourceSpaceDocument.getProperty(DataObjectFactory.OBJECT_ID));
+                    SpaceDocument readSpaceDocument = _gigaSpace.read(templateSpaceDocument);
+                }
+                timeChecker.printElapsedTime(READ_SPACE_DOCUMENT_LOOP);
+
+                checkObjectCounts(LOOP_SIZE, ToolkitObjectType.SPACE_DOCUMENT);
+                clearSpaceObjects(ToolkitObjectType.SPACE_DOCUMENT);
+                System.out.println();
+                return;
         }
-        timeChecker.printElapsedTime(READ_SPACE_CLASS_LOOP);
-
-        checkObjectCounts(LOOP_SIZE, ToolkitObjectType.SPACE_CLASS);
-        clearSpaceObjects(ToolkitObjectType.SPACE_CLASS);
-        System.out.println();
-        timeChecker.reset();
-
-        for (int i = 0; i < LOOP_SIZE; i++)
-            _gigaSpace.write(_sourceSpaceDocumentArray[i]);
-        timeChecker.printElapsedTime(WRITE_SPACE_DOCUMENT_LOOP);
-
-        ToolkitSpaceDocument templateSpaceDocument = new ToolkitSpaceDocument();
-        templateSpaceDocument.setTypeName(DataObjectFactory.TOOLKIT_SPACE_DOCUMENT_TYPE);
-        for (int i = 0; i < LOOP_SIZE; i++) {
-            ToolkitSpaceDocument sourceSpaceDocument = (ToolkitSpaceDocument) _sourceSpaceDocumentArray[i];
-            templateSpaceDocument.setProperty(DataObjectFactory.OBJECT_ID,
-                sourceSpaceDocument.getProperty(DataObjectFactory.OBJECT_ID));
-            SpaceDocument readSpaceDocument = _gigaSpace.read(templateSpaceDocument);
-        }
-        timeChecker.printElapsedTime(READ_SPACE_DOCUMENT_LOOP);
-
-        checkObjectCounts(LOOP_SIZE, ToolkitObjectType.SPACE_DOCUMENT);
-        clearSpaceObjects(ToolkitObjectType.SPACE_DOCUMENT);
     }
 }

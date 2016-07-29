@@ -1,10 +1,12 @@
 package com.gigaspaces.gigapro.xapapi.options;
 
+import javax.annotation.Nullable;
+
 public class NanoTimeHelper {
     private long _startTime;
     private ActionSpreadsheet _spreadsheet;
 
-    public NanoTimeHelper(ActionSpreadsheet spreadsheet) {
+    public NanoTimeHelper(@Nullable ActionSpreadsheet spreadsheet) {
         if (spreadsheet == null) {
             _spreadsheet = new ActionSpreadsheet("second");
         }

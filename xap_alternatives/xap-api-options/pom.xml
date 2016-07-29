@@ -17,8 +17,7 @@
     </description>
 
     <properties>
-        <!--gsType>PU</gsType-->
-        <!--gsVersion>9.5.0-RELEASE</gsVersion-->
+        <findbugsVersion>3.0.1</findbugsVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -33,6 +32,11 @@
             <groupId>com.gigaspaces</groupId>
             <artifactId>gs-openspaces</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>${findbugsVersion}</version>
         </dependency>
     </dependencies>
 </project>

@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <artifactId>toolkit</artifactId>
+        <groupId>com.gigaspaces.gigapro</groupId>
+        <version>1.1-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>xap-api-options</artifactId>
+    <packaging>jar</packaging>
+
+    <description>The project provides basic interface and implementation classes
+        that help to measure XAP space performance for different data objects.
+    </description>
+
+    <properties>
+        <!--gsType>PU</gsType-->
+        <!--gsVersion>9.5.0-RELEASE</gsVersion-->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <!-- Make sure the dependencies match the parent pom list -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gigaspaces</groupId>
+            <artifactId>gs-openspaces</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

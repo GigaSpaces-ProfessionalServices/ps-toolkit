@@ -3,10 +3,9 @@ set -o errexit
 
 show_usage() {
     echo ""
-    echo "Creates a stack of EC2 virtual machines and starts XAP grid"
-    echo "on these boxes using XAP Maven plugin"
+    echo "Creates a stack of EC2 virtual machines and starts XAP grid on these boxes"
     echo ""
-    echo "Usage: $0 [--help] [OPTIONS]... <path-to-project-directory>"
+    echo "Usage: $0 [--help] [OPTIONS]"
     echo ""
     echo "Mandatory parameters:"
     echo "  -s,   --stack-name          EC2 stack name"
@@ -26,11 +25,6 @@ show_usage() {
 }
 
 parse_input() {
-    if [[ $# -eq 0 ]]; then
-        echo "No path to XAP project directory was provided" >&2
-        show_usage; exit 2
-    fi
-
     if [[ $# -eq 1 && $1 == '--help' ]]; then
         show_usage; exit 0
     fi
@@ -75,16 +69,8 @@ parse_input() {
                 echo "Unknown option encountered: $1" >&2
                 show_usage; exit 2
             fi
-
-            # required parameter
-            project_dir="$1"
-            shift ;;
         esac
     done
-
-    if [[ ! -d "$project_dir" ]]; then
-        echo "The directory ${project_dir} does not exist"; exit 1
-    fi
 }
 
 create_vms() {
@@ -140,19 +126,10 @@ create_vms() {
 
     aws cloudformation wait stack-create-complete --stack-name ${stack_name}
 
-    lookup_locators=$(aws cloudformation describe-stacks --stack-name ${stack_name} \
-        --query 'Stacks[*].Outputs[?OutputKey==`MgtPrivateIP`].OutputValue[]' --output text)
-}
-
-deploy() {
-    cd ${project_dir}
-    mvn clean package
-
-    local deploy_cmd="mvn os:deploy -Dlocators=$lookup_locators"
-    if [[ $lookup_groups ]]; then
-        deploy_cmd+=" -Dgroups=$lookup_groups"
-    fi
-    $deploy_cmd
+    echo "Completed."
+    echo ""
+    echo "lookup locators: $(aws cloudformation describe-stacks --stack-name ${stack_name} \
+        --query 'Stacks[*].Outputs[?OutputKey==`MgtPrivateIP`].OutputValue[]' --output text)"
 }
 
 main() {
@@ -161,7 +138,6 @@ main() {
 
     parse_input "$@"
     create_vms
-    deploy
 }
 
 main "$@"

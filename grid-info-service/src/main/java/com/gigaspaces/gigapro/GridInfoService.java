@@ -8,6 +8,7 @@ import com.gigaspaces.gigapro.model.ClusterReplicationPolicy;
 import com.gigaspaces.gigapro.model.GridInfo;
 import com.j_spaces.core.IJSpace;
 import com.j_spaces.core.admin.IRemoteJSpaceAdmin;
+import com.j_spaces.core.cluster.ClusterPolicy;
 import com.j_spaces.core.cluster.ReplicationPolicy;
 import net.jini.core.discovery.LookupLocator;
 import org.openspaces.admin.Admin;
@@ -93,7 +94,12 @@ public class GridInfoService {
             try {
                 IJSpace spaceProxy = space.getGigaSpace().getSpace();
                 IRemoteJSpaceAdmin spaceAdmin = (IRemoteJSpaceAdmin) (spaceProxy.getAdmin());
-                ReplicationPolicy replicationPolicy = spaceAdmin.getClusterPolicy().getReplicationPolicy();
+
+                ClusterPolicy clusterPolicy = spaceAdmin.getClusterPolicy();
+                if (clusterPolicy == null) { // e.g. for 'mirror' space
+                    continue; 
+                }
+                ReplicationPolicy replicationPolicy = clusterPolicy.getReplicationPolicy();
 
                 ClusterReplicationPolicy clusterReplicationPolicy = replPolicyMap.get(space.getName());
                 if (clusterReplicationPolicy == null && replicationPolicy != null) {

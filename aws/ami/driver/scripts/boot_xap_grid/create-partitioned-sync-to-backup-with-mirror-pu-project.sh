@@ -145,7 +145,7 @@ start_hsqldb_server() {
     echo "server.remote_open=true" > ~/hsqldb-catalogs/server.properties
     echo "Starting HSQLDB server: database=${db_path}, alias=${db_name}..."
     nohup java -cp /tmp/hsqldb.jar org.hsqldb.server.Server --database.0 file:$db_path --dbname.0 $db_name --props ~/hsqldb-catalogs/server.properties >/dev/null 2>&1 &
-    ENDSSH
+ENDSSH
 }
 
 main() {

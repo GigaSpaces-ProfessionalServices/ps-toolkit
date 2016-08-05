@@ -1,27 +1,36 @@
-package com.gigaspaces.gigapro.zombie_finder;
+package com.zombiefinder.model;
 
 public class XapProcess {
 	private String host;
 	private String processId;
 	private String serviceType;
-//	private String command;
 
-    public XapProcess(String host, String processId, String serviceType) {
-		this.host = host;
-		this.processId = processId;
-		this.serviceType = serviceType;
+	public XapProcess() {
+		// default
 	}
 
 	public String getHost() {
 		return host;
 	}
 
+	public void setHost(String host) {
+		this.host = host;
+	}
+
 	public String getProcessId() {
 		return processId;
 	}
 
+	public void setProcessId(String processId) {
+		this.processId = processId;
+	}
+
 	public String getServiceType() {
 		return serviceType;
+	}
+
+	public void setServiceType(String serviceType) {
+		this.serviceType = serviceType;
 	}
 
 	@Override
@@ -60,12 +69,4 @@ public class XapProcess {
 			return false;
 		return true;
 	}
-
-	/*public String getCommand() {
-		return command;
-	}
-
-	public void setCommand(String command) {
-		this.command = command;
-	}*/
 }

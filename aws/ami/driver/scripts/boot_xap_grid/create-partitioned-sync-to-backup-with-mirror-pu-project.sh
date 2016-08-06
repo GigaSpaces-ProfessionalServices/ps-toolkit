@@ -25,10 +25,9 @@ readonly repl_chunk_size=500
 readonly repl_interval_millis=3000
 
 readonly template="basic-async-persistency"
-readonly artifact_id="my-app"
 readonly space_name="space"
-readonly conf_dest_dir="$artifact_id/processor/src/main/resources/META-INF/spring"
-readonly mirror_conf_dest_dir="$artifact_id/mirror/src/main/resources/META-INF/spring"
+readonly conf_dest_dir="processor/src/main/resources/META-INF/spring"
+readonly mirror_conf_dest_dir="mirror/src/main/resources/META-INF/spring"
 readonly cluster_schema="partitioned-sync2backup"
 readonly number_of_backups=1
 readonly max_instances_per_vm=1
@@ -42,20 +41,21 @@ readonly on_redo_log_capacity_exceeded="block-operations"
 readonly redo_log_capacity=150000
 
 #db settings
-readonly db_host="10.8.1.142" #The Driver VM
 readonly db_path="~/hsqldb-catalogs/my-app-testDB"
 readonly db_name="testDB"
 readonly db_user="SA"
 readonly db_password=""
 readonly mapping_resources="<value>com.mycompany.app.common.Data</value>"
 
+readonly sctipts_dir=$(dirname $0)
+
 show_usage() {
     echo ""
-    echo "Starts XAP grid with partitioned topology, synchronous backup and"
-    echo "async database mirroring on specified number of virtual machines"
+    echo "Creates a basic SBA application with partitioned topology, synchronous backup and async database mirroring"
+    echo "Starts HSQLDB server on requested host"
     echo ""
     echo "Usage: $0"
-    echo "  [--help] <number-of-gsc-partitions> <number-of-vms>"
+    echo "  [--help] <project-dir> <db-host>"
     echo ""
 }
 
@@ -74,8 +74,8 @@ parse_input() {
         show_usage; exit 2
     fi
 
-    number_of_instances=$1
-    vm_count=$2
+    project_dir=$1
+    db_host=$2
 }
 
 assemble_pu() {
@@ -106,7 +106,7 @@ assemble_pu() {
         -e 's|{{mirror_interval_opers}}|'"${mirror_interval_opers}"'|g' \
         -e 's|{{on_redo_log_capacity_exceeded}}|'"${on_redo_log_capacity_exceeded}"'|g' \
         -e 's|{{redo_log_capacity}}|'"${redo_log_capacity}"'|g' \
-        ${pu_template_path} > $1/pu.xml
+        $sctipts_dir/$pu_template_path > $1/pu.xml
 }
 
 assemble_sla() {
@@ -114,7 +114,7 @@ assemble_sla() {
         -e 's|{{number_of_instances}}|'"${number_of_instances}"'|g' \
         -e 's|{{number_of_backups}}|'"${number_of_backups}"'|g' \
         -e 's|{{max_instances_per_vm}}|'"${max_instances_per_vm}"'|g' \
-        ${sla_template_path} > $1/sla.xml
+        $sctipts_dir/$sla_template_path > $1/sla.xml
 }
 
 assemble_mirror() {
@@ -127,34 +127,31 @@ assemble_mirror() {
         -e 's|{{mirror_name}}|'"${mirror_name}"'|g' \
         -e 's|{{mapping_resources}}|'"${mapping_resources}"'|g' \
         -e 's|{{space_name}}|'"${space_name}"'|g' \
-        ${mirror_pu_template_path} > ${1}/pu.xml
+        $sctipts_dir/$mirror_pu_template_path > ${1}/pu.xml
 }
 
 create_basic_project() {
-    ./customize-topology.sh -t $template -a $artifact_id
+    $sctipts_dir/customize-topology.sh -t $template -a $project_dir
 
-    assemble_pu $conf_dest_dir
-    assemble_sla $conf_dest_dir
-    assemble_mirror $mirror_conf_dest_dir
+    assemble_pu $project_dir/$conf_dest_dir
+    assemble_sla $project_dir/$conf_dest_dir
+    assemble_mirror $project_dir/$mirror_conf_dest_dir
 }
 
 start_hsqldb_server() {
+    ssh $db_host <<ENDSSH
     wget -O /tmp/hsqldb.jar http://central.maven.org/maven2/org/hsqldb/hsqldb/2.3.2/hsqldb-2.3.2.jar
     mkdir -p ~/hsqldb-catalogs
     echo "server.remote_open=true" > ~/hsqldb-catalogs/server.properties
     echo "Starting HSQLDB server: database=${db_path}, alias=${db_name}..."
     nohup java -cp /tmp/hsqldb.jar org.hsqldb.server.Server --database.0 file:$db_path --dbname.0 $db_name --props ~/hsqldb-catalogs/server.properties >/dev/null 2>&1 &
-}
-
-boot_grid() {
-    ./boot-grid.sh --node-count $vm_count -s "partitioned-sync-replicated-grid-with-mirror" $artifact_id
+ENDSSH
 }
 
 main() {
     parse_input "$@"
     create_basic_project
     start_hsqldb_server
-    boot_grid
 }
 
 main "$@"

@@ -52,6 +52,7 @@ start_mgt() {
 }
 
 main() {
+    . $(dirname $0)/setenv.sh
     parse_input "$@"
     start_mgt
 }

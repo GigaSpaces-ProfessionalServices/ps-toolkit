@@ -8,6 +8,7 @@ show_usage() {
     echo "Usage $0 [--help] [OPTIONS]..."
     echo ""
     echo "Optional parameters:"
+    echo "  -j    --java-home         <java-home-dir>"
     echo "  -h,   --xap-home          <xap-home-dir>" 
     echo "  -g,   --lookup-groups     <lookup-groups>"
     echo "  -l,   --lookup-locators   <lookup-locators>"
@@ -17,16 +18,15 @@ show_usage() {
 }
 
 parse_input() {
-    if [[ $# -eq 0 ]]; then
-        show_usage; exit 2
-    fi
-
     if [[ $# -eq 1 && $1 == '--help' ]]; then
         show_usage; exit 0
     fi
 
     while [[ $# > 0 ]]; do
         case $1 in
+        '-j' | 'java-home')
+            java_home="$2"
+            shift 2 ;;
         '-h' | '--xap-home')  
             jshomedir="$2"  
             shift 2 ;;
@@ -55,27 +55,32 @@ parse_input() {
 }
 
 configure() {
+    local content;
     if [[ ${jshomedir} ]]; then
-        grep -q -F "JSHOMEDIR" $bash_profile || echo "export JSHOMEDIR=\"${jshomedir}\"" >>$bash_profile
+        content+="export JSHOMEDIR=\"${jshomedir}\"\n"
     fi
 
     if [[ ${java_home} ]]; then
-        grep -q -F "JAVA_HOME" $bash_profile || echo "export JAVA_HOME=\"${java_home}\" PATH=\"${PATH}:${java_home}/bin\"" >>$bash_profile
+        content+="export JAVA_HOME=\"${java_home}\"\nexport PATH=\"${PATH}:${java_home}/bin\"\n"
     fi
 
     if [[ ${lookup_groups} ]]; then
-        grep -q -F "LOOKUPGROUPS" $bash_profile || echo "export LOOKUPGROUPS=\"${lookup_groups}\"" >>$bash_profile
+        content+="export LOOKUPGROUPS=\"${lookup_groups}\"\n"
     fi
 
     if [[ ${lookup_locators} ]]; then
-        grep -q -F "LOOKUPLOCATORS" $bash_profile || echo "export LOOKUPLOCATORS=\"${lookup_locators}\"" >>$bash_profile
+        content+="export LOOKUPLOCATORS=\"${lookup_locators}\"\n"
     fi
 
     if [[ ${nic_address} ]]; then
-        grep -q -F "NIC_ADDR" $bash_profile || echo "export NIC_ADDR=\"${nic_address}\"" >>$bash_profile
+        content+="export NIC_ADDR=\"${nic_address}\"\n"
     fi
+    
+    content+="# XAP configured at [$(date +'%Y-%b-%d %H:%M:%S')]. [$(readlink -f /opt/gigaspaces/current)]"
 
-    source ${bash_profile}
+    echo ""
+    echo -e $content | tee $config_file && chmod +x $config_file
+    echo ""
 
     if [[ ${gs_license} ]]; then
         if [[ -f "${gs_license}" ]]; then
@@ -87,15 +92,16 @@ configure() {
 }
 
 main() {
-    readonly java_home="/opt/java/jdk1.7.0_79"
     readonly ip_address=$(/sbin/ifconfig eth0 2>/dev/null|awk '/inet addr:/ {print $2}'|sed 's/addr://')
-    readonly bash_profile=~/.profile
 
+    java_home="/opt/java/jdk1.7.0_79"
     jshomedir="/opt/gigaspaces/current"
     lookup_locators=$ip_address
     nic_address=$ip_address
     gs_license=/tmp/gslicense.xml
 
+    config_file=$(dirname $0)/setenv.sh
+    
     parse_input "$@"
     configure
 }

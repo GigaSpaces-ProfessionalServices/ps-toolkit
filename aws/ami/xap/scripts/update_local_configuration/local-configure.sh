@@ -45,10 +45,8 @@ parse_input() {
         *)
             if [[ "$1" == "-"* ]]; then
                 echo "Unknown option encountered: $1" >&2
-            else
-                echo "Unknown operand encountered: $1" >&2
+                show_usage; exit 2
             fi
-            show_usage; exit 2
         esac
         shift
     done

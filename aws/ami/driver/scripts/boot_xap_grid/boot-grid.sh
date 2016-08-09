@@ -21,6 +21,7 @@ show_usage() {
     echo "  -cnt, --compute-node-type   EC2 instance type of VM with GSC"
     echo "  -cns, --compute-node-size   Size of EBS volume in GiB"
     echo "  -gsc, --gsc-count           The number of GSCs per compute node"
+    echo "  -dr,  --disable-rollback    Specify to disable rollback for troubleshooting stack creation"
     echo ""
 }
 
@@ -64,6 +65,9 @@ parse_input() {
         '-gsc' | '--gsc-count')
             gsc_count="$2"
             shift 2 ;;
+        '-dr' | '--disable-rollback')
+            disable_rollback=true
+            shift 1 ;;
         *)
             if [[ "$1" == "-"* ]]; then
                 echo "Unknown option encountered: $1" >&2
@@ -117,6 +121,10 @@ create_vms() {
     if [[ $parameters ]]; then
         create_stack_cmd+=" --parameters$parameters"
     fi
+
+    if [[ $disable_rollback ]]; then
+	    create_stack_cmd+=" --disable-rollback"
+    fi 
 
     local stack_id
     if ! stack_id=$(eval $create_stack_cmd); then

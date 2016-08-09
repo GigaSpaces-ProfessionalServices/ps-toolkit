@@ -37,7 +37,7 @@ start_webui() {
 }
 
 main() {
-    . $(dirname $0)/setenv.sh
+    . /tmp/setenv.sh
     parse_input "$@"
     start_webui
 }

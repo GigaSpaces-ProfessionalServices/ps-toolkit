@@ -190,10 +190,10 @@
     "ImageId": {
       "Description": "Id of an existing image",
       "Type": "String",
-      "Default": "ami-f5549498",
+      "Default": "ami-0b65041c",
       "AllowedValues": [
         "ami-f5549498",
-        "ami-1e2be673"
+        "ami-0b65041c"
       ],
       "ConstraintDescription": "must be the id of an existing AMI."
     },
@@ -215,7 +215,7 @@
       "ami-f5549498": {
         "root": "/dev/sda1"
       },
-      "ami-1e2be673": {
+      "ami-0b65041c": {
         "root": "/dev/sda1"
       }
     }
@@ -342,8 +342,8 @@
                       "#!/bin/bash -xe\n",
                       "cd /opt/gigaspaces/scripts\n",
                       "ip_addr=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)\n",
-                      ". local-configure.sh",
-                      " --groups ",
+                      ". update_local_configuration/local-configure.sh",
+                      " --lookup-groups ",
                       {
                         "Fn::If": [
                           "LookupGroupsIsEmpty",
@@ -355,15 +355,15 @@
                           }
                         ]
                       },
-                      " --locators ${ip_addr}",
+                      " --lookup-locators ${ip_addr}",
                       " --nic-address ${ip_addr}",
                       " --xap-home /opt/gigaspaces/",
                       {
                         "Ref": "XapVersion"
                       },
                       "\n",
-                      "./start-mgt.sh\n",
-                      "./start-webui.sh\n"
+                     "xap_service_mgt/start-mgt.sh\n",
+                     "xap_service_mgt/start-webui.sh\n"
                     ]
                   ]
                 },
@@ -383,7 +383,7 @@
       },
       "CreationPolicy": {
         "ResourceSignal": {
-          "Timeout": "PT5M"
+          "Timeout": "PT15M"
         }
       }
     },
@@ -498,8 +498,8 @@
                       "#!/bin/bash -xe\n",
                       "cd /opt/gigaspaces/scripts\n",
                       "ip_addr=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)\n",
-                      ". local-configure.sh",
-                      " --groups ",
+                       ". update_local_configuration/local-configure.sh",
+                      " --lookup-groups ",
                       {
                         "Fn::If": [
                           "LookupGroupsIsEmpty",
@@ -511,15 +511,15 @@
                           }
                         ]
                       },
-                      " --locators ${ip_addr}",
+                      " --lookup-locators ${ip_addr}",
                       " --nic-address ${ip_addr}",
                       " --xap-home /opt/gigaspaces/",
                       {
                         "Ref": "XapVersion"
                       },
                       "\n",
-                      "./start-mgt.sh\n",
-                      "./start-webui.sh\n"
+                      "xap_service_mgt/start-mgt.sh\n",
+                      "xap_service_mgt/start-webui.sh\n"
                     ]
                   ]
                 },
@@ -539,7 +539,7 @@
       },
       "CreationPolicy": {
         "ResourceSignal": {
-          "Timeout": "PT5M"
+          "Timeout": "PT15M"
         }
       }
     },
@@ -580,7 +580,7 @@
       },
       "CreationPolicy": {
         "ResourceSignal": {
-          "Timeout": "PT5M"
+          "Timeout": "PT15M"
         }
       }
     },
@@ -681,8 +681,8 @@
                       "#!/bin/bash -xe\n",
                       "cd /opt/gigaspaces/scripts\n",
                       "ip_addr=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)\n",
-                      ". local-configure.sh",
-                      " --groups ",
+                      ". update_local_configuration/local-configure.sh",
+                      " --lookup-groups ",
                       {
                         "Fn::If": [
                           "LookupGroupsIsEmpty",
@@ -694,7 +694,7 @@
                           }
                         ]
                       },
-                      " --locators ",
+                      " --lookup-locators ",
                       {
                         "Fn::GetAtt": [
                           "ManagementNode1",
@@ -714,7 +714,7 @@
                         "Ref": "XapVersion"
                       },
                       "\n",
-                      "./start-gscs.sh ",
+                      "xap_service_mgt/start-gscs.sh ",
                       {
                         "Ref": "GscCount"
                       }

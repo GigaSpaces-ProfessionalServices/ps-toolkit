@@ -48,7 +48,6 @@ parse_input() {
                 show_usage; exit 2
             fi
         esac
-        shift
     done
 }
 

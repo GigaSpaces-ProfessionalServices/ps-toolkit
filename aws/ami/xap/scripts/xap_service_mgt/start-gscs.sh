@@ -63,7 +63,7 @@ start_gscs() {
 }
 
 main() {
-    . $(dirname $0)/setenv.sh
+    . /tmp/setenv.sh
     parse_input "$@"
     start_gscs "$1"
 }

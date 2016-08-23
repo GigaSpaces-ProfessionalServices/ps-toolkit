@@ -5,11 +5,11 @@
     <parent>
         <artifactId>toolkit</artifactId>
         <groupId>com.gigaspaces.gigapro</groupId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>xap-config-cli</artifactId>
+    <artifactId>datagrid-config-cli</artifactId>
 
     <dependencies>
         <dependency>

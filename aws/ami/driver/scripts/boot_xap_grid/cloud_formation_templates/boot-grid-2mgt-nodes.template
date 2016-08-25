@@ -190,10 +190,10 @@
     "ImageId": {
       "Description": "Id of an existing image",
       "Type": "String",
-      "Default": "ami-0b65041c",
+      "Default": "ami-9af0938d",
       "AllowedValues": [
         "ami-f5549498",
-        "ami-0b65041c"
+        "ami-9af0938d"
       ],
       "ConstraintDescription": "must be the id of an existing AMI."
     },
@@ -215,7 +215,7 @@
       "ami-f5549498": {
         "root": "/dev/sda1"
       },
-      "ami-0b65041c": {
+      "ami-9af0938d": {
         "root": "/dev/sda1"
       }
     }

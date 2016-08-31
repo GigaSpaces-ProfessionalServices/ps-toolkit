@@ -23,6 +23,12 @@
         <dependency>
             <groupId>com.gigaspaces</groupId>
             <artifactId>gs-openspaces</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.gigaspaces</groupId>
+            <artifactId>gs-runtime</artifactId>
+            <scope>compile</scope>
         </dependency>
         <!-- TEST -->
         <dependency>
@@ -72,8 +78,8 @@
                             <mainClass>com.gigaspaces.gigapro.GridInfoService</mainClass>
                         </manifest>
                     </archive>
-                    <finalName>${project.artifactId}/${project.artifactId}</finalName>
-                    <outputDirectory>target</outputDirectory>
+                    <finalName>${project.artifactId}</finalName>
+                    <outputDirectory>target/${project.artifactId}</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>

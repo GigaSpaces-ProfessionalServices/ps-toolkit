@@ -43,19 +43,19 @@ pull_scripts() {
 
     if [[ ! -d "$ps_toolkit" ]]; then
         echo "Retrieving 'ps-toolkit' repository from GitHub"
-        sudo git clone $github_repo $ps_toolkit
+        git clone $github_repo $ps_toolkit
 
         cd $ps_toolkit
 
         # Below line assumes that git credentials to be entered manually
         # at least once - this should happen before AMI is generated
-        sudo git config credential.helper store
+        git config credential.helper store
     else
         cd $ps_toolkit
     fi
 
     echo "Pulling the most recent version of 'ps-toolkit' repository"
-    sudo git pull $github_repo
+    git pull $github_repo
 }
 
 copy_driver_scripts() {
@@ -63,7 +63,7 @@ copy_driver_scripts() {
 
     # Below command is supposed to preserve Linux file permissions
     # Only the files missing in source tree are being deleted
-    sudo rsync -av --delete $driver_source $driver_target
+    rsync -av --delete $driver_source $driver_target
 }
 
 main() {

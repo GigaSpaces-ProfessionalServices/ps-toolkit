@@ -25,15 +25,39 @@
             <artifactId>gs-openspaces</artifactId>
             <scope>compile</scope>
         </dependency>
+        
         <dependency>
             <groupId>com.gigaspaces</groupId>
             <artifactId>gs-runtime</artifactId>
             <scope>compile</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>com.gigaspaces.gigapro</groupId>
+            <artifactId>datagrid-config-cli</artifactId>
+            <version>1.1-SNAPSHOT</version>
+        </dependency>
+        
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+        </dependency>
+        
+        <!--LOGGING-->
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
     </dependencies>
 
@@ -75,7 +99,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.gigaspaces.gigapro.GridInfoService</mainClass>
+                            <mainClass>com.gigaspaces.gigapro.GridInfoTool</mainClass>
                         </manifest>
                     </archive>
                     <finalName>${project.artifactId}</finalName>

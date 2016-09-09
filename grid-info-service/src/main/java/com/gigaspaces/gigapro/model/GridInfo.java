@@ -1,6 +1,6 @@
 package com.gigaspaces.gigapro.model;
 
-import com.gigaspaces.gigapro.convert.PropertyKey;
+import com.gigaspaces.gigapro.convert.property.PropertyKey;
 
 import java.util.*;
 
@@ -27,8 +27,6 @@ public class GridInfo {
     private Set<String> gsmAddresses = new HashSet<>();
     @PropertyKey("gsc_host_addresses")
     private Map<String, Integer> gscAddresses = new HashMap<>();
-
-    private transient Map<String, ClusterReplicationPolicy> replPolicyMap = new HashMap<>();
 
     public Set<String> getIpAddresses() {
         return ipAddresses;
@@ -92,13 +90,5 @@ public class GridInfo {
 
     public void setSecuredSpaces(Set<String> securedSpaces) {
         this.securedSpaces = securedSpaces;
-    }
-
-    public Map<String, ClusterReplicationPolicy> getReplPolicyMap() {
-        return replPolicyMap;
-    }
-
-    public void setReplPolicyMap(Map<String, ClusterReplicationPolicy> replPolicyMap) {
-        this.replPolicyMap = replPolicyMap;
     }
 }

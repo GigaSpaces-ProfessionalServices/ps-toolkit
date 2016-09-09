@@ -1,6 +1,6 @@
 package com.gigaspaces.gigapro.model;
 
-import com.gigaspaces.gigapro.convert.PropertyKey;
+import com.gigaspaces.gigapro.convert.property.PropertyKey;
 
 /**
  * @author Svitlana_Pogrebna

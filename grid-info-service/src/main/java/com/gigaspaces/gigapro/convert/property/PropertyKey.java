@@ -1,4 +1,4 @@
-package com.gigaspaces.gigapro.convert;
+package com.gigaspaces.gigapro.convert.property;
 
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;

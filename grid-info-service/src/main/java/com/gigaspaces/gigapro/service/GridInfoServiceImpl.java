@@ -1,11 +1,13 @@
-package com.gigaspaces.gigapro;
+package com.gigaspaces.gigapro.service;
+
+import org.openspaces.admin.os.OperatingSystemDetails.VendorDetails;
 
 import com.gigaspaces.cluster.replication.MirrorServiceConfig;
 import com.gigaspaces.cluster.replication.sync.SyncReplPolicy;
-import com.gigaspaces.gigapro.convert.Converter;
-import com.gigaspaces.gigapro.convert.PropertiesFormatConverter;
 import com.gigaspaces.gigapro.model.ClusterReplicationPolicy;
+import com.gigaspaces.gigapro.model.CpuUsageInfo;
 import com.gigaspaces.gigapro.model.GridInfo;
+import com.gigaspaces.gigapro.parser.GridInfoOptionsParser.GridInfoOptions;
 import com.j_spaces.core.IJSpace;
 import com.j_spaces.core.admin.IRemoteJSpaceAdmin;
 import com.j_spaces.core.cluster.ClusterPolicy;
@@ -17,37 +19,68 @@ import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.gsc.GridServiceContainer;
 import org.openspaces.admin.gsm.GridServiceManager;
 import org.openspaces.admin.lus.LookupService;
+import org.openspaces.admin.machine.Machine;
+import org.openspaces.admin.machine.Machines;
+import org.openspaces.admin.os.OperatingSystemDetails;
 import org.openspaces.admin.space.Space;
-import org.openspaces.admin.space.Spaces;
 import org.openspaces.admin.vm.VirtualMachine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.Console;
 import java.rmi.RemoteException;
 import java.util.*;
-import java.util.Map.Entry;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author Svitlana_Pogrebna
  *
  */
-public class GridInfoService {
+public class GridInfoServiceImpl implements GridInfoService {
 
-    private static final int DEFAULT_GSA_COUNT = 1;
-    private static final long DEFAULT_TIMEOUT = 10l;
     private static final String COLON_SEPATATOR = ":";
 
-    private static final String GSA_COUNT_KEY = "gsa.count";
-    private static final String LOOKUP_LOCATORS_KEY = "lookup.locators";
-    private static final String LOOKUP_GROUPS_KEY = "lookup.groups";
-    private static final String XAP_USER_NAME_KEY = "xap.user.name";
-    private static final String WAIT_TIMEOUT_KEY = "wait.timeout";
-
-    private final Converter converter = new PropertiesFormatConverter();
-
-    private GridInfo createGridInfo(Admin admin, long waitTimeout) {
+    private static final Logger LOG = LoggerFactory.getLogger(GridInfoServiceImpl.class);
+    
+    private GridInfoOptions options;
+    private Admin admin;
+    
+    public GridInfoServiceImpl(GridInfoOptions options) {
+        this.options = options;
+        initAdmin();
+        waitForGsAgents();
+    }
+    
+    private void initAdmin() {
+        AdminFactory adminFactory = new AdminFactory();
+        if (options.getLookupLocators().isPresent()) {
+            adminFactory.addLocators(options.getLookupLocators().get());
+        }
+        if (options.getLookupGroups().isPresent()) {
+            adminFactory.addGroups(options.getLookupGroups().get());
+        }
+        if (options.getUsername().isPresent() && options.getPassword().isPresent()) {
+            char[] password = options.getPassword().get();
+            adminFactory.credentials(options.getUsername().get(), String.valueOf(password));
+            Arrays.fill(password, ' ');
+        }
+        
+        if (options.getRmiHostName().isPresent()) {
+            System.setProperty("java.rmi.server.hostname", options.getRmiHostName().get());
+        }
+        admin = adminFactory.discoverUnmanagedSpaces().createAdmin();
+        admin.setDefaultTimeout(options.getTimeout(), TimeUnit.SECONDS);
+    }
+   
+    private void waitForGsAgents() {
+        if (!admin.getGridServiceAgents().waitFor(options.getCount(), options.getTimeout(), TimeUnit.SECONDS)) {
+            throw new IllegalStateException(String.format("%d GSA(s) have not been found during %d seconds", options.getCount(), options.getTimeout()));
+        }
+    }
+    
+    @Override
+    public GridInfo collectGridInfo() {
         GridInfo gridInfo = new GridInfo();
-
+        
         gridInfo.setLookupGroups(new HashSet<String>(Arrays.<String> asList(admin.getGroups())));
         for (LookupLocator ll : admin.getLocators()) {
             gridInfo.getLookupLocators().add(ll.getHost() + COLON_SEPATATOR + ll.getPort());
@@ -57,6 +90,7 @@ public class GridInfoService {
             gridInfo.getIpAddresses().add(virtualMachine.getMachine().getHostAddress());
         }
 
+        long waitTimeout = options.getTimeout();
         for (GridServiceAgent gsa : admin.getGridServiceAgents()) {
             gsa.getGridServiceManagers().waitForAtLeastOne(waitTimeout, TimeUnit.SECONDS);
             for (GridServiceManager gsm : gsa.getGridServiceManagers()) {
@@ -88,9 +122,10 @@ public class GridInfoService {
         return gridInfo;
     }
 
-    private Map<String, ClusterReplicationPolicy> createClusterReplicationPolicyMap(Spaces spaces) {
+    @Override
+    public Map<String, ClusterReplicationPolicy> collectClusterReplicationPolicyInfo() {
         Map<String, ClusterReplicationPolicy> replPolicyMap = new HashMap<>();
-        for (Space space : spaces) {
+        for (Space space : admin.getSpaces()) {
             try {
                 IJSpace spaceProxy = space.getGigaSpace().getSpace();
                 IRemoteJSpaceAdmin spaceAdmin = (IRemoteJSpaceAdmin) (spaceProxy.getAdmin());
@@ -137,91 +172,42 @@ public class GridInfoService {
                     }
                 }
             } catch (RemoteException e) {
-                System.err.printf("Failed to get '%s' space proxy admin", space.getName(), DEFAULT_TIMEOUT);
-                System.exit(1);
+                LOG.error("Failed to get space proxy admin for space {}", space.getName(), e);
+                throw new IllegalStateException("Failed to get space proxy admin for space" + space.getName(), e);
             }
         }
         return replPolicyMap;
     }
-
-    public GridInfo getGridInfo(int count, String username, char[] password, String lookupGroups, String lookupLocators, long waitTimeout) {
-        Admin admin = null;
-        try {
-            AdminFactory adminFactory = new AdminFactory();
-            if (lookupLocators != null && !lookupLocators.isEmpty()) {
-                adminFactory.addLocators(lookupLocators);
-            }
-            if (lookupGroups != null && !lookupGroups.isEmpty()) {
-                adminFactory.addGroups(lookupGroups);
-            }
-            if (username != null && !username.isEmpty() && password != null && password.length > 0) {
-                adminFactory.credentials(username, String.valueOf(password));
-                Arrays.fill(password, ' ');
-            }
-            admin = adminFactory.createAdmin();
-
-            if (!admin.getGridServiceAgents().waitFor(count, waitTimeout, TimeUnit.SECONDS)) {
-                System.err.printf("%d GSA have not been found using during %d seconds", count, waitTimeout);
-                return null;
-            }
-
-            GridInfo gridInfo = createGridInfo(admin, waitTimeout);
-            gridInfo.setReplPolicyMap(createClusterReplicationPolicyMap(admin.getSpaces()));
-
-            return gridInfo;
-        } finally {
-            if (admin != null) {
-                admin.close();
-            }
+    
+    @Override
+    public Set<CpuUsageInfo> collectCpuUsageInfo() {
+        long timeout = options.getTimeout();
+        if (!admin.getLookupServices().waitFor(1, timeout, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("No Lookup Services have not been found during " + timeout + " seconds");
         }
+        Machines machines = admin.getMachines();
+        if (!machines.waitFor(1, timeout, TimeUnit.SECONDS)) {
+            throw new IllegalStateException("No machines have not been found during " + timeout + " seconds");
+        }
+        Set<CpuUsageInfo> cpuUsageInfoSet = new HashSet<>();
+        for (Machine machine : machines) {
+            CpuUsageInfo cpuUsageInfo = new CpuUsageInfo();
+            cpuUsageInfo.setHostName(machine.getHostName());
+            cpuUsageInfo.setHostAddress(machine.getHostAddress());
+            OperatingSystemDetails os = machine.getOperatingSystem().getDetails();
+            cpuUsageInfo.setAvailableProcessors(os.getAvailableProcessors());
+            cpuUsageInfo.setOperationSystem(os.getName() + " " + os.getVersion() + " " + os.getArch());
+            double totalPhysicalMemorySizeInMB = os.getTotalPhysicalMemorySizeInMB();
+            cpuUsageInfo.setPhysicalMemorySizeInMB(totalPhysicalMemorySizeInMB);
+            cpuUsageInfoSet.add(cpuUsageInfo);
+        }
+        return cpuUsageInfoSet;
     }
 
-    public void printGridStatus(GridInfo gridInfo) {
-        System.out.println(converter.convert(gridInfo));
-
-        for (Entry<String, ClusterReplicationPolicy> entry : gridInfo.getReplPolicyMap().entrySet()) {
-            System.out.println(converter.convert(entry.getKey(), entry.getValue()));
-        }
-    }
-
-    public static void main(String[] args) {
-        String lookupLocators = System.getProperty(LOOKUP_LOCATORS_KEY);
-        String lookupGroups = System.getProperty(LOOKUP_GROUPS_KEY);
-
-        String timeoutStr = System.getProperty(WAIT_TIMEOUT_KEY);
-        long timeout = DEFAULT_TIMEOUT;
-        if (timeoutStr != null) {
-            try {
-                timeout = Long.parseLong(timeoutStr);
-            } catch (NumberFormatException e) {
-                System.err.printf("Invalid wait timeout provided: %s. The default timeout %d will be used.", timeoutStr, DEFAULT_TIMEOUT);
-            }
-        }
-
-        String username = System.getProperty(XAP_USER_NAME_KEY);
-        char[] password = null;
-        if (username != null) {
-            Console console = System.console();
-            if (console == null) {
-                System.err.printf("No console is associated with the current JVM. Exiting...");
-                System.exit(1);
-            }
-            password = console.readPassword("Password for %s:", username);
-        }
-        String countStr = System.getProperty(GSA_COUNT_KEY);
-        int count = DEFAULT_GSA_COUNT;
-        if (countStr != null) {
-            try {
-                count = Integer.parseInt(countStr);
-            } catch (NumberFormatException e) {
-                System.err.printf("Invalid gsa count provided: %s", countStr);
-            }
-        }
-
-        GridInfoService gridInfoService = new GridInfoService();
-        GridInfo gridInfo = gridInfoService.getGridInfo(count, username, password, lookupGroups, lookupLocators, timeout);
-        if (gridInfo != null) {
-            gridInfoService.printGridStatus(gridInfo);
+    @Override
+    public void close() {
+        if (admin != null) {
+            admin.close();
         }
     }
 }

@@ -1,4 +1,6 @@
-package com.gigaspaces.gigapro.convert;
+package com.gigaspaces.gigapro.convert.property;
+
+import com.gigaspaces.gigapro.convert.Converter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -38,15 +40,17 @@ public class PropertiesFormatConverter implements Converter {
             }
 
             try {
-                Class<? extends Object> fieldType = field.getType();
-                Object value = field.get(data);
-
                 PropertyKey propertyKey = field.getDeclaredAnnotation(PropertyKey.class);
                 String key = propertyKey != null ? propertyKey.value() : field.getName();
+                
                 if (keyPrefix != null && !keyPrefix.isEmpty()) {
                     key = keyPrefix + KEY_SEPARATOR + key;
                 }
+                
                 output.append(key).append(PROPERTIES_SEPARATOR);
+              
+                Class<? extends Object> fieldType = field.getType();
+                Object value = field.get(data);
                 if (isMap(fieldType)) {
                     convertMapValue(key, (Map<?, ?>) value, output);
                 } else if (isIterable(fieldType)) {

@@ -1,5 +1,8 @@
 package com.gigaspaces.gigapro.convert;
 
+import com.gigaspaces.gigapro.convert.property.PropertyKey;
+
+import com.gigaspaces.gigapro.convert.property.PropertiesFormatConverter;
 import org.junit.Test;
 
 import java.util.*;

@@ -2,16 +2,23 @@
 <Configuration>
     <Appenders>
         <Console name="STDOUT" target="SYSTEM_OUT">
-            <PatternLayout pattern="%-5p %d %m%n"/>
+            <PatternLayout pattern="%-5p %d %m%n" />
         </Console>
-        <File name="File" fileName="${sys:java.io.tmpdir}/logs/xap_statistics.log">
-            <PatternLayout pattern="%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-        </File>
+        <RollingFile name="RollingFile" fileName="${sys:java.io.tmpdir}/logs/xap_statistics.log" filePattern="${sys:java.io.tmpdir}/logs/xap_statistics.%d{MM-dd-yyyy}.%i.log">
+            <PatternLayout>
+                <Pattern>%d{yyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n </Pattern>
+            </PatternLayout>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="1 GB" />
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <DefaultRolloverStrategy max="10" />
+        </RollingFile>
     </Appenders>
     <Loggers>
         <Root level="all">
-            <AppenderRef ref="STDOUT"/>
-            <AppenderRef ref="File"/>
+            <AppenderRef ref="STDOUT" />
+            <AppenderRef ref="RollingFile" />
         </Root>
     </Loggers>
 </Configuration>

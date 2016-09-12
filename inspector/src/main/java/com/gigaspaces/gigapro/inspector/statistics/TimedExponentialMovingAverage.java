@@ -2,8 +2,6 @@ package com.gigaspaces.gigapro.inspector.statistics;
 
 import java.util.Collection;
 
-import static org.apache.commons.collections.CollectionUtils.isEmpty;
-
 class TimedExponentialMovingAverage {
 
     private double accumulator;
@@ -38,9 +36,9 @@ class TimedExponentialMovingAverage {
     }
 
     static TimedExponentialMovingAverage combineMultiple(Collection<TimedExponentialMovingAverage> averages) {
-        if (isEmpty(averages))
+        if (averages == null || averages.isEmpty()) {
             throw new IllegalArgumentException("Collection averages must not be empty!");
-
+        }
         long totalInvocations = 0;
         double sumOfAverages = 0.0;
         for (TimedExponentialMovingAverage stat : averages) {

@@ -35,7 +35,7 @@ public class ClusterReplicationPolicy {
     @PropertyKey("max_throttle_tp_when_inactive")
     private int maxThrottleTpWhenInactive;
     @PropertyKey("min_throttle_tp_when_active")
-    private int minThrottleTpWhenInactive;
+    private int minThrottleTpWhenActive;
     @PropertyKey("multiple_opers_chunk_size")
     private int multipleOpersChunkSize;
     @PropertyKey("target_consume_timeout")
@@ -159,12 +159,12 @@ public class ClusterReplicationPolicy {
         this.maxThrottleTpWhenInactive = maxThrottleTpWhenInactive;
     }
 
-    public int getMinThrottleTpWhenInactive() {
-        return minThrottleTpWhenInactive;
+    public int getMinThrottleTpWhenActive() {
+        return minThrottleTpWhenActive;
     }
 
-    public void setMinThrottleTpWhenInactive(int minThrottleTpWhenInactive) {
-        this.minThrottleTpWhenInactive = minThrottleTpWhenInactive;
+    public void setMinThrottleTpWhenActive(int minThrottleTpWhenActive) {
+        this.minThrottleTpWhenActive = minThrottleTpWhenActive;
     }
 
     public int getMultipleOpersChunkSize() {

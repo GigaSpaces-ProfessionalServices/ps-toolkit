@@ -25,26 +25,46 @@
             <artifactId>gs-openspaces</artifactId>
             <scope>compile</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>com.gigaspaces</groupId>
             <artifactId>gs-runtime</artifactId>
             <scope>compile</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>com.gigaspaces.gigapro</groupId>
             <artifactId>datagrid-config-cli</artifactId>
             <version>1.1-SNAPSHOT</version>
         </dependency>
-        
+
+        <!-- PDF -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>2.0.0</version>
+        </dependency>  
+
+        <dependency>
+            <groupId>com.github.dhorions</groupId>
+            <artifactId>boxable</artifactId>
+            <version>1.4</version>
+        </dependency>
+
+        <!-- java mail -->
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <version>1.5.6</version>
+        </dependency>
+
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-        
-        <!--LOGGING-->
+
+        <!--LOGGING -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -62,6 +82,15 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**</exclude>
+                </excludes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
         <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
@@ -70,6 +99,26 @@
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/${project.artifactId}/config</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -97,10 +146,14 @@
                 <configuration>
                     <archive>
                         <manifest>
+                            <addDefaultImplementationEntries>false</addDefaultImplementationEntries>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
                             <mainClass>com.gigaspaces.gigapro.GridInfoTool</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <Class-Path>config/</Class-Path> 
+                        </manifestEntries>
                     </archive>
                     <finalName>${project.artifactId}</finalName>
                     <outputDirectory>target/${project.artifactId}</outputDirectory>

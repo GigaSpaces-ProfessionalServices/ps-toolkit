@@ -1,7 +1,7 @@
 package com.gigaspaces.gigapro.service;
 
 import com.gigaspaces.gigapro.model.ClusterReplicationPolicy;
-import com.gigaspaces.gigapro.model.CpuUsageInfo;
+import com.gigaspaces.gigapro.model.HostInfo;
 import com.gigaspaces.gigapro.model.GridInfo;
 
 import java.util.Map;
@@ -17,5 +17,5 @@ public interface GridInfoService extends AutoCloseable {
     
     Map<String, ClusterReplicationPolicy> collectClusterReplicationPolicyInfo();
     
-    Set<CpuUsageInfo> collectCpuUsageInfo();
+    Set<HostInfo> collectCpuUsageInfo();
 }

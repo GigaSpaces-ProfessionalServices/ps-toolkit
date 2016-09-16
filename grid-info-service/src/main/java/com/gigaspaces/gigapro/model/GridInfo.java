@@ -22,9 +22,9 @@ public class GridInfo {
     private Set<String> lookupLocators = new HashSet<>();
 
     @PropertyKey("lus_host_addresses")
-    private Set<String> lusAddresses = new HashSet<>();
+    private Map<String, Integer> lusAddresses = new HashMap<>();
     @PropertyKey("gsm_host_addresses")
-    private Set<String> gsmAddresses = new HashSet<>();
+    private Map<String, Integer> gsmAddresses = new HashMap<>();
     @PropertyKey("gsc_host_addresses")
     private Map<String, Integer> gscAddresses = new HashMap<>();
 
@@ -52,19 +52,19 @@ public class GridInfo {
         this.lookupGroups = lookupGroups;
     }
 
-    public Set<String> getLusAddresses() {
+    public Map<String, Integer> getLusAddresses() {
         return lusAddresses;
     }
 
-    public void setLusAddresses(Set<String> lusAddresses) {
+    public void setLusAddresses(Map<String, Integer> lusAddresses) {
         this.lusAddresses = lusAddresses;
     }
 
-    public Set<String> getGsmAddresses() {
+    public Map<String, Integer> getGsmAddresses() {
         return gsmAddresses;
     }
 
-    public void setGsmAddresses(Set<String> gsmAddresses) {
+    public void setGsmAddresses(Map<String, Integer> gsmAddresses) {
         this.gsmAddresses = gsmAddresses;
     }
 

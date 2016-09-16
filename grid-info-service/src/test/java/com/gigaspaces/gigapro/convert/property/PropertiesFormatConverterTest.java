@@ -1,8 +1,5 @@
-package com.gigaspaces.gigapro.convert;
+package com.gigaspaces.gigapro.convert.property;
 
-import com.gigaspaces.gigapro.convert.property.PropertyKey;
-
-import com.gigaspaces.gigapro.convert.property.PropertiesFormatConverter;
 import org.junit.Test;
 
 import java.util.*;
@@ -16,11 +13,11 @@ import static org.junit.Assert.*;
  */
 public class PropertiesFormatConverterTest {
 
-    private Converter converter = new PropertiesFormatConverter();
+    private PropertiesFormatConverter propertiesConverter = new PropertiesFormatConverter();
 
     @Test
     public void testConvertNull() {
-        assertEquals("Output should be empty", "", converter.convert(null));
+        assertEquals("Output should be empty", "", propertiesConverter.convert(null));
     }
 
     @Test
@@ -34,7 +31,7 @@ public class PropertiesFormatConverterTest {
 
         TestData testData = new TestData();
 
-        String output = converter.convert(testData);
+        String output = propertiesConverter.convert(testData);
         assertNotNull("Outupt should not be null", output);
         String[] lines = output.split("\n");
         assertEquals("Output should have 2 lines", 2, lines.length);
@@ -60,7 +57,7 @@ public class PropertiesFormatConverterTest {
 
         TestData testData = new TestData();
 
-        String output = converter.convert(testData);
+        String output = propertiesConverter.convert(testData);
         assertNotNull("Output should not be null", output);
         String[] lines = output.split("\n");
         assertEquals("Output should have 6 lines", 6, lines.length);
@@ -86,6 +83,6 @@ public class PropertiesFormatConverterTest {
             private transient int simpleType = 1;
         }
         TestData testData = new TestData();
-        assertEquals("Output should be empty", "", converter.convert(testData));
+        assertEquals("Output should be empty", "", propertiesConverter.convert(testData));
     }
 }

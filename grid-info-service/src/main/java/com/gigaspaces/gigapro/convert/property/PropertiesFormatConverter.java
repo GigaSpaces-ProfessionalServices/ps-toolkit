@@ -1,6 +1,7 @@
 package com.gigaspaces.gigapro.convert.property;
 
-import com.gigaspaces.gigapro.convert.Converter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -12,19 +13,20 @@ import java.util.Map.Entry;
  * @author Svitlana_Pogrebna
  *
  */
-public class PropertiesFormatConverter implements Converter {
+public class PropertiesFormatConverter {
 
     private static final char PROPERTIES_SEPARATOR = '=';
     private static final char MULTI_VALUES_SEPARATOR = ',';
     private static final char KEY_VALUE_SEPARATOR = ':';
     private static final char KEY_SEPARATOR = '_';
-
-    @Override
+    private static final char NEWLINE_SEPARATOR = '\n';
+    
+    private static final Logger LOG = LoggerFactory.getLogger(PropertiesFormatConverter.class);
+    
     public <T> String convert(T data) {
         return convert("", data);
     }
-
-    @Override
+    
     public <T> String convert(String keyPrefix, T data) {
         if (data == null) {
             return "";
@@ -39,35 +41,51 @@ public class PropertiesFormatConverter implements Converter {
                 continue;
             }
 
-            try {
-                PropertyKey propertyKey = field.getDeclaredAnnotation(PropertyKey.class);
-                String key = propertyKey != null ? propertyKey.value() : field.getName();
-                
-                if (keyPrefix != null && !keyPrefix.isEmpty()) {
-                    key = keyPrefix + KEY_SEPARATOR + key;
-                }
-                
-                output.append(key).append(PROPERTIES_SEPARATOR);
-              
-                Class<? extends Object> fieldType = field.getType();
-                Object value = field.get(data);
-                if (isMap(fieldType)) {
-                    convertMapValue(key, (Map<?, ?>) value, output);
-                } else if (isIterable(fieldType)) {
-                    convertIterableValue(key, (Iterable<?>) value, output);
-                } else if (fieldType.isArray()) {
-                    convertIterableValue(key, Arrays.asList((Object[]) value), output);
-                } else {
-                    output.append(value == null ? "" : value).append("\n");
-                }
-            } catch (IllegalAccessException e) {
-                System.err.printf("Error while accessing property %s. %s", field.getName(), e.getMessage());
-            }
+            convertItem(keyPrefix, field, data, output);
         }
         return output.toString();
     }
 
-    private void convertMapValue(String key, Map<?, ?> map, StringBuilder output) {
+    protected void convertKey(String keyPrefix, Field field, StringBuilder output) {
+        PropertyKey propertyKey = field.getDeclaredAnnotation(PropertyKey.class);
+        String key = propertyKey != null ? propertyKey.value() : field.getName();
+
+        if (keyPrefix != null && !keyPrefix.isEmpty()) {
+            key = keyPrefix + KEY_SEPARATOR + key;
+        }
+        output.append(key);
+    }
+    
+    protected void convertValue(Class<? extends Object> fieldType, Object value, StringBuilder output) {
+        if (isMap(fieldType)) {
+            convertMapValue((Map<?, ?>) value, output);
+        } else if (isIterable(fieldType)) {
+            convertIterableValue((Iterable<?>) value, output);
+        } else if (fieldType.isArray()) {
+            convertIterableValue(Arrays.asList((Object[]) value), output);
+        } else {
+            output.append(value == null ? "" : value);
+        }
+    }
+    
+    protected void convertItem(String keyPrefix, Field field, Object data, StringBuilder output) {
+        try {
+            convertKey(keyPrefix, field, output);
+             
+            output.append(PROPERTIES_SEPARATOR);
+
+            Class<? extends Object> fieldType = field.getType();
+            Object value = field.get(data);
+            convertValue(fieldType, value, output);
+            
+            output.append(NEWLINE_SEPARATOR);
+            
+         } catch (IllegalAccessException e) {
+             LOG.error("Error while accessing property {}", field.getName(), e);
+         }
+    }
+    
+    protected void convertMapValue(Map<?, ?> map, StringBuilder output) {
         boolean first = true;
         for (Entry<?, ?> entry : map.entrySet()) {
             if (!first) {
@@ -77,10 +95,9 @@ public class PropertiesFormatConverter implements Converter {
             output.append(entry.getKey()).append(KEY_VALUE_SEPARATOR).append(value == null ? "" : value);
             first = false;
         }
-        output.append("\n");
     }
 
-    private void convertIterableValue(String key, Iterable<?> data, StringBuilder output) {
+    protected void convertIterableValue(Iterable<?> data, StringBuilder output) {
         boolean first = true;
         for (Object entry : data) {
             if (!first) {
@@ -89,7 +106,6 @@ public class PropertiesFormatConverter implements Converter {
             output.append(entry == null ? "" : entry);
             first = false;
         }
-        output.append("\n");
     }
 
     private static boolean isMap(Class<? extends Object> type) {

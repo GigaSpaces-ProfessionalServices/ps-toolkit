@@ -13,7 +13,7 @@
     <version>1.0-SNAPSHOT</version>
     <name>inspector</name>
     <url>http://maven.apache.org</url>
-    
+
     <properties>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <log4j2.version>2.1</log4j2.version>
@@ -86,6 +86,12 @@
             <version>${commons.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.tdunning</groupId>
+            <artifactId>t-digest</artifactId>
+            <version>3.1</version>
+        </dependency>
+
         <!-- logging -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -123,6 +129,7 @@
             <version>${hamcrest.version}</version>
             <scope>test</scope>
         </dependency>
+        
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit-dep</artifactId>
@@ -134,6 +141,13 @@
                     <artifactId>hamcrest-core</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

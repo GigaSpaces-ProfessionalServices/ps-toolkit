@@ -1,4 +1,4 @@
-package com.gigaspaces.gigapro.inspector.statistics;
+package com.gigaspaces.gigapro.inspector.model;
 
 public enum IoOperationModifier {
     ASYNC,

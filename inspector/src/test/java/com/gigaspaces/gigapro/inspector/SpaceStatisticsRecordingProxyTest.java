@@ -1,9 +1,9 @@
 package com.gigaspaces.gigapro.inspector;
 
-import com.gigaspaces.gigapro.inspector.statistics.IoOperation;
-import com.gigaspaces.gigapro.inspector.statistics.IoOperationModifier;
-import com.gigaspaces.gigapro.inspector.statistics.IoOperationType;
-import com.gigaspaces.gigapro.inspector.statistics.SpaceIoOperation;
+import com.gigaspaces.gigapro.inspector.model.IoOperation;
+import com.gigaspaces.gigapro.inspector.model.IoOperationModifier;
+import com.gigaspaces.gigapro.inspector.model.IoOperationType;
+import com.gigaspaces.gigapro.inspector.model.SpaceIoOperation;
 import com.gigaspaces.internal.query.CustomSpaceQuery;
 import com.gigaspaces.internal.query.predicate.composite.AllSpacePredicate;
 import com.gigaspaces.query.IdQuery;
@@ -17,10 +17,10 @@ import org.openspaces.core.GigaSpace;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import static com.gigaspaces.gigapro.inspector.statistics.IoOperation.*;
-import static com.gigaspaces.gigapro.inspector.statistics.IoOperationModifier.*;
-import static com.gigaspaces.gigapro.inspector.statistics.IoOperationType.SQL;
-import static com.gigaspaces.gigapro.inspector.statistics.IoOperationType.TEMPLATE;
+import static com.gigaspaces.gigapro.inspector.model.IoOperation.*;
+import static com.gigaspaces.gigapro.inspector.model.IoOperationModifier.*;
+import static com.gigaspaces.gigapro.inspector.model.IoOperationType.SQL;
+import static com.gigaspaces.gigapro.inspector.model.IoOperationType.TEMPLATE;
 import static java.lang.Integer.valueOf;
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static org.hamcrest.CoreMatchers.*;

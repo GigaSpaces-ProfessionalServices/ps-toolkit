@@ -20,6 +20,7 @@
         <commons.version>2.6</commons.version>
         <hamcrest.version>1.3</hamcrest.version>
         <groovy.version>2.4.6</groovy.version>
+        <!-- <skipTests>false</skipTests> -->
     </properties>
 
     <dependencies>
@@ -129,24 +130,17 @@
             <version>${hamcrest.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>junit</groupId>
-            <artifactId>junit-dep</artifactId>
-            <version>4.11</version>
+            <artifactId>junit</artifactId>
             <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.hamcrest</groupId>
-                    <artifactId>hamcrest-core</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
-        
+
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-            <version>3.6.1</version>
+            <groupId>org.jmockit</groupId>
+            <artifactId>jmockit</artifactId>
+            <version>1.28</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

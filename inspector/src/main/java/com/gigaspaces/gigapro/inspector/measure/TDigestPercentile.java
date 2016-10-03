@@ -29,7 +29,7 @@ public class TDigestPercentile implements StatisticalMeasure {
     }
 
     @Override
-    public Object getResult() {
+    public Map<PercentileRatio, Double> getResult() {
         Map<PercentileRatio, Double> resultMap = new EnumMap<>(PercentileRatio.class);
         for (PercentileRatio percentileRatio : PercentileRatio.values()) {
             resultMap.put(percentileRatio, calculatePercentile(percentileRatio));
@@ -39,15 +39,15 @@ public class TDigestPercentile implements StatisticalMeasure {
     
     private double calculatePercentile(PercentileRatio percentileRatio) {
         synchronized(digest) {
-            return digest.quantile(percentileRatio.getValue());
+            return digest.quantile(percentileRatio.getValue()) / ONE_MILLISECOND;
         }
     }
 
     @Override
     public void logStatistics() {
-        LOG.info("Percentiles calculated using Q-Digest: ");
+        LOG.info("Percentiles calculated using t-Digest: ");
         for (PercentileRatio percentileRatio : PercentileRatio.values()) {
-            LOG.info(format(DECIMAL_FORMAT, percentileRatio, calculatePercentile(percentileRatio)));
+            LOG.info(format(FORMAT, percentileRatio, calculatePercentile(percentileRatio)));
         }
     }
 }

@@ -25,12 +25,12 @@ public class TimedExponentialMovingAverage implements StatisticalMeasure {
     }
 
     @Override
-    public synchronized Object getResult() {
-        return accumulator;
+    public synchronized Double getResult() {
+        return accumulator / ONE_MILLISECOND;
     }
 
     @Override
     public void logStatistics() {
-        LOG.info(format(DECIMAL_FORMAT, "Average", getResult()));
+        LOG.info(format(FORMAT, "EMA", getResult()));
     }
 }

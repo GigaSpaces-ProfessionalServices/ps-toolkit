@@ -35,9 +35,9 @@ public class AbsoluteMinMax implements StatisticalMeasure {
     }
 
     @Override
-    public Object getResult() {
+    public Double getResult() {
         synchronized (queue) {
-            return queue.peek();
+            return queue.peek() / ONE_MILLISECOND;
         }
     }
 

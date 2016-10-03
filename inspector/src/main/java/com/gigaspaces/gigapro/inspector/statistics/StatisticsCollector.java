@@ -27,5 +27,5 @@ public interface StatisticsCollector {
      */
     void operationFinished(SpaceIoOperation spaceIoOperation);
 
-    void logStatistics(long invocationCount);
+    void logIfNeeded(long invocationCount);
 }

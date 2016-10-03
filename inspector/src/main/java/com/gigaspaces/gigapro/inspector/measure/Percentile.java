@@ -40,22 +40,29 @@ public class Percentile implements StatisticalMeasure {
     }
 
     @Override
-    public Object getResult() {
+    public Map<PercentileRatio, Double> getResult() {
         Map<PercentileRatio, Double> resultMap = new EnumMap<>(PercentileRatio.class);
         List<Long> dataSet = getDataSet();
         for (PercentileRatio percentileRatio : PercentileRatio.values()) {
-            Double result = percentileCalculator.calculate(dataSet, percentileRatio.getValue());
-            resultMap.put(percentileRatio, result);
+            Double result = calculate(dataSet, percentileRatio);
+            if (result != null) {
+                resultMap.put(percentileRatio, result);
+            }
         }
         return resultMap;
     }
 
+    private Double calculate(List<Long> dataSet, PercentileRatio percentileRatio) {
+        Double result = percentileCalculator.calculate(dataSet, percentileRatio.getValue());
+        return result != null ? result / ONE_MILLISECOND : null;
+    }
+    
     @Override
     public void logStatistics() {
         List<Long> dataSet = getDataSet();
         LOG.info("Percentiles calculated using piecewise constant approximation: ");
         for (PercentileRatio percentileRatio : PercentileRatio.values()) {
-            LOG.info(format(DECIMAL_FORMAT, percentileRatio, percentileCalculator.calculate(dataSet, percentileRatio.getValue())));
+            LOG.info(format(FORMAT, percentileRatio, calculate(dataSet, percentileRatio)));
         }
     }
 }

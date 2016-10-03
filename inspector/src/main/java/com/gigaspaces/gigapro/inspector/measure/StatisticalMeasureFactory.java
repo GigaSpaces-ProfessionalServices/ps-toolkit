@@ -1,10 +1,10 @@
 package com.gigaspaces.gigapro.inspector.measure;
 
+import com.gigaspaces.gigapro.inspector.utils.Configuration.MeasureType;
 import com.gigaspaces.gigapro.inspector.math.PercentileCalculator;
-import com.gigaspaces.gigapro.inspector.math.PiecewiseConstantPercCalculator;
+import com.gigaspaces.gigapro.inspector.math.PiecewiseConstantPercentileCalculator;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Svitlana_Pogrebna
@@ -12,10 +12,25 @@ import java.util.List;
  */
 public class StatisticalMeasureFactory {
 
-    public List<StatisticalMeasure> createAll() {
-        return Arrays.asList(getTimedExponentialMovingAverage(), geAbsoluteMax(), geAbsoluteMin(), getPercentile(), getTDigestPercentile());
+    public List<StatisticalMeasure> create(Set<MeasureType> measures) {
+        Objects.requireNonNull(measures, "'measures' must not be null");
+        List<StatisticalMeasure> statisticalMeasures = new ArrayList<>(measures.size());
+        for (MeasureType measureType : measures) {
+            statisticalMeasures.add(create(measureType));
+        }
+        return statisticalMeasures;
     }
 
+    private StatisticalMeasure create(MeasureType measureType) {
+        switch(measureType) {
+            case EMA:                return getTimedExponentialMovingAverage();
+            case MAX:                return geAbsoluteMax();
+            case MIN:                return geAbsoluteMin();
+            case PERCENTILE:         return getPercentile();
+            case PERCENTILE_TDIGEST: return getTDigestPercentile();
+            default: throw new UnsupportedOperationException("Unsupported measure type: " + measureType);
+        }
+    }
     public StatisticalMeasure getTimedExponentialMovingAverage() {
         return new TimedExponentialMovingAverage();
     }
@@ -37,6 +52,6 @@ public class StatisticalMeasureFactory {
     }
 
     public PercentileCalculator getPercentileCalculator() {
-        return new PiecewiseConstantPercCalculator();
+        return new PiecewiseConstantPercentileCalculator();
     }
 }

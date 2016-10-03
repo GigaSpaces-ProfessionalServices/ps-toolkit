@@ -58,12 +58,8 @@ public class SpaceStatisticsRecordingProxy {
         }
 
         String gigaSpaceName = ((GigaSpace) joinPoint.getTarget()).getName();
-
-        StatisticsCollector newStatisticsCollector = new XapIoStatisticsCollector();
-        StatisticsCollector statisticsCollector = statisticsCollectors.putIfAbsent(gigaSpaceName, newStatisticsCollector);
-        if (statisticsCollector == null) {
-            statisticsCollector = newStatisticsCollector;
-        }
+        StatisticsCollector statisticsCollector = statisticsCollectors.computeIfAbsent(gigaSpaceName, (string) -> new XapIoStatisticsCollector());
+      
         String methodName = joinPoint.getSignature().getName();
         SpaceIoOperation spaceIoOperation = createSpaceIoOperation(param, methodName, gigaSpaceName);
 
@@ -72,7 +68,7 @@ public class SpaceStatisticsRecordingProxy {
         statisticsCollector.operationFinished(spaceIoOperation);
         return result;
     }
-
+    
     private SpaceIoOperation createSpaceIoOperation(Object param, String methodName, String spaceName) throws ClassNotFoundException {
         IoOperation operation = determineOperation(methodName);
         IoOperationModifier operationModifier = determineOperationModifier(methodName);

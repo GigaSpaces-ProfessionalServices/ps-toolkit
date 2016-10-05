@@ -1,7 +1,5 @@
 package com.gigaspaces.gigapro.xap_config_cli;
 
-import org.apache.commons.cli.ParseException;
-
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -13,11 +11,29 @@ public class XAPConfigCLI {
 
     private Options options = new Options();
 
+    private static final int HELP_WIDTH = 130;
+
     /**
      * Adds a program argument description to be parsed.
+     * 
+     * @see <a
+     *      href="http://commons.apache.org/proper/commons-cli/javadocs/api-release/org/apache/commons/cli/PatternOptionBuilder.html">PatternOptionBuilder</a>
+     *      for supported type
+     * 
      */
     public XAPConfigCLI addOption(String name, String shortOption, String longOption, String description, int numOfArgs, Class<?> type) {
-        options.addOption(builder(shortOption).argName(name).longOpt(longOption).desc(description).numberOfArgs(numOfArgs).type(type).build());
+        return addOption(name, shortOption, longOption, description, numOfArgs, type, false);
+    }
+
+    /**
+     * Adds a program argument description to be parsed.
+     * 
+     * @see <a
+     *      href="http://commons.apache.org/proper/commons-cli/javadocs/api-release/org/apache/commons/cli/PatternOptionBuilder.html">PatternOptionBuilder</a>
+     *      for supported type
+     */
+    public XAPConfigCLI addOption(String name, String shortOption, String longOption, String description, int numOfArgs, Class<?> type, boolean isMandatory) {
+        options.addOption(builder(shortOption).argName(name).longOpt(longOption).desc(description).numberOfArgs(numOfArgs).type(type).required(isMandatory).build());
         return this;
     }
 
@@ -43,11 +59,10 @@ public class XAPConfigCLI {
      */
     public CommandLine parseArgs(String[] args) throws ParseException {
         try {
-            CommandLineParser parser = new DefaultParser();
             if (ArrayUtils.isEmpty(args)) {
                 printHelp();
             }
-
+            CommandLineParser parser = new DefaultParser();
             CommandLine cl = parser.parse(options, args);
             if (cl.hasOption(XapOption.HELP.getShortOption())) {
                 printHelp();
@@ -62,8 +77,13 @@ public class XAPConfigCLI {
 
     public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
+        formatter.setWidth(HELP_WIDTH);
+        formatter.setOptionComparator((o1, o2) -> {
+            String help = XapOption.HELP.getShortOption();
+            return help.equals(o1.getOpt()) ? 1 : help.equals(o2.getOpt()) ? -1 : o1.getOpt().compareTo(o2.getOpt());
+        });
+
         formatter.printHelp("XAP config options", options, true);
         System.exit(1);
     }
-
 }

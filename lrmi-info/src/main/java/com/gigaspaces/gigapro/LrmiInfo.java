@@ -1,6 +1,7 @@
 package com.gigaspaces.gigapro;
 
-import com.gigaspaces.gigapro.xap_config_cli.*;
+import com.gigaspaces.gigapro.xap_config_cli.XAPConfigCLI;
+import com.gigaspaces.gigapro.xap_config_cli.XapOption;
 import com.gigaspaces.lrmi.LRMIProxyMonitoringDetails;
 import com.gigaspaces.lrmi.LRMIServiceMonitoringDetails;
 import org.apache.commons.cli.CommandLine;
@@ -11,6 +12,7 @@ import org.openspaces.admin.transport.Transport;
 
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -22,36 +24,44 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
+import static com.gigaspaces.gigapro.xap_config_cli.XapOptionUtils.getIntegerValue;
 /**
  * @author Svitlana_Pogrebna
  *
  */
 public class LrmiInfo {
 
+    private static final Set<XapOption> XAP_OPTIONS = EnumSet.of(XapOption.LOOKUP_GROUPS, XapOption.LOOKUP_LOCATORS, XapOption.HELP); 
+    private static final String GSC_COUNT_OPTION = "j";
+    private static final String ITERATION_COUNT_OPTION = "q";
+    
     public static void main(String[] args) throws Exception {
 
         // setup CLI and process args
         XAPConfigCLI xapConfigCLI = new XAPConfigCLI();
-        xapConfigCLI.addXapOptions(EnumSet.allOf(XapOption.class));
-        xapConfigCLI.addOption("GSC Count", "j", "num-gscs", "Number of GSCs to wait for during Admin initialization", 1, Integer.class);
-        xapConfigCLI.addOption("Iteration Sleep", "q", "iteration-sleep", "Millis to wait between iterations", 5000, Integer.class);
+        xapConfigCLI.addXapOptions(XAP_OPTIONS);
+        xapConfigCLI.addOption("GSC Count", GSC_COUNT_OPTION, "num-gscs", "Number of GSCs to wait for during Admin initialization", 1, Number.class, true);
+        xapConfigCLI.addOption("Iteration Sleep", ITERATION_COUNT_OPTION, "iteration-sleep", "Millis to wait between iterations", 1, Number.class, true);
         CommandLine xapCli = xapConfigCLI.parseArgs(args);
-        String groups = xapCli.getOptionValue(XapOption.LOOKUP_GROUPS.getShortOption());
-        String locators = xapCli.getOptionValue(XapOption.LOOKUP_GROUPS.getShortOption());
-        Integer numGscs = Integer.valueOf(xapCli.getOptionValue("j"));
-        Integer iterationSleep = Integer.valueOf(xapCli.getOptionValue("q"));
+       
+        Optional<String> groups = XapOption.LOOKUP_GROUPS.getValue(xapCli);
+        Optional<String> locators = XapOption.LOOKUP_LOCATORS.getValue(xapCli);
+        
+        Optional<Integer> numGscs = getIntegerValue(GSC_COUNT_OPTION, xapCli);
+        Optional<Integer> iterationSleep = getIntegerValue(ITERATION_COUNT_OPTION, xapCli);
 
         // Create an admin and connect to the grid
         AdminFactory factory = new AdminFactory();
-        if( groups != null )
-            factory.addGroups(groups);
-        if( locators != null )
-            factory.addLocators(locators);
+        if (groups.isPresent())
+            factory.addGroups(groups.get());
+        if (locators.isPresent())
+            factory.addLocators(locators.get());
+        
         Admin admin = factory.createAdmin();
-        admin.getGridServiceContainers().waitFor(60, numGscs, TimeUnit.SECONDS);
+        admin.getGridServiceContainers().waitFor(60, numGscs.get(), TimeUnit.SECONDS);
 
         while (true) {
-            Thread.sleep(iterationSleep);
+            Thread.sleep(iterationSleep.get());
             for (GridServiceContainer gsc : admin.getGridServiceContainers()) {
                 System.out.println("--------- GSC [" + gsc.getUid() + "] running on Machine " + gsc.getMachine().getHostAddress() + " Pid:" + gsc.getVirtualMachine().getDetails().getPid() + " Start Time:" + new Date(gsc.getVirtualMachine().getDetails().getStartTime()) + " --------- ");
 

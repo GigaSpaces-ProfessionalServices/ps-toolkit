@@ -17,6 +17,9 @@ import static org.apache.commons.lang.StringUtils.*;
  */
 public final class Configuration {
 
+    private static final String LOGGING_PROPERTY_KEY = "Log4jContextSelector";
+    private static final String LOGGING_PROPERTY_VALUE = "org.apache.logging.log4j.core.async.AsyncLoggerContextSelector";
+    
     private static final String LOG_FREQUENCY_KEY = "LOG_FREQUENCY";
     private static final int DEFAULT_LOG_FREQUENCY = 1000;
 
@@ -89,4 +92,11 @@ public final class Configuration {
         }
     }
 
+    public static String getLoggingPropertyKey() {
+        return LOGGING_PROPERTY_KEY;
+    }
+
+    public static String getLoggingPropertyValue() {
+        return LOGGING_PROPERTY_VALUE;
+    }
 }

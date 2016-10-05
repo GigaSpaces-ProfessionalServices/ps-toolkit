@@ -35,7 +35,7 @@ public class XAPConfigCLI {
 
     /**
      * Parses program arguments
-     * 
+     *
      * @param args
      *            args from main(String[] args) method
      * @return CommandLine object
@@ -60,7 +60,7 @@ public class XAPConfigCLI {
         return null;
     }
 
-    private void printHelp() {
+    public void printHelp() {
         HelpFormatter formatter = new HelpFormatter();
         formatter.printHelp("XAP config options", options, true);
         System.exit(1);

@@ -16,6 +16,7 @@
         <module>zombie-finder</module>
         <module>xap-config-cli</module>
         <module>inspector</module>
+        <module>lrmi-info</module>
   </modules>
 
     <properties>

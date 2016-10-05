@@ -9,6 +9,9 @@ import org.openspaces.admin.Admin;
 import org.openspaces.admin.AdminFactory;
 import org.openspaces.admin.gsc.GridServiceContainer;
 import org.openspaces.admin.transport.Transport;
+import org.openspaces.admin.transport.TransportDetails;
+import org.openspaces.admin.transport.TransportLRMIMonitoring;
+import org.openspaces.admin.transport.TransportStatistics;
 
 import java.util.Date;
 import java.util.EnumSet;
@@ -145,20 +148,25 @@ public class LrmiInfo {
                     }
                 }
                 Transport transportInfo = gsc.getTransport();
-                transportInfo.getLRMIMonitoring().enableMonitoring();
-                System.out.println("LRMI Transport Statistics - Active Threads Count:" + transportInfo.getStatistics().getActiveThreadsCount());
-                System.out.println("LRMI Transport Statistics - Queue Size:" + transportInfo.getStatistics().getQueueSize());
-                System.out.println("LRMI Transport Statistics - Active Threads Perc:" + transportInfo.getStatistics().getActiveThreadsPerc());
-                System.out.println("LRMI Transport Statistics - Completed Task Count:" + transportInfo.getStatistics().getCompletedTaskCount());
-                System.out.println("LRMI Transport Statistics - Completed Task Per Second:" + transportInfo.getStatistics().getCompletedTaskPerSecond());
-
-                LRMIServiceMonitoringDetails lrmiServiceDetails[] = transportInfo.getLRMIMonitoring().fetchMonitoringDetails().getInboundMonitoringDetails().getServicesMonitoringDetails();
+                TransportLRMIMonitoring lmLrmiMonitoring = transportInfo.getLRMIMonitoring();
+                lmLrmiMonitoring.enableMonitoring();
+                TransportStatistics transportsStatistics = transportInfo.getStatistics();
+                System.out.println("LRMI Transport Statistics - Active Threads Count:" + transportsStatistics.getActiveThreadsCount());
+                System.out.println("LRMI Transport Statistics - Queue Size:" + transportsStatistics.getQueueSize());
+                System.out.println("LRMI Transport Statistics - Active Threads Perc:" + transportsStatistics.getActiveThreadsPerc());
+                System.out.println("LRMI Transport Statistics - Completed Task Count:" + transportsStatistics.getCompletedTaskCount());
+                System.out.println("LRMI Transport Statistics - Completed Task Per Second:" + transportsStatistics.getCompletedTaskPerSecond());
+                TransportDetails transportDetails = transportsStatistics.getDetails();
+                System.out.println("LRMI Transport Statistics - MIN threads:" + transportDetails.getMinThreads());
+                System.out.println("LRMI Transport Statistics - MAX threads:" + transportDetails.getMaxThreads());
+                
+                LRMIServiceMonitoringDetails lrmiServiceDetails[] = lmLrmiMonitoring.fetchMonitoringDetails().getInboundMonitoringDetails().getServicesMonitoringDetails();
 
                 for (int i = 0; i < lrmiServiceDetails.length; i++) {
                     System.out.println("Inbound ServicesMonitoringDetails " + i + " :" + lrmiServiceDetails[i]);
                 }
 
-                LRMIProxyMonitoringDetails lrmiProxyDetails[] = transportInfo.getLRMIMonitoring().fetchMonitoringDetails().getOutboundMonitoringDetails().getProxiesMonitoringDetails();
+                LRMIProxyMonitoringDetails lrmiProxyDetails[] = lmLrmiMonitoring.fetchMonitoringDetails().getOutboundMonitoringDetails().getProxiesMonitoringDetails();
 
                 for (int i = 0; i < lrmiProxyDetails.length; i++) {
                     System.out.println("Outbound ProxiesMonitoringDetails " + i + " : " + lrmiProxyDetails[i]);

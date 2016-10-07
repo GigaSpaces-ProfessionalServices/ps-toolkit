@@ -23,13 +23,15 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.annotation.PostConstruct;
+
 import static com.gigaspaces.gigapro.inspector.model.IoOperation.*;
 import static com.gigaspaces.gigapro.inspector.model.IoOperationModifier.*;
 import static com.gigaspaces.gigapro.inspector.model.IoOperationType.SQL;
 import static com.gigaspaces.gigapro.inspector.model.IoOperationType.TEMPLATE;
 import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
-
+import static com.gigaspaces.gigapro.inspector.utils.Configuration.*;
 /**
  * This class assumes the presence of a pre-existing Spring ApplicationContext
  * that contains at least one org.openspaces.core.GigaSpace.
@@ -39,8 +41,16 @@ import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 @Aspect
 public class SpaceStatisticsRecordingProxy {
 
+    private boolean asyncLogging = true;
+    
     private final ConcurrentMap<String, StatisticsCollector> statisticsCollectors = new ConcurrentHashMap<>();
 
+    @PostConstruct
+    private void init() {
+        if (asyncLogging) {
+            System.setProperty(getLoggingPropertyKey(), getLoggingPropertyValue());
+        }
+    }
     @Pointcut("(execution(public * org.openspaces.core.GigaSpace.read*(..)) " +
             " || execution(public * org.openspaces.core.GigaSpace.write*(..))" +
             " || execution(public * org.openspaces.core.GigaSpace.take*(..)) " +
@@ -131,4 +141,9 @@ public class SpaceStatisticsRecordingProxy {
             return BY_ID;
         return NONE;
     }
+    
+    public void setAsyncLogging(boolean asyncLogging) {
+        this.asyncLogging = asyncLogging;
+    }
+    
 }

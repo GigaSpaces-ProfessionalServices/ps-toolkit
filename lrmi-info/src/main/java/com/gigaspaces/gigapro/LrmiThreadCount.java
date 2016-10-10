@@ -19,5 +19,6 @@ public enum LrmiThreadCount implements Statistic {
     LOOKUP_DISCOVERY,
     LEASE_MANAGER_REAPER,
     CONNECTION,
-    CUSTOM
+    CUSTOM,
+    NOTIFIER
 }

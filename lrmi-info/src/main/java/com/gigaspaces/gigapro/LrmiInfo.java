@@ -110,7 +110,8 @@ public class LrmiInfo {
         int lrmiAsyncSelectorThreadCount = 0;
         int lrmiMonitoringThreadCount = 0;
         int lrmiLivenessThreadCount = 0;
-
+        int lrmiCustomThreadCount = 0;
+        
         int leaseRenewalManagerThreadCount = 0;
         int backgroundFifoThreadThreadCount = 0;
         int processorpoolThreadCount = 0;
@@ -119,7 +120,7 @@ public class LrmiInfo {
         int lookupDiscoveryTaskThreadCount = 0;
         int leaseManager$ReaperThreadCount = 0;
         int leaseRenewalManagerTaskThreadCount = 0;
-        
+
         boolean fullResult = true;
         for (long tid : tids) {
             Long[] params = new Long[] { tid };
@@ -133,32 +134,37 @@ public class LrmiInfo {
             }
             Object threadNameObj = threadInfo.get("threadName");
             String threadName = threadNameObj.toString();
+            
             if (threadName.contains("LRMI Connection"))
                 lrmiThreadCount++;
-            if (threadName.contains("LRMI-Selector-Read"))
+            else if (threadName.contains("LRMI-Selector-Read"))
                 lrmiSelectorReadThreadCount++;
-            if (threadName.contains("LRMI-Selector-Write"))
+            else if (threadName.contains("LRMI-Selector-Write"))
                 lrmiSelectorWriteThreadCount++;
-            if (threadName.contains("LRMI-async-Selector"))
+            else if (threadName.contains("LRMI-async-Selector"))
                 lrmiAsyncSelectorThreadCount++;
-            if (threadName.contains("LRMI Monitoring"))
+            else if (threadName.contains("LRMI Monitoring"))
                 lrmiMonitoringThreadCount++;
-            if (threadName.contains("LeaseRenewalManager"))
-                leaseRenewalManagerThreadCount++;
-            if (threadName.contains("BackgroundFifo"))
-                backgroundFifoThreadThreadCount++;
-            if (threadName.contains("Processor-pool"))
-                processorpoolThreadCount++;
-            if (threadName.contains("Pending Answers"))
-                pendingAnswerspoolThreadCount++;
-            if (threadName.contains("Batch Notifier"))
-                batchNotifierThreadCount++;
-            if (threadName.contains("LookupDiscovery Task"))
-                lookupDiscoveryTaskThreadCount++;
-            if (threadName.contains("LeaseManager$Reaper"))
-                leaseManager$ReaperThreadCount++;
-            if (threadName.contains("LeaseRenewalManager Task"))
+            else if (threadName.contains("LeaseRenewalManager Task"))
                 leaseRenewalManagerTaskThreadCount++;
+            else if (threadName.contains("LeaseRenewalManager"))
+                leaseRenewalManagerThreadCount++;
+            else if (threadName.contains("BackgroundFifo"))
+                backgroundFifoThreadThreadCount++;
+            else if (threadName.contains("Processor-pool"))
+                processorpoolThreadCount++;
+            else if (threadName.contains("Pending Answers"))
+                pendingAnswerspoolThreadCount++;
+            else if (threadName.contains("Batch Notifier"))
+                batchNotifierThreadCount++;
+            else if (threadName.contains("LookupDiscovery Task"))
+                lookupDiscoveryTaskThreadCount++;
+            else if (threadName.contains("LeaseReaper"))
+                leaseManager$ReaperThreadCount++;
+            else if (threadName.contains("LRMI Custom Pool"))
+                lrmiCustomThreadCount++;
+            else if (threadName.contains("LRMI Liveness Pool")) 
+                lrmiLivenessThreadCount++;
         }
         writer.write(LrmiThreadCount.CONNECTION, lrmiThreadCount);
         writer.write(LrmiThreadCount.SELECTOR_READ, lrmiSelectorReadThreadCount);
@@ -166,7 +172,8 @@ public class LrmiInfo {
         writer.write(LrmiThreadCount.ASYNC_SELECTOR, lrmiAsyncSelectorThreadCount);
         writer.write(LrmiThreadCount.MONITORING, lrmiMonitoringThreadCount);
         writer.write(LrmiThreadCount.LIVENESS, lrmiLivenessThreadCount);
-
+        writer.write(LrmiThreadCount.CUSTOM, lrmiCustomThreadCount);
+        
         writer.write(LrmiThreadCount.LEASE_RENEWAL_MANAGER, leaseRenewalManagerThreadCount);
         writer.write(LrmiThreadCount.BACKGROUND_FIFO_THREAD, backgroundFifoThreadThreadCount);
         writer.write(LrmiThreadCount.PROCESSOR_POOL, processorpoolThreadCount);

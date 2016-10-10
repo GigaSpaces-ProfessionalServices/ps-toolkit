@@ -10,21 +10,22 @@ import org.openspaces.admin.AdminFactory;
 import org.openspaces.admin.gsc.GridServiceContainer;
 import org.openspaces.admin.transport.Transport;
 import org.openspaces.admin.transport.TransportDetails;
-import org.openspaces.admin.transport.TransportLRMIMonitoring;
 import org.openspaces.admin.transport.TransportStatistics;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import javax.management.*;
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectInstance;
+import javax.management.ObjectName;
 import javax.management.openmbean.CompositeDataSupport;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
-import static com.gigaspaces.gigapro.xap_config_cli.XapOptionUtils.*;
+import static com.gigaspaces.gigapro.xap_config_cli.XapOptionUtils.getIntegerValue;
+import static com.gigaspaces.gigapro.xap_config_cli.XapOptionUtils.getStringValue;
 import static java.lang.System.out;
 /**
  * @author Svitlana_Pogrebna
@@ -111,6 +112,7 @@ public class LrmiInfo {
         int lrmiMonitoringThreadCount = 0;
         int lrmiLivenessThreadCount = 0;
         int lrmiCustomThreadCount = 0;
+        int notifierThreadCount = 0;
         
         int leaseRenewalManagerThreadCount = 0;
         int backgroundFifoThreadThreadCount = 0;
@@ -165,6 +167,8 @@ public class LrmiInfo {
                 lrmiCustomThreadCount++;
             else if (threadName.contains("LRMI Liveness Pool")) 
                 lrmiLivenessThreadCount++;
+            else if (threadName.contains("Notifier-pool")) 
+                notifierThreadCount++;
         }
         writer.write(LrmiThreadCount.CONNECTION, lrmiThreadCount);
         writer.write(LrmiThreadCount.SELECTOR_READ, lrmiSelectorReadThreadCount);
@@ -173,6 +177,7 @@ public class LrmiInfo {
         writer.write(LrmiThreadCount.MONITORING, lrmiMonitoringThreadCount);
         writer.write(LrmiThreadCount.LIVENESS, lrmiLivenessThreadCount);
         writer.write(LrmiThreadCount.CUSTOM, lrmiCustomThreadCount);
+        writer.write(LrmiThreadCount.NOTIFIER, notifierThreadCount);
         
         writer.write(LrmiThreadCount.LEASE_RENEWAL_MANAGER, leaseRenewalManagerThreadCount);
         writer.write(LrmiThreadCount.BACKGROUND_FIFO_THREAD, backgroundFifoThreadThreadCount);

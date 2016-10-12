@@ -8,18 +8,21 @@ def process_lrmi_line(text):
     clean = text.strip()
     if text[0] == ',':
         clean = text[1:len(text)]
+            
     last_char = clean[len(clean) - 1:len(clean)]
-    if last_char == ',':
+    if last_char == ',' or last_char.isspace():
         clean = clean[0:len(clean) - 1]
-    if clean[len(clean) - 1:len(clean)] == ',':
         dummy = clean
-        clean = process_lrmi_line(dummy)
-    if isinstance(clean, str):
-        x = clean.split(',')
-    else:
-        x = clean
-    return x
-
+        return process_lrmi_line(dummy)
+    else: 
+        if isinstance(clean, str):
+            if ',' in clean:
+                return clean.split(',', 1)
+            elif ':' in clean:
+                return clean.split(':', 1)
+            else:
+                return clean.split(' ',1)
+        return clean
 
 def look_for_space_name(text):
     c_loc = text.find('SpaceImpl')
@@ -61,13 +64,10 @@ if __name__ == '__main__':
             begin = line.index('[') + 1
             uid = line[begin:len(line)].rstrip()
 
-            num_uids = len(gsc_uids)
             gsc_uids.add(uid)
-            if len(gsc_uids) > num_uids:
-                current_space_uid = uid
-                print 'Detected new GSC {0}'.format(uid)
+            current_space_uid = uid
+            #print 'Detected new GSC {0}'.format(uid)
             parse_mode = 1
-
         else:
 
             # deal with property followed by 'XXX BUNCH OF TEXT'
@@ -75,56 +75,38 @@ if __name__ == '__main__':
                 x_loc = line.find('XXX')
                 if x_loc > 0:
                     head = line[0:x_loc]
-                    temp = process_lrmi_line(head)
-                    uid_lrmi_info_map[current_space_uid] = [temp]
+                    tup = process_lrmi_line(head)
                     parse_mode = 2
-                    # print '{0} {1}'.format(temp[0], temp[1])
                 else:
                     if line.find('~~~') == -1:
                         tup = process_lrmi_line(line)
-                        x = uid_lrmi_info_map[current_space_uid]
-                        if x:
-                            uid_lrmi_info_map.update(current_space_uid, tup)
-                        else:
-                            uid_lrmi_info_map[current_space_uid, [tup]]
-                        # print '{0} {1}'.format(tup[0], tup[1])
+                    else:
+                        temp = line[4:len(line)]
+                        tup = process_lrmi_line(temp)
+                if current_space_uid in uid_lrmi_info_map:
+                    if tup[0] in uid_lrmi_info_map[current_space_uid]:
+                        uid_lrmi_info_map[current_space_uid][tup[0]].append(tup[1])
+                    else:
+                        uid_lrmi_info_map[current_space_uid][tup[0]] = [tup[1]]
+                else:
+                    uid_lrmi_info_map[current_space_uid] = {tup[0]:[tup[1]]}    
 
             # sniff for space name until we find it
             if parse_mode == 2:
                 space_name = look_for_space_name(line)
                 if space_name:
-                    if current_space_uid not in gsc_uids:
-                        uid_to_space_map[current_space_uid] = space_name
-                        current_space_uid = space_name
-                        # print 'Detected New SpaceName: {0}'.format(space_name)
-                    parse_mode = 3
-
-            # process properties
-            if parse_mode == 3:
-                if line.find('~~~') != -1:
-                    tup = process_lrmi_line(line)
-                    print '{0} {1}'.format(tup[0], tup[1])
-                    uid_lrmi_info_map[current_space_uid] = [tup]
-                else:
+                    uid_to_space_map[current_space_uid] = space_name
                     parse_mode = 0
-
-        # end for loop
-
-        for tup in uid_to_space_map:
-            uid = tup[0]
-            print "SpaceName,{0},GSC,{1}".format(tup[0], tup[1])
-            for infoList in uid_lrmi_info_map[uid]:
-                first_one = True
-                counter = 0
-                num_metrics = len(infoList)
-                for pair in infoList:
-                    if not first_one:
-                        print "{0},{1}".format(pair[1], pair[2])
-                    else:
-                        if counter != num_metrics:
-                            print ",{0}"
-                        else:
-                            print ",{0}\n"
-                    counter += 1
+    # end for loop
+    for uid, space_name in uid_to_space_map.iteritems():
+        print "SpaceName,{0},GSC,{1}".format(space_name, uid)
+        counter = 0
+        num_metrics = len(uid_lrmi_info_map[uid])
+        for stat, values in uid_lrmi_info_map[uid].iteritems():
+            if counter != num_metrics:
+                print ",{0},{1}".format(stat, ','.join(values))
+            else:
+                print ",{0},{1}\n".format(stat, ','.join(values))
+            counter += 1
 
     print 'Detected {0} GSCs'.format(len(gsc_uids))

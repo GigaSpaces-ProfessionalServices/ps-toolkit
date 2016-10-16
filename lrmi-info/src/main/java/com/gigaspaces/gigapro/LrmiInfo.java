@@ -74,9 +74,9 @@ public class LrmiInfo {
             
             Thread.sleep(iterationSleep.get());
             for (GridServiceContainer gsc : admin.getGridServiceContainers()) {
+                out.println("~~~ GSC " + gsc.getUid());
                 Date now = new Date(System.currentTimeMillis());
                 out.println("~~~ current time " + format.format(now));
-                out.println("~~~ GSC " + gsc.getUid());
                 out.println("~~~ machine " + gsc.getMachine().getHostAddress());
                 out.println("~~~ PID " + gsc.getVirtualMachine().getDetails().getPid());
                 out.println("~~~ started " + new Date(gsc.getVirtualMachine().getDetails().getStartTime()));
@@ -186,7 +186,7 @@ public class LrmiInfo {
         writer.write(LrmiThreadCount.BATCH_NOTIFIER, batchNotifierThreadCount);
         writer.write(LrmiThreadCount.LOOKUP_DISCOVERY, lookupDiscoveryTaskThreadCount);
         writer.write(LrmiThreadCount.LEASE_MANAGER_REAPER, leaseManager$ReaperThreadCount);
-        writer.writeLast(LrmiThreadCount.LEASE_RENEWAL_MANAGER_TASK, leaseRenewalManagerTaskThreadCount);
+        writer.write(LrmiThreadCount.LEASE_RENEWAL_MANAGER_TASK, leaseRenewalManagerTaskThreadCount);
         
         return fullResult;
     }
@@ -196,13 +196,12 @@ public class LrmiInfo {
         
         void write(Statistic stat, Number value) {
             Objects.requireNonNull(stat, "'stat' parameter must not be null");
-            out.printf(firstColumn ? "%s,%s" : ",%s,%s", stat, value != null ? value : "NO VALUE");
+            out.printf(firstColumn ? "%s,%s%n" : ",%s,%s%n", stat, value != null ? value : "NO VALUE");
             firstColumn = false;
         }
 
         void writeLast(Statistic stat, Number value) {
             write(stat, value);
-            out.println();
             firstColumn = true;
         }
     }

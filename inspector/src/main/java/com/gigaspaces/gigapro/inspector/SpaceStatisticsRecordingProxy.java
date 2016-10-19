@@ -30,7 +30,6 @@ import static com.gigaspaces.gigapro.inspector.model.IoOperationModifier.*;
 import static com.gigaspaces.gigapro.inspector.model.IoOperationType.SQL;
 import static com.gigaspaces.gigapro.inspector.model.IoOperationType.TEMPLATE;
 import static java.lang.String.format;
-import static org.apache.commons.lang.StringUtils.containsIgnoreCase;
 import static com.gigaspaces.gigapro.inspector.utils.Configuration.*;
 /**
  * This class assumes the presence of a pre-existing Spring ApplicationContext
@@ -68,8 +67,15 @@ public class SpaceStatisticsRecordingProxy {
         }
 
         String gigaSpaceName = ((GigaSpace) joinPoint.getTarget()).getName();
-        StatisticsCollector statisticsCollector = statisticsCollectors.computeIfAbsent(gigaSpaceName, (string) -> new XapIoStatisticsCollector());
-      
+        StatisticsCollector statisticsCollector = statisticsCollectors.get(gigaSpaceName);
+        if (statisticsCollector == null) {
+            StatisticsCollector newStatisticsCollector = new XapIoStatisticsCollector();
+            statisticsCollector = statisticsCollectors.putIfAbsent(gigaSpaceName, newStatisticsCollector);
+            if (statisticsCollector == null) {
+                statisticsCollector = newStatisticsCollector;
+            }
+        }
+                
         String methodName = joinPoint.getSignature().getName();
         SpaceIoOperation spaceIoOperation = createSpaceIoOperation(param, methodName, gigaSpaceName);
 
@@ -133,17 +139,15 @@ public class SpaceStatisticsRecordingProxy {
     }
 
     private IoOperationModifier determineOperationModifier(String methodName) {
-        if (containsIgnoreCase(methodName, "ifExists"))
-            return IF_EXISTS;
-        if (containsIgnoreCase(methodName, "async"))
-            return ASYNC;
-        if (containsIgnoreCase(methodName, "byId"))
-            return BY_ID;
-        return NONE;
+        switch(methodName.toLowerCase()) {
+            case "ifexists": return IF_EXISTS;
+            case "async":    return ASYNC;
+            case "byid":     return BY_ID;
+            default:         return NONE;
+        }
     }
     
     public void setAsyncLogging(boolean asyncLogging) {
         this.asyncLogging = asyncLogging;
     }
-    
 }

@@ -3,6 +3,7 @@ package com.gigaspaces.gigapro.inspector.statistics;
 import com.gigaspaces.gigapro.inspector.measure.StatisticalMeasure;
 import com.gigaspaces.gigapro.inspector.measure.StatisticalMeasureFactory;
 import com.gigaspaces.gigapro.inspector.model.SpaceIoOperation;
+import com.gigaspaces.gigapro.inspector.utils.Configuration;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
@@ -14,6 +15,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -41,11 +43,11 @@ public class XapIoStatisticsCollectorTest {
     @Test
     public void testXapIoStatistics() throws Exception {
         int size = 100;
-        TestStatisticalMeasure statisticalMeasure = new TestStatisticalMeasure(size);
+        final TestStatisticalMeasure statisticalMeasure = new TestStatisticalMeasure(size);
 
         new Expectations() {
             {
-                statisticalMeasureFactory.create(withNotNull());
+                statisticalMeasureFactory.create((Set<Configuration.MeasureType>)withNotNull());
                 result = Collections.singletonList(statisticalMeasure);
             }
         };
@@ -76,29 +78,33 @@ public class XapIoStatisticsCollectorTest {
 
     @Test
     public void testXapIoStatisticsMultithreaded() throws InterruptedException {
-        int size = 100;
+        final int size = 100;
         new Expectations() {
             {
-                statisticalMeasureFactory.create(withNotNull());
+                statisticalMeasureFactory.create((Set<Configuration.MeasureType>)withNotNull());
                 result = Collections.emptyList();
             }
         };
 
-        SpaceIoOperation spaceIoOperation = new SpaceIoOperation("space", Object.class, CHANGE, SQL, NONE);
+        final SpaceIoOperation spaceIoOperation = new SpaceIoOperation("space", Object.class, CHANGE, SQL, NONE);
 
-        long[] sleeps = new long[size];
+        final long[] sleeps = new long[size];
         for (int i = 0; i < size; i++) {
             sleeps[i] = i + 1;
         }
 
-        CountDownLatch latch = new CountDownLatch(5);
+        final CountDownLatch latch = new CountDownLatch(5);
         ExecutorService executorService = newFixedThreadPool(4);
 
-        Runnable task = () -> {
-            for (int i = 0; i < size; i++) {
-                perform(statisticsCollector, spaceIoOperation, sleeps[i]);
+        Runnable task = new Runnable() {
+            
+            @Override
+            public void run() {
+                for (int i = 0; i < size; i++) {
+                    perform(statisticsCollector, spaceIoOperation, sleeps[i]);
+                }
+                latch.countDown();
             }
-            latch.countDown();
         };
 
         executorService.submit(task);

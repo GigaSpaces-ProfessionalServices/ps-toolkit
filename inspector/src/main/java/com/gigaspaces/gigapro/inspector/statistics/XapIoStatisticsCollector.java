@@ -25,14 +25,14 @@ public class XapIoStatisticsCollector implements StatisticsCollector {
     private final static StatisticalMeasureFactory statisticsMetricFactory = new StatisticalMeasureFactory();
 
     private final ConcurrentMap<SpaceIoOperation, List<StatisticalMeasure>> statistics = new ConcurrentHashMap<>();
-    
+
     private ThreadLocal<Long> startTime = new ThreadLocal<Long>();
     private final AtomicLong operationsCounter = new AtomicLong(0);
-    
+
     private final int logFrequency = Configuration.getLogFrequency();
 
     private static final Logger LOG = LoggerFactory.getLogger("ps-inspector");
-    
+
     @Override
     public void operationStarted(SpaceIoOperation spaceIoOperation) {
         startTime.set(System.nanoTime());
@@ -46,8 +46,17 @@ public class XapIoStatisticsCollector implements StatisticsCollector {
         }
         final long latency = System.nanoTime() - startTs;
 
-        statistics.computeIfAbsent(spaceIoOperation, (SpaceIoOperation) -> Collections.unmodifiableList(statisticsMetricFactory.create(Configuration.getMeasureTypes())))
-            .forEach(m -> m.addValue(latency));
+        List<StatisticalMeasure> statisticalMeasures = statistics.get(spaceIoOperation);
+        if (statisticalMeasures == null) {
+            List<StatisticalMeasure> newStatisticalMeasures = Collections.unmodifiableList(statisticsMetricFactory.create(Configuration.getMeasureTypes()));
+            statisticalMeasures = statistics.putIfAbsent(spaceIoOperation, newStatisticalMeasures);
+            if (statisticalMeasures == null) {
+                statisticalMeasures = newStatisticalMeasures;
+            }
+        }
+        for (StatisticalMeasure measure : statisticalMeasures) {
+            measure.addValue(latency);
+        }
         logIfNeeded(operationsCounter.incrementAndGet());
     }
 
@@ -58,17 +67,19 @@ public class XapIoStatisticsCollector implements StatisticsCollector {
             for (Entry<SpaceIoOperation, List<StatisticalMeasure>> entry : statistics.entrySet()) {
                 SpaceIoOperation operation = entry.getKey();
                 LOG.info(format("Space = %s, operation = %s, operationType = %s, operationModifier = %s, space class = %s", operation.getSpaceName(), operation.getOperation(), operation.getOperationType(), operation.getOperationModifier(), operation.getTrackedClass().getSimpleName()));
-                entry.getValue().forEach(m -> m.logStatistics());
+                for (StatisticalMeasure measure : entry.getValue()) {
+                    measure.logStatistics();
+                }
                 LOG.info("\n");
             }
         }
     }
-    
+
     /**
      * For test usage only
      */
     long getInvocationCount() {
         return operationsCounter.get();
     }
-    
+
 }

@@ -60,7 +60,7 @@ public class SpaceIoOperation {
             errorMessage.add("Operation modifier must be provided.");
         }
         if (isNotEmpty(errorMessage)) {
-            throw new IllegalArgumentException(join(errorMessage, " "));
+            throw new IllegalArgumentException(join(errorMessage.iterator(), " "));
         }
     }
 

@@ -5,9 +5,9 @@ import org.junit.Test;
 import static com.gigaspaces.gigapro.inspector.model.IoOperation.CHANGE;
 import static com.gigaspaces.gigapro.inspector.model.IoOperationModifier.NONE;
 import static com.gigaspaces.gigapro.inspector.model.IoOperationType.SQL;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class SpaceIoOperationTest {
 
@@ -21,7 +21,7 @@ public class SpaceIoOperationTest {
 
         SpaceIoOperation spaceIoOperation = new SpaceIoOperation(spaceName, clazz, operation, operationType, operationModifier);
 
-        assertThat(spaceIoOperation.getTrackedClass(), is(equalTo(clazz)));
+        assertEquals(spaceIoOperation.getTrackedClass(), clazz);
         assertThat(spaceIoOperation.getOperation(), is(operation));
         assertThat(spaceIoOperation.getOperationModifier(), is(operationModifier));
         assertThat(spaceIoOperation.getOperationType(), is(operationType));

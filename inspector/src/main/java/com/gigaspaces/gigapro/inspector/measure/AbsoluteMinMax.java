@@ -5,7 +5,7 @@ import com.google.common.collect.MinMaxPriorityQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.Queue;
 
 import static java.lang.String.format;
@@ -23,8 +23,8 @@ public class AbsoluteMinMax implements StatisticalMeasure {
 
     public AbsoluteMinMax(boolean isMax) {
         this.isMax = isMax;
-        this.queue = isMax ? MinMaxPriorityQueue.orderedBy(Comparator.<Long> reverseOrder()).maximumSize(Configuration.getHeadSize()).create() 
-                : MinMaxPriorityQueue.maximumSize(Configuration.getTallSize()).create();
+        this.queue = isMax ? MinMaxPriorityQueue.orderedBy(Collections.reverseOrder()).maximumSize(Configuration.getHeadSize()).<Long>create() 
+                : MinMaxPriorityQueue.maximumSize(Configuration.getTallSize()).<Long>create();
     }
 
     @Override

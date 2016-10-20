@@ -16,6 +16,7 @@ import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.junit.Assert.*;
+
 /**
  * @author Svitlana_Pogrebna
  *
@@ -29,7 +30,7 @@ public class StatisticalMeasuresTest {
     private Percentile percentile;
 
     private List<StatisticalMeasure> measures;
-    
+
     @Before
     public void setup() {
         this.ema = new TimedExponentialMovingAverage();
@@ -37,7 +38,7 @@ public class StatisticalMeasuresTest {
         this.min = new AbsoluteMinMax(false);
         this.tDigestPercentile = new TDigestPercentile();
         this.percentile = new Percentile(new PiecewiseConstantPercentileCalculator());
-        
+
         measures = Arrays.asList(ema, max, min, tDigestPercentile, percentile);
     }
 
@@ -51,36 +52,40 @@ public class StatisticalMeasuresTest {
 
         double error = 1;
         addValue(values, 0, 1);
-        validate(1, 1, 1, new double [] {1, 1, 1, 1, 1}, null, error);
+        validate(1, 1, 1, new double[] { 1, 1, 1, 1, 1 }, null, error);
 
         int expectedCount = size / 2;
         addValue(values, 1, expectedCount);
 
-        double[] expectedPercentiles = {25.5, 45.5, 48, 50, 50};
+        double[] expectedPercentiles = { 25.5, 45.5, 48, 50, 50 };
         validate(49, 50, 1, expectedPercentiles, expectedPercentiles, error);
 
         addValue(values, expectedCount, values.length);
 
-        expectedPercentiles = new double [] {50.5, 90.5, 95.9, 99.5, 99.9};
+        expectedPercentiles = new double[] { 50.5, 90.5, 95.9, 99.5, 99.9 };
         validate(99, 100, 1, expectedPercentiles, expectedPercentiles, error);
     }
 
     @Test
     public void testMeasuresMultithreaded() throws InterruptedException {
-        int size = 100;
-        long[] values = new long[size];
+        final int size = 100;
+        final long[] values = new long[size];
         for (int i = 0; i < size; i++) {
             values[i] = i + 1;
         }
 
-        CountDownLatch latch = new CountDownLatch(5);
+        final CountDownLatch latch = new CountDownLatch(5);
         ExecutorService executorService = newFixedThreadPool(4);
 
-        Runnable task = () -> {
-            for (int i = 0; i < size; i++) {
-                addValue(values, 0, size);
+        Runnable task = new Runnable() {
+
+            @Override
+            public void run() {
+                for (int i = 0; i < size; i++) {
+                    addValue(values, 0, size);
+                }
+                latch.countDown();
             }
-            latch.countDown();
         };
 
         executorService.submit(task);
@@ -91,7 +96,7 @@ public class StatisticalMeasuresTest {
         latch.await();
 
         double error = 1;
-        double[] expectedPercentiles = {50.5, 90.5, 95.9, 99.5, 99.9};
+        double[] expectedPercentiles = { 50.5, 90.5, 95.9, 99.5, 99.9 };
         validate(99, 100, 1, expectedPercentiles, expectedPercentiles, error);
     }
 
@@ -108,7 +113,7 @@ public class StatisticalMeasuresTest {
             validatePercentiles(percentiles, expectedPercentiles, error);
         }
     }
-    
+
     private void validatePercentiles(Map<PercentileRatio, Double> actual, double[] expected, double error) {
         assertThat(actual.get(PercentileRatio.MEDIAN), closeTo(expected[0], error));
         assertThat(actual.get(PercentileRatio.P90th), closeTo(expected[1], error));
@@ -116,12 +121,12 @@ public class StatisticalMeasuresTest {
         assertThat(actual.get(PercentileRatio.P99th), closeTo(expected[3], error));
         assertThat(actual.get(PercentileRatio.P999th), closeTo(expected[4], error));
     }
-    
+
     private void addValue(long[] values, int start, int length) {
-        measures.forEach((m) -> {
+        for (StatisticalMeasure m : measures) {
             for (int i = start; i < length; i++) {
                 m.addValue(TimeUnit.MILLISECONDS.toNanos(values[i]));
             }
-        });
+        }
     }
 }

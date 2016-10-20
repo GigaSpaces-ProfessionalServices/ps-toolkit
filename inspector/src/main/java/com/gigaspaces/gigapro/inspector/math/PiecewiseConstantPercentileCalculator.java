@@ -1,6 +1,9 @@
 package com.gigaspaces.gigapro.inspector.math;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Svitlana_Pogrebna
@@ -9,24 +12,38 @@ import java.util.*;
 public class PiecewiseConstantPercentileCalculator implements PercentileCalculator {
 
     @Override
-    public <T extends Number & Comparable<T>> Double calculate(List<? extends T> dataSet, float percentileRatio) {
-        return calculate(dataSet, percentileRatio, Comparator.naturalOrder());
+    public <T extends Number & Comparable<T>> Double calculate(List<? extends T> dataCollection, float percentileRatio) {
+        checkParams(percentileRatio);
+        
+        if (checkDataCollection(dataCollection)) {
+            Collections.sort(dataCollection);
+            return calculateSorted(dataCollection, percentileRatio);
+        } 
+        return null;
     }
 
     @Override
     public <T extends Number> Double calculate(List<? extends T> dataCollection, float percentileRatio, Comparator<T> comparator) {
-        if (dataCollection == null || dataCollection.size() < 2) {
-            return null;
-        }
         Objects.requireNonNull(comparator, "'comparator' must not be null");
+        checkParams(percentileRatio);
+        
+        if (checkDataCollection(dataCollection)) {
+            Collections.sort(dataCollection, comparator);
+            return calculateSorted(dataCollection, percentileRatio);
+        } 
+        return null;
+    }
+
+    private boolean checkDataCollection(List<?> dataCollection) {
+        return dataCollection != null && dataCollection.size() >= 2;
+    }
+    
+    private void checkParams(float percentileRatio) {
         if (percentileRatio <= 0 || percentileRatio >= 1) {
             throw new IllegalArgumentException("'percentileRatio' must be in exclusive [0,1] range");
         }
-        Collections.sort(dataCollection, comparator);
-
-        return calculateSorted(dataCollection, percentileRatio);
     }
-
+    
     private <T extends Number> Double calculateSorted(List<? extends T> sortedData, float percentileRatio) {
         if (sortedData == null || sortedData.size() < 2) {
             return null;

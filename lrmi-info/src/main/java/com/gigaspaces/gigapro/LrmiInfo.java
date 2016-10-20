@@ -70,7 +70,7 @@ public class LrmiInfo {
         
         while (true) {
             
-            SimpleDateFormat format = new SimpleDateFormat("HH:MM:SS", Locale.getDefault());
+            SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault());
             
             Thread.sleep(iterationSleep.get());
             for (GridServiceContainer gsc : admin.getGridServiceContainers()) {

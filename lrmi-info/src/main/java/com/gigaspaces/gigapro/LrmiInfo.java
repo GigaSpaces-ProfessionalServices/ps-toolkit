@@ -92,7 +92,7 @@ public class LrmiInfo {
                     ObjectName name = mbean.getObjectName();
                     if (name.toString().contains("Threading")) {
                         long[] tids = (long[]) server.getAttribute(name, "AllThreadIds");
-                        out.println("~~~ all threads сount " + tids.length);
+                        out.println("~~~ all threads count " + tids.length);
 
                         outputTransportInfo &= outputThreadsInfo(tids, server, name, writer);
                     }

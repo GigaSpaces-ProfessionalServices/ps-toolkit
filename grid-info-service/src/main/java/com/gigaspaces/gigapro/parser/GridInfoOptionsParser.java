@@ -13,7 +13,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.gigaspaces.gigapro.xap_config_cli.XapOption.*;
-
 /**
  * @author Svitlana_Pogrebna
  *
@@ -45,10 +44,10 @@ public class GridInfoOptionsParser {
 
         GridInfoOptions options = new GridInfoOptions();
         options.count = getGsaCount(cl);
-        options.lookupLocators = LOOKUP_LOCATORS.value(cl);
-        options.lookupGroups = LOOKUP_GROUPS.value(cl);
+        options.lookupLocators = LOOKUP_LOCATORS.getValue(cl);
+        options.lookupGroups = LOOKUP_GROUPS.getValue(cl);
         options.timeout = getWaitTimeout(cl);
-        Optional<String> username = USERNAME.value(cl);
+        Optional<String> username = USERNAME.getValue(cl);
         options.username = username;
         if (username.isPresent()) {
             Console console = System.console();
@@ -59,7 +58,7 @@ public class GridInfoOptionsParser {
         } else {
             options.password = Optional.<char[]> empty();
         }
-        options.rmiHostName = RMI_SERVER_HOSTNAME.value(cl);
+        options.rmiHostName = RMI_SERVER_HOSTNAME.getValue(cl);
         return options;
     }
 

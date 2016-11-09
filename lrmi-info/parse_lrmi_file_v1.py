@@ -1,10 +1,18 @@
 #!/usr/bin/python
 
 import sys
+import matplotlib.pyplot as plt
+import matplotlib.cm as cmx
+import matplotlib.colors as colors
+import numpy as np
+from matplotlib.legend_handler import HandlerLine2D
+from matplotlib.backends.backend_pdf import PdfPages
+from collections import OrderedDict
 
 file_name = sys.argv[1]
 
-headers = ['current time', 'machine', 'PID', 'started', 'all threads count']
+headers = ['current time', 'machine', 'pid', 'started', 'all threads count']
+stat_filter = list(headers) + ['completed_task_count', 'completed_task_per_sec', 'active_threads_perc']
 
 def process_lrmi_line(text):
     clean = text.strip()
@@ -19,8 +27,15 @@ def process_lrmi_line(text):
 
 def process_header_line(text):
     clean = text.strip()
-    header = next(header for header in headers if header in clean)
+    header = next(header for header in headers if header in clean.lower())
     return (header, clean[len('~~~ ') + len(header) + 1:len(clean)])
+
+def get_cmap(N):
+    color_norm = colors.Normalize(vmin=0, vmax=N-1)
+    scalar_map = cmx.ScalarMappable(norm=color_norm, cmap='hsv') 
+    def map_index_to_rgb_color(index):
+        return scalar_map.to_rgba(index)
+    return map_index_to_rgb_color
 
 def look_for_space_name(text):
     c_loc = text.find('SpaceImpl')
@@ -30,7 +45,6 @@ def look_for_space_name(text):
         name = text[open_paren_loc + 1:close_paren_loc]
         return name
     return None
-
 
 if __name__ == '__main__':
 
@@ -87,18 +101,42 @@ if __name__ == '__main__':
             else:
                 uid_lrmi_info_map[current_space_uid][tup[0]] = [tup[1]]
         else:
-            uid_lrmi_info_map[current_space_uid] = {tup[0]:[tup[1]]}
+            uid_lrmi_info_map[current_space_uid] = OrderedDict({tup[0]:[tup[1]]})
             
     # end for loop
+    i = 1
+    stat_count = len(uid_to_space_map)
+    plt.figure(i, figsize=(20, 10 * stat_count))
+    
     for uid, space_name in uid_to_space_map.iteritems():
         print "SpaceName,{0},GSC,{1}".format(space_name, uid)
-        counter = 0
-        num_metrics = len(uid_lrmi_info_map[uid])
-        for stat, values in uid_lrmi_info_map[uid].iteritems():
-            if counter != num_metrics:
-                print ",{0},{1}".format(stat, ','.join(values))
-            else:
-                print ",{0},{1}\n".format(stat, ','.join(values))
-            counter += 1
+       
+        colorMap = get_cmap(len(uid_lrmi_info_map[uid]))
+        x = None
+        line = None
+        j = 0
 
+        plt.subplot(stat_count, 1, i) 
+        plt.grid(True)
+        plt.title("SpaceName:'{0}' GSC:'{1}'".format(space_name, uid))
+
+        i = i + 1
+        for stat, values in uid_lrmi_info_map[uid].iteritems():
+            print ",{0},{1}".format(stat, ','.join(values))
+             
+            if x is None:
+                x = np.arange(0, len(values), 1.0)
+
+            if stat.lower() not in stat_filter:
+                yValues = values + ['0']*(len(x) - len(values))
+                line, = plt.plot(x, yValues, color=colorMap(j), label=stat.lower())
+                plt.legend(handler_map={line: HandlerLine2D(numpoints=4)})
+                plt.yscale('log')
+                j = j + 1
+        print "\n"
+
+    pdf = PdfPages('lrmi_graphs.pdf')
+    pdf.savefig()
+    
+    pdf.close()
     print 'Detected {0} GSCs'.format(len(gsc_uids))

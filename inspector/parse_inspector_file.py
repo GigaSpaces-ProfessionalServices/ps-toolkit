@@ -1,6 +1,11 @@
 #!/usr/bin/python
 
 import sys
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+from matplotlib.legend_handler import HandlerLine2D
+from matplotlib.backends.backend_pdf import PdfPages
+from cProfile import label
 
 file_name = sys.argv[1]
 
@@ -62,13 +67,57 @@ if __name__ == '__main__':
             oper_stat_map[cur_oper] = {stat[0]:[stat[1]]}
 
     # end for loop
+    i = 1
+    stat_count = len(oper_stat_map)
+    plt.figure(1, figsize=(20, 10 * stat_count))
+    
     for oper, statistics in oper_stat_map.iteritems():
         print oper
-        counter = 0
-        num_statistics = len(statistics)
+        
+        x = None
+        median = None
+        p95 = None
+        ema = None
+        min = None
+        max = None
+        
         for stat_key, values in statistics.iteritems():
-            if counter != num_statistics:
-                print ",{0},{1}".format(stat_key, ','.join(values))
-            else:
-                print ",{0},{1}\n".format(stat_key, ','.join(values))
-            counter += 1
+            print ",{0},{1}".format(stat_key, ','.join(values))
+            
+            if x is None:
+                x = range(len(values))
+            if stat_key in 'MEDIAN':
+                median = values
+            elif stat_key in 'P95th TD':
+                p95 = values
+            elif stat_key in 'EMA':
+                ema = values
+            elif stat_key in 'MIN':
+                min = values
+            elif stat_key in 'MAX':
+                max = values
+                
+        print "\n"
+
+        plt.subplot(stat_count, 1, i) 
+        i = i + 1
+        
+        medianLine, = plt.plot(x, median, 'b', label="median")
+        p95Line, = plt.plot(x, p95, 'g', label = "p95th")
+        emaLine, = plt.plot(x, ema, 'r', label = "ema")
+        minLine, = plt.plot(x, min, "y", label = "min")
+        maxLine, = plt.plot(x, max, "m", label = "max")
+        
+        plt.legend(handler_map={medianLine: HandlerLine2D(numpoints=4)})
+        plt.grid(True)
+
+        operArray = oper.split(',')
+        title = "'{0}' space - {1}".format(operArray[0], operArray[1])
+        plt.title(title)
+        plt.ylabel("ms")
+        plt.yscale('log')
+        
+    pdf = PdfPages('inspector_graphs.pdf')
+    pdf.savefig()
+    
+    pdf.close()

@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>datagrid-config-cli</artifactId>
+    <version>1.1-RELEASE</version>
 
     <dependencies>
         <dependency>

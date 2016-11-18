@@ -1,27 +1,31 @@
-package com.gigaspaces.gigapro.inspector.statistics;
+package com.gigaspaces.gigapro.inspector.model;
 
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 import static org.apache.commons.lang.StringUtils.join;
 
 public class SpaceIoOperation {
 
+    private final String spaceName;
     private final Class<?> trackedClass;
     private final IoOperation operation;
     private final IoOperationType operationType;
     private final IoOperationModifier operationModifier;
 
     /**
+     * @param spaceName         spaceName
      * @param trackedClass      trackedClass
      * @param operation         IoOperation
      * @param operationType     IoOperationType
      * @param operationModifier IoOperationModifier
      * @throws IllegalArgumentException if any of params is null
      */
-    public SpaceIoOperation(Class<?> trackedClass, IoOperation operation, IoOperationType operationType, IoOperationModifier operationModifier) {
-        validateParamsNotNull(trackedClass, operation, operationType, operationModifier);
+    public SpaceIoOperation(String spaceName, Class<?> trackedClass, IoOperation operation, IoOperationType operationType, IoOperationModifier operationModifier) {
+        validateParamsNotNull(spaceName, trackedClass, operation, operationType, operationModifier);
+        this.spaceName = spaceName;
         this.trackedClass = trackedClass;
         this.operation = operation;
         this.operationType = operationType;
@@ -31,14 +35,18 @@ public class SpaceIoOperation {
     /**
      * Validates all params if they're null and throws IllegalArgumentException if any of them is null
      *
+     * @param spaceName         spaceName
      * @param trackedClass      trackedClass
      * @param operation         IoOperation
      * @param operationType     IoOperationType
      * @param operationModifier IoOperationModifier
      * @throws IllegalArgumentException if any of params is null
      */
-    static void validateParamsNotNull(Class<?> trackedClass, IoOperation operation, IoOperationType operationType, IoOperationModifier operationModifier) {
+    public static void validateParamsNotNull(String spaceName, Class<?> trackedClass, IoOperation operation, IoOperationType operationType, IoOperationModifier operationModifier) {
         List<String> errorMessage = new ArrayList<>();
+        if (spaceName == null) {
+            errorMessage.add("Space name must be provided.");
+        }
         if (trackedClass == null) {
             errorMessage.add("Space class must be provided.");
         }
@@ -52,24 +60,28 @@ public class SpaceIoOperation {
             errorMessage.add("Operation modifier must be provided.");
         }
         if (!errorMessage.isEmpty()) {
-            throw new IllegalArgumentException(join(errorMessage, " "));
+            throw new IllegalArgumentException(join(errorMessage.iterator(), " "));
         }
     }
 
-    IoOperation getOperation() {
+    public IoOperation getOperation() {
         return operation;
     }
 
-    IoOperationType getOperationType() {
+    public IoOperationType getOperationType() {
         return operationType;
     }
 
-    IoOperationModifier getOperationModifier() {
+    public IoOperationModifier getOperationModifier() {
         return operationModifier;
     }
 
-    Class<?> getTrackedClass() {
+    public Class<?> getTrackedClass() {
         return trackedClass;
+    }
+
+    public String getSpaceName() {
+        return spaceName;
     }
 
     @Override
@@ -79,6 +91,7 @@ public class SpaceIoOperation {
 
         SpaceIoOperation spaceIoOperation = (SpaceIoOperation) o;
 
+        if (!spaceName.equals(spaceIoOperation.spaceName)) return false;
         if (!trackedClass.equals(spaceIoOperation.trackedClass)) return false;
         if (operation != spaceIoOperation.operation) return false;
         if (operationType != spaceIoOperation.operationType) return false;
@@ -88,6 +101,7 @@ public class SpaceIoOperation {
     @Override
     public int hashCode() {
         int result = trackedClass.hashCode();
+        result = 31 * result + spaceName.hashCode();
         result = 31 * result + operation.hashCode();
         result = 31 * result + operationType.hashCode();
         result = 31 * result + operationModifier.hashCode();

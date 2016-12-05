@@ -1,17 +1,34 @@
 ##DataGrid Info Tool
 
-***Purpose:*** This tool connects to a running DataGrid and reports out a variety of data about the grid and its configuration.
+***Purpose***
 
-***Usage:*** Building the project will create an executable jar file with a manifest file that specifies the main-method-containing class. 
-To run it you would invoke the following command from the build directory:
+Report DataGrid runtime properties.
+
+***Usage*** 
+
+1. configure (optional: if you want email support)
+
+edit [mail.properties](./src/main/resources/mail.properties)
+
+2. build
+ 
+```mvn clean package```
+
+3. run
 
 ```bash
-java [SYSTEM PROPERTIES] -jar target\grid-info-service\grid-info-service.jar 
+java [options] -jar target\grid-info-service\grid-info-service.jar
+```
 
-System properties:
--Dgsa.count           A count of running GS Agents to be discovered. Default value is 1.
--Dlookup.locators     Lookup locators.
--Dlookup.groups       Lookup groups.
--Dxap.user.name       A username in case of space security is enabled. (It will prompt for user password)
--Dwait.timeout        A wait timeout to lookup XAP components. Default value is 10 seconds.
+Data is output to file ```grid-info.pdf```. If valid mail credentials are provided, then the file is relayed to an email address.
+
+***Options (none required)***
+
+Properties|purpose|default
+---|---|---
+gsa.count|A count of running GS Agents to be discovered|1
+lookup.locators|Lookup locators|[GigaSpaces' system default]
+lookup.groups|Lookup groups|[GigaSpaces' system default]
+xap.user.name|username, when Space security is enabled. (Will prompt for password.)|none
+wait.timeout|A wait timeout to lookup XAP components. Default value is 10 seconds.|10
 ```

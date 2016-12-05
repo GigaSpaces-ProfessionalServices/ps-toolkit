@@ -1,7 +1,16 @@
-# Network outage error monitor script
+# DataGrid log scanner
 
-This script searches for log files (base folder must be specified in `BASE_LOG_DIR` variable; logs filename regexes must be specified in `LOG_FILE_REGEXES` variable) and detects exceptions related to replication channel or LUS lookup disconnections.
-Detected Exceptions are printed to stdout and stderr.
-Also it detects system recovery messages and prints them to stdout\stderr as well.
+Scans log files for REGEXes 
 
-If you need more details regarding the script, navigate to [BW-1](http://10.8.1.184:8080/issue/BW-1)
+#####To implement
+
+1. Edit the first three variables in [this file](./network-outage-error-finder.sh#L5) 
+
+2. Run
+
++ Matching messages are reported to:
+    * ```stderr```
+    * ```stdout```
+    * ```${OUTPUT_FILE_NAME}```
+
+3. Parse or analyze

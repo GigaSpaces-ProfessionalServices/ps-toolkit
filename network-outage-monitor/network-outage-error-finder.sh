@@ -5,6 +5,7 @@ set -o nounset
 readonly LOG_FILE_REGEXES='^.*/[0-9]{4}-[0-9]{2}-[0-9]{2}~[0-9]{2}.[0-9]{2}-gigaspaces-[a-z]{3}.*\.log;^.*/[a-z]{3}.*\.log'
 # The base dir with logs
 readonly BASE_LOG_DIR=/gigaspaces/scripts/logs/
+readonly OUTPUT_FILE_NAME=/dev/stderr
 
 # Split LOG_FILE_REGEXES into the array
 readonly REGEXES_ARR=(${LOG_FILE_REGEXES//;/ })
@@ -22,18 +23,18 @@ done
 readonly UNIQUE_FILES=($(for file in "${FOUND_FILES_ARRAY[@]}"; do echo "${file}" ; done | sort -du))
 
 # Go through found logs and list errors
-echo -e "Errors found:" | tee /dev/stderr
+echo -e "Errors found:" | tee ${OUTPUT_FILE_NAME}
 for file in "${UNIQUE_FILES[@]}"; do
     error=$(grep -rnw ${file} -e "Replication channel" -e "Failed to connect to LUS")
 
     if [ ! -z "${error}" ]; then
-        echo "${file}:" | tee /dev/stderr
-        echo -e "${error}" | tee /dev/stderr
+        echo "${file}:" | tee ${OUTPUT_FILE_NAME}
+        echo -e "${error}" | tee ${OUTPUT_FILE_NAME}
 
         recovery=$(grep -rnw ${file} -e "Recovered")
         if [ ! -z "${recovery}" ]; then
-            echo -e "\nRecovery messages:\n${recovery}" | tee /dev/stderr
+            echo -e "\nRecovery messages:\n${recovery}" | tee ${OUTPUT_FILE_NAME}
         fi
-        echo -e "\n" | tee /dev/stderr
+        echo -e "\n" | tee ${OUTPUT_FILE_NAME}
     fi
 done

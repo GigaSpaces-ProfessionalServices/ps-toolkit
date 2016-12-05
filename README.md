@@ -17,7 +17,7 @@ Looks for DataGrid processes that have been orphaned by a service grid
 ##### [AWS tools](aws)
 AWS tools for starting common DataGrid topologies.
 #### Use Case: DEV'ing
-##### [DataGrid client config](xap-config-cli/datagrid-config-cli)
+##### [DataGrid client config](xap-config-cli)
 commons-cli extension library for DataGrids
 #### Use Case: Deploring
 Unmentionable code exists in the nearabouts, reputed to have design smells and rough edges.

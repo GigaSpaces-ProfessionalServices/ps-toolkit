@@ -19,14 +19,14 @@ mvn clean package
 
 ######API usage
 
-1) Obtain an XAPOptions instance
+1. Obtain an XAPOptions instance
 
 ```
 XAPConfigCLI xapConfigCLI = new XAPConfigCLI();
 XAPOptions xapOptions = xapConfigCLI.parseArgs(args);
 ```
 
-2) Use CommandLine object
+2. Use CommandLine object
 
 ```
 Boolean multicastEnabled = (Boolean) xapOptions.getCommandLine().getParsedOptionValue(XAPOptions.MULTICAST_ENABLED);

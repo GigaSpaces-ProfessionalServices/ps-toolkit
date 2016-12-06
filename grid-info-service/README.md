@@ -20,15 +20,14 @@ edit [mail.properties](./src/main/resources/mail.properties)
 java [options] -jar target\grid-info-service\grid-info-service.jar
 ```
 
-Data is output to file ```grid-info.pdf```. If valid mail credentials are provided, then the file is relayed to an email address.
+Data is output to ```grid-info.pdf```. With valid credentials, file is emailed.
 
-***Options (none required)***
+***Options***
 
-Properties|purpose|default
----|---|---
-gsa.count|A count of running GS Agents to be discovered|1
-lookup.locators|Lookup locators|[GigaSpaces' system default]
-lookup.groups|Lookup groups|[GigaSpaces' system default]
-xap.user.name|username, when Space security is enabled. (Will prompt for password.)|none
-wait.timeout|A wait timeout to lookup XAP components. Default value is 10 seconds.|10
-```
+Properties|purpose|default|required
+---|---|---|---
+gsa.count|Number of running agents to wait for during discovery|1|no
+lookup.locators|Lookup locators|none|yes
+lookup.groups|Lookup groups|system default|no
+xap.user.name|username, when Space security is enabled. (Will prompt for password.)|none|no
+wait.timeout|A wait timeout to lookup XAP components.|10|no

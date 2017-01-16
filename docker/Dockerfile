@@ -11,7 +11,7 @@ RUN mkdir -p ${XAP_HOME_DIR}
 # Download XAP
 ADD http://d3a0pn6rx5g9yg.cloudfront.net/sites/default/files/private/product/gigaspaces-xap-premium-${XAP_VERSION}-${XAP_MILESTONE}-b${XAP_BUILD_NUMBER}.zip /tmp/gigaspaces-xap-premium-${XAP_VERSION}-${XAP_MILESTONE}-b${XAP_BUILD_NUMBER}.zip
 RUN unzip /tmp/gigaspaces-xap-premium-${XAP_VERSION}-${XAP_MILESTONE}-b${XAP_BUILD_NUMBER}.zip -d ${XAP_HOME_DIR} \
-    && rm -rf /tmp/gigaspaces-xap-premium-*.zip
+    && rm -f /tmp/gigaspaces-xap-premium-*.zip
 
 ENV XAP_HOME ${XAP_HOME_DIR}/gigaspaces-xap-premium-${XAP_VERSION}-${XAP_MILESTONE}-b${XAP_BUILD_NUMBER}
 ENV XAP_NIC_ADDRESS "#local:ip#"

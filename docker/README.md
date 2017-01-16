@@ -32,7 +32,7 @@ This repository contains **Dockerfile** of [GigaSpaces XAP](http://www.gigaspace
     docker inspect --format '{{ .NetworkSettings.IPAddress }}' xap-mgt-node
  
 #### Run gs-webui
-    docker run -d -p 8099:8099 gigaspaces/xap:12.0.1 ./bin/gs-webui.sh
+    docker run --name gs-webui -d -p 8099:8099 gigaspaces/xap:12.0.1 ./bin/gs-webui.sh
     
 
 

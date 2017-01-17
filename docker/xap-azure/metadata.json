@@ -1,0 +1,5 @@
+{
+  "itemDisplayName": "Deploy an Ubuntu VM with Docker Engine installed, build XAP docker image and run XAP components",
+  "description": "This template allows you to deploy an Ubuntu VM with XAP management node (1 GSM and 1 LUS) or XAP compute node (1 GSC)",
+  "summary": "This deploys an Ubuntu VM with XAP data grid containers"
+}

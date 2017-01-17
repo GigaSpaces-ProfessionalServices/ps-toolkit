@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 set -e
 
 readonly dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"

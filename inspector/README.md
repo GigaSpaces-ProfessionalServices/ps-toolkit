@@ -17,7 +17,7 @@
 
 1. Tell ProcessingUnit to scan `com.gigaspaces.gigapro.inspector` using
 ```
-<context:component-scan base-package="com.base.app,your.app"/>
+<context:component-scan base-package="com.base.app,com.gigaspaces.gigapro.inspector"/>
 ```
 or
  ```

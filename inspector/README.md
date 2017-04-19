@@ -17,11 +17,11 @@
 
 1. Tell ProcessingUnit to scan `com.gigaspaces.gigapro.inspector` using
 ```
-<context:component-scan base-package="com.base.app,com.gigaspaces.gigapro.inspector"/>
+<context:component-scan base-package="your.app.directory,com.gigaspaces.gigapro.inspector"/>
 ```
 or
  ```
- @ComponentScan({"com.gigaspaces.gigapro.inspector","your.app"})
+ @ComponentScan({"com.gigaspaces.gigapro.inspector","your.app.directory"})
  ```
 
 Statistics will be piped to ```stdout``` **and** ```${sys:java.io.tmpdir}/logs/datagrid_statistics.log```.

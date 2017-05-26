@@ -16,9 +16,10 @@ Dixson and I finally got it well-designed. Reference scripts are attached.
 
 #### Limitations
 
-1. We have not added grafana montoring to this yet
-2.Upgrades still require careful analysis for things like gs.properties, config/log/xap_logging_ext.properties and many others)
-3. Reference implementations not provided for starting WEBUI, fat client UI, or UGM. 
+1. XAP 12.1 
+2. We have not added grafana montoring to this yet
+3. Upgrades still require careful analysis for things like gs.properties, config/log/xap_logging_ext.properties and many others)
+4. Reference implementations not provided for starting WEBUI, fat client UI, or UGM. 
 
 #### Algorithm
 

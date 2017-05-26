@@ -1,4 +1,4 @@
-Over the last year, we've evolved a design for customer XAP upgrades where the XAP installation directory ($XAP_HOME) sits in a BASE_DIR that can contain the current and any future XAP distributions.
+Over the last year, we've evolved a design for customer XAP upgrades where the XAP installation directory `$XAP_HOME` sits in a BASE_DIR that can contain the current and any future XAP distributions.
 
 Dixson and I finally got it well-designed. Reference scripts are attached.
 

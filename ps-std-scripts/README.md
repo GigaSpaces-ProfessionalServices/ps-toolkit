@@ -2,26 +2,27 @@ Over the last year, we've evolved a design for customer XAP upgrades where the X
 
 Dixson and I finally got it well-designed. Reference scripts are attached.
 
-Benefits
+### Benefits
 
-+ Three step upgrades (assuming no configuration changes in the product, which still must be dealt with on a case by case basis):
+#### Three step upgrades (assuming no configuration changes in the product, which still must be dealt with on a case by case basis):
 
 1. Unzip into BASE_DIR
 2. Copy in xap-license.txt
-3. `cd $XAP_HOME ; mv config config.factory ; ln -s ../config .` # all configuration must be moved to  BASE_DIR at time of upgrade
+3. `cd $XAP_HOME ; mv config config.factory ; ln -s ../config . ; mv logs logs.factory ; ln -s ../logs .` # all configuration must be moved to  BASE_DIR at time of upgrade
 
-+ Environment portability (ops teams frequently copy the previous teams' installation directory to a new environment or set of environments belonging to the 'new' team as XAP is expanded in the account)
+### Environment portability (ops teams frequently copy the previous teams' installation directory to a new environment or set of environments belonging to the 'new' team as XAP is expanded in the account)
 
-+ One stop shopping (all configuration is in $XAP_HOME/scripts/setenv-overrides.sh and $XAP_HOME/scripts/gs-agent.sh)
+### One stop shopping (all configuration is in $XAP_HOME/scripts/setenv-overrides.sh and $XAP_HOME/scripts/gs-agent.sh)
 
-Limitations
+### Limitations
 
-- We have not added grafana montoring to this yet
-- Upgrades still require careful analysis for things like gs.properties, config/log/xap_logging_ext.properties and many others)
-- Reference implementations not provided for starting WEBUI, fat client UI, or UGM. 
+1. We have not added grafana montoring to this yet
+2.Upgrades still require careful analysis for things like gs.properties, config/log/xap_logging_ext.properties and many others)
+3. Reference implementations not provided for starting WEBUI, fat client UI, or UGM. 
 
-Detailed description/upgrade algorithm
+### Detailed description/upgrade algorithm
 
+```bash
 % mkdir $BASE_DIR # conventionally /opt/xap
 % cd $BASE_DIR
 % mkdir deploy work security scripts
@@ -29,6 +30,8 @@ Detailed description/upgrade algorithm
 % cd [new xap location // directory created by unzip] 
 % cp [license file loc] .
 % mv config config.factory
+% mv logs logs.factory
+% ln -s ../logs .
 % cp -r config ..
 % ln -s ../config .
 % cd $BASE_DIR/scripts
@@ -37,5 +40,5 @@ Detailed description/upgrade algorithm
 # change LOOKUP settings
 % cd $BASE_DIR
 % ln -s $XAP_HOME current
-# ./gs-agent.sh
-# debug...
+% ./start-xap.sh
+# debug...```

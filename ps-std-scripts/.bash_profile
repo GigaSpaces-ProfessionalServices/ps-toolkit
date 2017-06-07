@@ -2,20 +2,26 @@
 
 alias l='ls -lash'
 alias cl='clear'
-export X12=/opt/xap
+
+export BD="/opt/xap"
+export X12="${BD}/current"
 
 gsas () {
-  ps -ef | grep GSA
+  ps -ef | grep java | grep GSA
 }
 
 gscs () {
-  ps -ef | grep GSC
+  ps -ef | grep java | grep GSC
+}
+
+webuis () {
+  ps -ef | grep java | grep -i webui
 }
 
 luss () {
-  ps -ef | grep LH
+  ps -ef | grep java | grep LH
 }
 
-webuis() {
-  ps -ef | grep -i webui
+gsms () {
+  ps -ef | grep java | grep GSM
 }

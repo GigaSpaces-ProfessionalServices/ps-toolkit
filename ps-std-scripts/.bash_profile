@@ -25,3 +25,7 @@ luss () {
 gsms () {
   ps -ef | grep java | grep GSM
 }
+
+notxapjavas () {
+  ps -ef | grep java | grep -v GSM | grep -v LH | grep -v GSC | grep -v GSA | grep -iv webu | grep -v MainUI
+}

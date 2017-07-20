@@ -4,6 +4,7 @@ alias l='ls -lash'
 alias cl='clear'
 
 export BD="/opt/xap"
+export SCR="${BD}/scripts"
 export X12="${BD}/current"
 
 gsas () {

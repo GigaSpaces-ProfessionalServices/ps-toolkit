@@ -6,6 +6,10 @@ Dixson and I finally got it well-designed. Reference scripts are attached.
 
 ##### Environment portability (ops teams frequently copy the previous teams' installation directory to a new environment or set of environments belonging to the 'new' team as XAP is expanded in the account)
 
+##### Log management
+
+System archives XAP and gc logs per restart. Log directories contain only the information for the current system runtime, simplifying debugging.
+
 ##### Three step upgrades (assuming no configuration changes in the product, which still must be dealt with on a case by case basis):
 
 1. Unzip into BASE_DIR
@@ -20,6 +24,7 @@ Dixson and I finally got it well-designed. Reference scripts are attached.
 2. Grafana montoring not implemented
 3. XAP Manager not implementated
 4. Upgrades still require careful analysis for things like gs.properties, config/log/xap_logging_ext.properties and many others
+5. WEB UI log is not archived like the other logs
 
 #### Algorithm
 

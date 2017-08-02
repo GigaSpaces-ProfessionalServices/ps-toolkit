@@ -7,9 +7,8 @@ Dixson and I finally got it well-designed. Reference scripts are attached.
 ##### Three step upgrades (assuming no configuration changes in the product, which still must be dealt with on a case by case basis):
 
 1. Unzip into BASE_DIR
-2. 
-3. `cd $BASE_DIR ; mkdir logs ; mkdir gclogs`
-4. `cd $XAP_HOME ; mv config config.factory ; ln -s ../config . ; mv logs logs.factory ; ln -s ../logs . ; cp /path/to/xap-license.txt .` # all configuration must be moved to  BASE_DIR at time of upgrade
+2. `cd $BASE_DIR ; mkdir logs ; mkdir gclogs`
+3. `cd $XAP_HOME ; mv config config.factory ; ln -s ../config . ; mv logs logs.factory ; ln -s ../logs . ; cp /path/to/xap-license.txt .` # all configuration must be moved to  BASE_DIR at time of upgrade
 
 ##### Environment portability (ops teams frequently copy the previous teams' installation directory to a new environment or set of environments belonging to the 'new' team as XAP is expanded in the account)
 

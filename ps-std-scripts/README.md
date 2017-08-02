@@ -18,7 +18,9 @@ System archives XAP and gc logs per restart. Log directories contain only the in
 2. `cd $BASE_DIR ; mkdir logs ; mkdir gclogs`
 3. `cd $XAP_HOME ; mv config config.factory ; ln -s ../config . ; mv logs logs.factory ; ln -s ../logs . ; cp /path/to/xap-license.txt .` # all configuration must be moved to BASE_DIR at time of upgrade
 
-##### One stop shopping (all configuration is in $XAP_HOME/scripts/project-env-settings.sh and $XAP_HOME/scripts/start-xap.sh)
+##### One-top config
+
+(Almost) all configuration is in $XAP_HOME/scripts/project-env-settings.sh
 
 #### Limitations
 

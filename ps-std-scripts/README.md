@@ -7,8 +7,9 @@ Dixson and I finally got it well-designed. Reference scripts are attached.
 ##### Three step upgrades (assuming no configuration changes in the product, which still must be dealt with on a case by case basis):
 
 1. Unzip into BASE_DIR
-2. Copy in xap-license.txt
-3. `cd $XAP_HOME ; mv config config.factory ; ln -s ../config . ; mv logs logs.factory ; ln -s ../logs .` # all configuration must be moved to  BASE_DIR at time of upgrade
+2. 
+3. `cd $BASE_DIR ; mkdir logs ; mkdir gclogs`
+4. `cd $XAP_HOME ; mv config config.factory ; ln -s ../config . ; mv logs logs.factory ; ln -s ../logs . ; cp /path/to/xap-license.txt .` # all configuration must be moved to  BASE_DIR at time of upgrade
 
 ##### Environment portability (ops teams frequently copy the previous teams' installation directory to a new environment or set of environments belonging to the 'new' team as XAP is expanded in the account)
 
@@ -17,16 +18,16 @@ Dixson and I finally got it well-designed. Reference scripts are attached.
 #### Limitations
 
 1. XAP 12.1 
-2. We have not added grafana montoring to this yet
-3. Upgrades still require careful analysis for things like gs.properties, config/log/xap_logging_ext.properties and many others)
-4. Reference implementations not provided for starting WEBUI, fat client UI, or UGM. 
+2. Grafana montoring not implemented
+3. XAP Manager not implementated
+4. Upgrades still require careful analysis for things like gs.properties, config/log/xap_logging_ext.properties and many others
 
 #### Algorithm
 
 ```bash
 % mkdir $BASE_DIR # conventionally /opt/xap
 % cd $BASE_DIR
-% mkdir deploy work security scripts
+% mkdir deploy work security scripts logs gclogs
 # unzip new XAP version (upgrade to)
 % cd [new xap location // directory created by unzip] 
 % cp [license file loc] .
@@ -37,7 +38,7 @@ Dixson and I finally got it well-designed. Reference scripts are attached.
 % ln -s ../config .
 % cd $BASE_DIR/scripts
 # copy reference scripts to $BASE_DIR/scripts
-% vi setenv-overrides.sh
+% vi project-env-settings.sh
 # change LOOKUP settings
 % cd $BASE_DIR
 % ln -s $XAP_HOME current

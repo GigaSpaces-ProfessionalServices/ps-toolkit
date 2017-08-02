@@ -4,15 +4,15 @@ Dixson and I finally got it well-designed. Reference scripts are attached.
 
 #### Benefits
 
+##### Environment portability (ops teams frequently copy the previous teams' installation directory to a new environment or set of environments belonging to the 'new' team as XAP is expanded in the account)
+
 ##### Three step upgrades (assuming no configuration changes in the product, which still must be dealt with on a case by case basis):
 
 1. Unzip into BASE_DIR
 2. `cd $BASE_DIR ; mkdir logs ; mkdir gclogs`
-3. `cd $XAP_HOME ; mv config config.factory ; ln -s ../config . ; mv logs logs.factory ; ln -s ../logs . ; cp /path/to/xap-license.txt .` # all configuration must be moved to  BASE_DIR at time of upgrade
+3. `cd $XAP_HOME ; mv config config.factory ; ln -s ../config . ; mv logs logs.factory ; ln -s ../logs . ; cp /path/to/xap-license.txt .` # all configuration must be moved to BASE_DIR at time of upgrade
 
-##### Environment portability (ops teams frequently copy the previous teams' installation directory to a new environment or set of environments belonging to the 'new' team as XAP is expanded in the account)
-
-##### One stop shopping (all configuration is in $XAP_HOME/scripts/setenv-overrides.sh and $XAP_HOME/scripts/gs-agent.sh)
+##### One stop shopping (all configuration is in $XAP_HOME/scripts/project-env-settings.sh and $XAP_HOME/scripts/start-xap.sh)
 
 #### Limitations
 

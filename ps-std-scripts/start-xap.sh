@@ -1,6 +1,6 @@
 #!/usr/bin/bash 
 
-source ./customer-settings.sh
+source ./project-env-settings.sh
 
 LOG_DIR="${BASE_DIR}/logs"
 

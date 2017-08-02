@@ -19,4 +19,4 @@ echo "Waiting for RHEL to release the 8099 TCP port."
 sleep $TCP_TIMEOUT
 
 echo "Starting XAP webui."
-bash /opt/ccs/xap/scripts/start-xap-webui.sh
+bash /opt/xap/scripts/start-xap-webui.sh

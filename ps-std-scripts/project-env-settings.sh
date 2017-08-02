@@ -19,7 +19,7 @@ export GC="-XX:+UseG1GC -XX:+PrintGC -XX:+ExplicitGCInvokesConcurrent -Xloggc:${
 # GC_DEBUG provides verbose logging to gc log files and heap dumps for "should never happen" situations. Should only be necessary for GSCs.
 export GC_DEBUG="-XX:+PrintGC -XX:+PrintGCCause -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime -XX:+PrintGCApplicationConcurrentTime -XX:+PrintAdaptiveSizePolicy -XX:+PrintTenuringDistribution -XX:-PrintReferenceGC -XX:+PrintClassHistogramBeforeFullGC -XX:+PrintClassHistogramAfterFullGC -XX:+HeapDumpBeforeFullGC -XX:+HeapDumpAfterFullGC -XX:+PrintParallelOldGCPhaseTimes"
 export SECURITY="-Dcom.gs.security.enabled=true -Dcom.gs.security.fs.file-service.file-path=${BASE_DIR}/security/gs-directory.fsm -Dcom.gigaspaces.logger.RollingFileHandler.filename-pattern.homedir=${BASE_DIR}"
-export AGENT="-agentpath:/opt/DT/libdtagent.so=name=CCS_AppSvr,server=otapnd71.qcorpaa.aa.com:9998,logpath=/opt/DT/log"
+export AGENT="-agentpath:/opt/DT/libdtagent.so=name=PROJ_AppSvr,server=someserver.com:9998,logpath=/opt/DT/log" # Dynatrace syntax YMMV
 
 export COMMON_XAP_OPTIONS="-XX:+UnlockExperimentalVMOptions -XX:+PrintCommandLineFlags -XX:+PrintFlagsFinal -Dcom.gs.deploy=${BASE_DIR}/deploy ${LRMI} ${GC} ${SECURITY}"
 # WORK is pulled out of the WEB UI JVM options b/c/o the way that the start-xap-webui.sh script is implemented

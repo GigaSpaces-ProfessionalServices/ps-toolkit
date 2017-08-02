@@ -4,7 +4,9 @@ Dixson and I finally got it well-designed. Reference scripts are attached.
 
 #### Benefits
 
-##### Environment portability (ops teams frequently copy the previous teams' installation directory to a new environment or set of environments belonging to the 'new' team as XAP is expanded in the account)
+##### Environment portability 
+
+Ops teams frequently copy previous teams' installation directory to a new environment or set of environments belonging to the 'new' team as XAP use expands
 
 ##### Log management
 

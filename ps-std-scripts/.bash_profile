@@ -6,6 +6,8 @@ alias cl='clear'
 export BD="/opt/xap"
 export SCR="${BD}/scripts"
 export X12="${BD}/current"
+export LOGS="${BD}/logs"
+export GCLOGS="${BD}/gclogs"
 
 gsas () {
   ps -ef | grep java | grep GSA

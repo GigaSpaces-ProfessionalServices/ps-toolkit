@@ -1,4 +1,4 @@
-#!/usr/bin/bash 
+#!/bin/bash 
 
 readonly STATUS_LOG="/tmp/webui-status.$(date +%Y-%m-%d-%H-%M-%S).log"
 

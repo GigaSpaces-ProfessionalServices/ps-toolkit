@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 gsas () {
   ps -ef | grep java | grep GSA

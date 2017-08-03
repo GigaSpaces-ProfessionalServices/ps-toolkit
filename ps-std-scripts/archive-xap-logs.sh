@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 source /opt/xap/scripts/project-env-settings.sh
 
@@ -24,3 +24,4 @@ then
 fi
 
 sleep 1
+exit 0

@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 source /opt/xap/scripts/ccs-ITEST-settings.sh
 

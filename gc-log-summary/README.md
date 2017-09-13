@@ -1,4 +1,4 @@
-These python scripts can be used to generate a csv file that lists the types of stop the world pauses. It also scans for certain keywords related to gc tuning.
+These python scripts can be used to generate a csv file that lists the types of stop the world pauses. It also scans for certain keywords related to gc tuning. This for use with g1gc logs.
 
 See: [https://blogs.oracle.com/poonam/entry/understanding_g1_gc_logs] for a description of stop the world pauses.
 
@@ -11,6 +11,8 @@ If the JVM is passed -XX:+PrintAdaptiveSizePolicy then the gc log entries will s
 If the JVM is passed -XX:+PrintGCDateStamps, the log entries will begin with a date time field.
 
 To keep it simple separate scripts were created.
+
+Use python 3.2 or higher.
 
 TODO: merge the scripts and reduce common code.
 

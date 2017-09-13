@@ -1,4 +1,4 @@
-These python scripts can be used to generate a csv file that lists the types of stop the world pauses. It also scans for certain keywords related to gc tuning. This for use with g1gc logs.
+These python scripts can be used to generate a csv file that lists the types of stop the world pauses. It also scans for certain keywords related to gc tuning. This is for use with g1gc logs.
 
 See: [https://blogs.oracle.com/poonam/entry/understanding_g1_gc_logs] for a description of stop the world pauses.
 

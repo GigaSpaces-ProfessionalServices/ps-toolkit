@@ -15,6 +15,8 @@ To keep it simple separate scripts were created.
 Use python 3.2 or higher.
 
 TODO: merge the scripts and reduce common code.
+TODO: write a version that handles gc logs that have events written to a single line (no PrintAdaptiveSizePolicy).
+TODO: write a tool that parses heap sizes.
 
 ```python
 > python gc-adaptive.py --help

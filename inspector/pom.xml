@@ -22,6 +22,7 @@
         <groovy.version>2.4.6</groovy.version>
         <java.version>1.7</java.version>
         <gsVersion>12.0.1</gsVersion>
+        <spring.version>4.3.8.RELEASE</spring.version>
         <!-- <skipTests>false</skipTests> -->
     </properties>
 
@@ -30,38 +31,38 @@
             <groupId>org.gigaspaces</groupId>
             <artifactId>xap-datagrid</artifactId>
             <version>${gsVersion}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         
         <dependency>
             <groupId>org.gigaspaces</groupId>
             <artifactId>xap-openspaces</artifactId>
             <version>${gsVersion}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-aspects</artifactId>
             <version>${spring.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>1.8.2</version>
+            <version>1.8.9</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>${commons.version}</version>
         </dependency>
 
         <dependency>
@@ -141,11 +142,14 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>commons-lang:commons-lang</exclude>
-                                </excludes>
-                            </artifactSet>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                  <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                  <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                            </transformers>
                             <filters>
                                 <filter>
                                     <artifact>org.aspectj:aspectjweaver</artifact>
@@ -178,7 +182,6 @@
                                     </includes>
                                 </filter>
                             </filters>
-                            <minimizeJar>true</minimizeJar>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>with-dependencies</shadedClassifierName>
                         </configuration>

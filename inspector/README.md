@@ -13,7 +13,7 @@
 
 ######To implement
 
-1. Add jar file to $DATAGRID_HOME/lib/optional/pu-common
+1. Add jar file to the client application's classpath (e.g. catalina_home/common/lib or bundled in war file)
 
 1. Tell ProcessingUnit to scan `com.gigaspaces.gigapro.inspector` using
 ```

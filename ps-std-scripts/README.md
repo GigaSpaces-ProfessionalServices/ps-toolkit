@@ -1,0 +1,3 @@
+This content has been moved to a top-level repository: https://github.com/GigaSpaces-ProfessionalServices/std-scripts/tree/master
+
+Use the master branch. History is here, future is branched over there...

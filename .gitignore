@@ -37,6 +37,7 @@ hs_err_pid*
 .idea/
 **/*/*.iml
 **/.idea/*
+.DS_Store
 out/
 bin/*
 build/*

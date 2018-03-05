@@ -7,7 +7,12 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rebalancer</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
+    <modules>
+        <module>common</module>
+        <module>grid-rebalancing</module>
+        <module>plugin</module>
+    </modules>
 
 
     <properties>
@@ -40,44 +45,5 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
     </dependencies>
-    <build>
-        <finalName>grid-rebalancing</finalName>
-        <plugins>
-            <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <appendAssemblyId>false</appendAssemblyId>
-                    <attach>false</attach>
-                    <ignoreDirFormatExtensions>true</ignoreDirFormatExtensions>
-                    <descriptors>
-                        <descriptor>src/main/assembly/assembly.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <!-- <repositories>
-        <repository>
-            <id>org.openspaces</id>
-            <url>http://maven-repository.openspaces.org</url>
-        </repository>
-    </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>org.openspaces</id>
-            <url>http://maven-repository.openspaces.org</url>
-        </pluginRepository>
-    </pluginRepositories> -->
 
 </project>

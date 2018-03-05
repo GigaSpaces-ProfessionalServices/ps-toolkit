@@ -16,6 +16,12 @@ buildNumber.properties
 *.jar
 *.war
 *.ear
+.DS_Store
+*.pdf
+inspector/*.csv 
+inspector/*.log
+
+
 
 # IDE garbage
 *.iml

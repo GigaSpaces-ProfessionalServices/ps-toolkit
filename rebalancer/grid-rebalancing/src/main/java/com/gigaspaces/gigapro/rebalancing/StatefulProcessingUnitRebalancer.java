@@ -27,8 +27,10 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap = buildEmptyContainersMap(gsas);
 
             //how many unbalanced nodes can be?
-            int instancesPerAgent = processingUnit.getPartitions().length / gsas.size();
-            int unbalancedNodes = processingUnit.getPartitions().length % gsas.size();
+            int initialPartitionCount = processingUnit.getPartitions().length;
+
+            int instancesPerAgent = initialPartitionCount / gsas.size();
+            int unbalancedNodes = initialPartitionCount % gsas.size();
 
             //check primaries
             Map<GridServiceAgent, Integer> lowPrimaries = new HashMap<>();
@@ -48,7 +50,10 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             }
 
             if (!unbalanced && highPrimaries.size() == unbalancedNodes){
-                logger.info(puName + " is balanced");
+
+                // balance backups
+                logger.info(puName + " is balanced on primaries. Starting backup rebalancing...");
+                doRebalancingOfBackups(processingUnit, gsas);
                 return;
             }
 
@@ -57,6 +62,49 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             if (!moved){
                 moved = moveBackupToLowPrimaryGSARestart(emptyContainersMap, instancesPerAgent, highPrimaries, lowPrimaries);
             }
+
+            if (!moved){
+                logger.error("rebalance failed for PU " + puName);
+            }
+        }
+    }
+
+    private void doRebalancingOfBackups(ProcessingUnit processingUnit, List<GridServiceAgent> gsas) {
+        for (int i = 0; i < MAX_REBALANCING_COUNT; i++){
+            //get empty containers
+            Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap = buildEmptyContainersMap(gsas);
+
+            //how many unbalanced nodes can be?
+            int initialPartitionCount = processingUnit.getPartitions().length;
+            int instancesPerAgent = initialPartitionCount / gsas.size();
+            int unbalancedNodes = initialPartitionCount % gsas.size();
+
+            //check primaries
+            Map<GridServiceAgent, Integer> lowBackups = new HashMap<>();
+            Map<GridServiceAgent, Integer> highBackups = new HashMap<>();
+            boolean unbalanced = false;
+
+            for (GridServiceAgent gsa : gsas){
+                int backups = listBackupsOnGSA(gsa).size();
+
+                if (backups > instancesPerAgent) {
+                    highBackups.put(gsa, backups);
+                }
+                if ((listPrimariesOnGSA(gsa).size() > instancesPerAgent) || (backups > instancesPerAgent + unbalancedNodes)){
+                    // node contains more primaries
+                    unbalanced = true;
+                }
+                if (backups < getBackupPerAgentCount(instancesPerAgent)){
+                    lowBackups.put(gsa, backups);
+                }
+            }
+
+            if (!unbalanced){
+                logger.info(puName + " is balanced");
+                return;
+            }
+
+            boolean moved = moveBackupToLowBackupGSA(emptyContainersMap, instancesPerAgent, highBackups, lowBackups);
 
             if (!moved){
                 logger.error("rebalance failed for PU " + puName);
@@ -88,15 +136,46 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         return moved;
     }
 
-    private boolean moveBackupToAvailableContainer(ProcessingUnitInstance pui, Map<GridServiceAgent, GridServiceContainer> availableContainersOnLowPrimaries) {
-        GridServiceAgent targetGSA = availableContainersOnLowPrimaries.keySet().iterator().next();
+    private boolean moveBackupToLowBackupGSA(Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap, int instancesPerAgent, Map<GridServiceAgent, Integer> highBackups, Map<GridServiceAgent, Integer> lowBackups) {
+        boolean moved = false;
+        for (GridServiceAgent gsa : highBackups.keySet()){
+            List<ProcessingUnitInstance> processingUnitInstances = listBackupsOnGSA(gsa);
+            for (ProcessingUnitInstance pui : processingUnitInstances){
+                Map<GridServiceAgent, GridServiceContainer> availableContainersOnLowBackups = findEmptyContainersOnLowBackup(emptyContainersMap, pui, instancesPerAgent);
+                if (availableContainersOnLowBackups.isEmpty()){
+                    logger.info("No empty containers found. Looking for available containers");
+                    // check for available containers with pu
+                    availableContainersOnLowBackups = findAvailableContainersOnLowBackups(lowBackups, pui, instancesPerAgent);
+
+                    if (availableContainersOnLowBackups.isEmpty()) {
+                        logger.info("No available containers found!!!");
+                        continue;
+                    }
+                }
+                moved = moveBackupToAvailableContainer(pui, availableContainersOnLowBackups, false);
+                break;
+            }
+            if (moved) break;
+        }
+        return moved;
+    }
+
+    private boolean moveBackupToAvailableContainer(ProcessingUnitInstance pui, Map<GridServiceAgent, GridServiceContainer> availableContainers) {
+        return moveBackupToAvailableContainer(pui, availableContainers, true);
+    }
+
+    private boolean moveBackupToAvailableContainer(ProcessingUnitInstance pui, Map<GridServiceAgent, GridServiceContainer> availableContainers, boolean restart) {
+        GridServiceAgent targetGSA = availableContainers.keySet().iterator().next();
         String currentBackupGSA = pui.getSpaceInstance().getPartition().getBackup().getMachine().getHostName();
         logger.info(String.format("moving backup id=%d from %s to %s",
                 pui.getInstanceId(), currentBackupGSA, targetGSA.getMachine().getHostName()));
-        logger.error("Primary name: " + pui.getProcessingUnitInstanceName());
-        findBackupInstanceForPrimary(pui).relocateAndWait(availableContainersOnLowPrimaries.get(targetGSA));
-        logger.info(String.format("backup on %s restarting primary", targetGSA.getMachine().getHostName()));
-        pui.restartAndWait();
+        ProcessingUnitInstance relocatedInstance = findBackupInstanceForPrimary(pui).relocateAndWait(availableContainers.get(targetGSA));
+
+        waitForInstanceInit(relocatedInstance);
+
+        if (restart) {
+            pui.restartAndWait();
+        }
         return true;
     }
 
@@ -105,11 +184,23 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 
         for (Map.Entry<GridServiceAgent, Integer> gridServiceAgentToPrimaries : lowPrimaries.entrySet()) {
             for (GridServiceContainer gsc : gridServiceAgentToPrimaries.getKey().getMachine().getGridServiceContainers()) {
-                if (isEmptyContainerEligible(gsc, primary, instancesPerAgent)){
+                if (isContainerEligibleForPrimary(gsc, primary, instancesPerAgent)){
                     result.put(gridServiceAgentToPrimaries.getKey(), gsc);
                     logger.info(String.format("added %s at %s machine as primary target", gsc.getUid(), gsc.getMachine().getHostName()));
-                    logger.info("primary hostname " + primary.getMachine().getHostName());
-                    logger.info("primary backup hostname " + primary.getSpaceInstance().getPartition().getBackup().getMachine().getHostName());
+                }
+            }
+        }
+        return result;
+    }
+
+    private Map<GridServiceAgent, GridServiceContainer> findAvailableContainersOnLowBackups(Map<GridServiceAgent, Integer> lowBackups, ProcessingUnitInstance backup, int instancesPerAgent) {
+        Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
+
+        for (Map.Entry<GridServiceAgent, Integer> gridServiceAgentToPrimaries : lowBackups.entrySet()) {
+            for (GridServiceContainer gsc : gridServiceAgentToPrimaries.getKey().getMachine().getGridServiceContainers()) {
+                if (isContainerEligibleForBackup(gsc, backup, instancesPerAgent)){
+                    result.put(gridServiceAgentToPrimaries.getKey(), gsc);
+                    logger.info(String.format("added %s at %s machine as backup target", gsc.getUid(), gsc.getMachine().getHostName()));
                 }
             }
         }
@@ -149,6 +240,7 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         gscs.waitFor(1, 2, TimeUnit.SECONDS);
         for (GridServiceContainer gsc : gscs.getContainers()){
             for (ProcessingUnitInstance pui : gsc.getProcessingUnitInstances(puName)){
+                waitForInstanceInit(pui);
                 if (pui.getSpaceInstance().getMode() == SpaceMode.PRIMARY){
                     primaries.add(pui);
                 }
@@ -157,16 +249,47 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         return primaries;
     }
 
+    private List<ProcessingUnitInstance> listBackupsOnGSA(GridServiceAgent gsa) {
+        List<ProcessingUnitInstance> backups = new ArrayList<>();
+        GridServiceContainers gscs = gsa.getMachine().getGridServiceContainers();
+        gscs.waitFor(1, 2, TimeUnit.SECONDS);
+        for (GridServiceContainer gsc : gscs.getContainers()){
+            for (ProcessingUnitInstance pui : gsc.getProcessingUnitInstances(puName)){
+                waitForInstanceInit(pui);
+                if (pui.getSpaceInstance().getMode() == SpaceMode.BACKUP){
+                    backups.add(pui);
+                }
+            }
+        }
+        return backups;
+    }
+
+    // after instance relocated it should be initialized before starting next iteration
+    private void waitForInstanceInit(ProcessingUnitInstance pui) {
+        while (pui.getSpaceInstance().getMode() == SpaceMode.NONE){}
+    }
+
     private Map<GridServiceAgent, GridServiceContainer> findEmptyContainersOnLowPrimaries(
             Map<GridServiceAgent, List<GridServiceContainer>> emptyContainers, ProcessingUnitInstance primary, int instancesPerAgent){
         Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
         for (Map.Entry<GridServiceAgent, List<GridServiceContainer>> gsaToGsc : emptyContainers.entrySet()){
             GridServiceContainer container = gsaToGsc.getValue().get(0);
-            if (isEmptyContainerEligible(container, primary, instancesPerAgent)){
+            if (isContainerEligibleForPrimary(container, primary, instancesPerAgent)){
                 result.put(gsaToGsc.getKey(), container);
                 logger.info(String.format("added %s at %s machine as primary target", container.getUid(), container.getMachine().getHostName()));
-                logger.info("primary hostname " + primary.getMachine().getHostName());
-                logger.info("primary backup hostname " + primary.getSpaceInstance().getPartition().getBackup().getMachine().getHostName());
+            }
+        }
+        return result;
+    }
+
+    private Map<GridServiceAgent, GridServiceContainer> findEmptyContainersOnLowBackup(
+            Map<GridServiceAgent, List<GridServiceContainer>> emptyContainers, ProcessingUnitInstance backup, int instancesPerAgent){
+        Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
+        for (Map.Entry<GridServiceAgent, List<GridServiceContainer>> gsaToGsc : emptyContainers.entrySet()){
+            GridServiceContainer container = gsaToGsc.getValue().get(0);
+            if (isContainerEligibleForBackup(container, backup, instancesPerAgent)){
+                result.put(gsaToGsc.getKey(), container);
+                logger.info(String.format("added %s at %s machine as backup target", container.getUid(), container.getMachine().getHostName()));
             }
         }
         return result;
@@ -177,22 +300,36 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         return primary.getPartition().getBackup();
     }
 
-    private boolean isEmptyContainerEligible(GridServiceContainer gsc, ProcessingUnitInstance primary, int instancesPerAgent){
-        return lowPrimaryAgent(gsc, instancesPerAgent) &&
-                notTheSameAgentAsPrimary(gsc, primary) &&
-                notTheSameAgentAsBackup(gsc, primary);
+    private boolean isContainerEligibleForPrimary(GridServiceContainer gsc, ProcessingUnitInstance primary, int instancesPerAgent){
+        return lowPrimaryAgent(gsc, instancesPerAgent) && notTheSameAgentAsBackup(gsc, primary);
+    }
+
+    private boolean isContainerEligibleForBackup(GridServiceContainer gsc, ProcessingUnitInstance backup, int instancesPerAgent){
+        return lowBackupAgent(gsc, instancesPerAgent) && notTheSameAgentAsPrimary(gsc, backup);
     }
 
     private boolean notTheSameAgentAsBackup(GridServiceContainer gsc, ProcessingUnitInstance primary) {
         return !primary.getSpaceInstance().getPartition().getBackup().getMachine().getHostAddress().equals(gsc.getMachine().getHostAddress());
     }
 
-    private boolean notTheSameAgentAsPrimary(GridServiceContainer gsc, ProcessingUnitInstance primary) {
-        return !gsc.getMachine().getHostAddress().equals(primary.getMachine().getHostAddress());
+//    private boolean noMaxInstanceRestriction(GridServiceContainer gsc, ProcessingUnitInstance instance) {
+//        instance.
+//    }
+
+    private boolean notTheSameAgentAsPrimary(GridServiceContainer gsc, ProcessingUnitInstance backup) {
+        return !backup.getSpaceInstance().getPartition().getPrimary().getMachine().getHostAddress().equals(gsc.getMachine().getHostAddress());
     }
 
     private boolean lowPrimaryAgent(GridServiceContainer gsc, int instancesPerAgent) {
         return listPrimariesOnGSA(gsc.getGridServiceAgent()).size() < instancesPerAgent;
+    }
+
+    private boolean lowBackupAgent(GridServiceContainer gsc, int instancesPerAgent) {
+        return listBackupsOnGSA(gsc.getGridServiceAgent()).size() < getBackupPerAgentCount(instancesPerAgent);
+    }
+
+    private int getBackupPerAgentCount(int instancesPerAgent) {
+        return instancesPerAgent + 1;
     }
 
 }

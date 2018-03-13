@@ -28,5 +28,6 @@ public class RebalancerStartEventListener {
         logger.info("Start event received!!!");
         GridServiceEventListener.enable();
         logger.info("Grid rebalancer enabled");
+        ZooKeeperUtils.persistState(RebalancerState.ON);
     }
 }

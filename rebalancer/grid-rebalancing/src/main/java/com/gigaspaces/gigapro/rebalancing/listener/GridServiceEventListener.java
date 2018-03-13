@@ -16,17 +16,20 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
     private static Logger logger = LoggerFactory.getLogger(GridServiceEventListener.class);
     private static AtomicBoolean ENABLE = new AtomicBoolean(true);
 
-    private Admin admin;
+    private static Admin admin;
 
-    private Executor executor;
+    private static Executor executor;
 
     public GridServiceEventListener(Admin admin, Executor executor) {
-        this.admin = admin;
-        this.executor = executor;
+        GridServiceEventListener.admin = admin;
+        GridServiceEventListener.executor = executor;
     }
 
     public static void enable() {
         ENABLE.compareAndSet(false, true);
+        // wait processing unit deployment
+        while(admin.getProcessingUnits().getSize() == 0) {}
+        executor.execute(new RebalancingTask(admin));
     }
 
     public static void disable() {

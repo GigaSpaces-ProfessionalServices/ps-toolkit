@@ -28,5 +28,6 @@ public class RebalancerStopEventListener {
         logger.info("Stop event received");
         GridServiceEventListener.disable();
         logger.info("Grid rebalancer disabled");
+        ZooKeeperUtils.persistState(RebalancerState.OFF);
     }
 }

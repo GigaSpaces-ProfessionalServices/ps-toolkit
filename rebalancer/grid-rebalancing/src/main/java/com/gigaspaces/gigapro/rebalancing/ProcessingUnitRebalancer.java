@@ -39,12 +39,7 @@ public abstract class ProcessingUnitRebalancer {
             for (GridServiceContainer gsc : gsa.getMachine().getGridServiceContainers()){
                 if (gsc.getProcessingUnitInstances().length == 0){
                     GridServiceAgent gridServiceAgent = gsc.getGridServiceAgent();
-                    List<GridServiceContainer> emptyContainers = result.get(gridServiceAgent);
-                    if (emptyContainers == null){
-                        emptyContainers = new ArrayList<>();
-                        result.put(gridServiceAgent, emptyContainers);
-                    }
-                    emptyContainers.add(gsc);
+                    result.computeIfAbsent(gridServiceAgent, key -> new ArrayList<>()).add(gsc);
                 }
             }
         }
@@ -55,6 +50,7 @@ public abstract class ProcessingUnitRebalancer {
         return admin.getProcessingUnits().getProcessingUnit(puName);
     }
 
+    // filter GSAs by PU required zone
     private List<GridServiceAgent> getGridServiceAgents(Set<String> zones) {
         List<GridServiceAgent> result = new ArrayList<>();
         GridServiceAgents gridServiceAgents = admin.getGridServiceAgents();

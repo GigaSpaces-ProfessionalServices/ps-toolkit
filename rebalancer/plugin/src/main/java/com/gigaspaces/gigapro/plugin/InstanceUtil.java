@@ -1,4 +1,4 @@
-package com.gigaspaces.gigapro;
+package com.gigaspaces.gigapro.plugin;
 
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;

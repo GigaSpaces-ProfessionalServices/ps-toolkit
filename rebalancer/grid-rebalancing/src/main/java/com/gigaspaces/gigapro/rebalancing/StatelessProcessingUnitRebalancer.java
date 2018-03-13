@@ -32,12 +32,12 @@ public class StatelessProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 
             //check primaries
             Map<GridServiceAgent, Integer> lowInstances = new HashMap<>();
-            Map<GridServiceAgent, Integer> highinstances = new HashMap<>();
+            Map<GridServiceAgent, Integer> highInstances = new HashMap<>();
             boolean unbalanced = false;
             for (GridServiceAgent gsa : gsas){
                 int instances = listInstancesOnGSA(gsa).size();
                 if (instances > instancesPerAgent){
-                    highinstances.put(gsa, instances);
+                    highInstances.put(gsa, instances);
                 }
                 if (instances > instancesPerAgent + 1){
                     unbalanced = true;
@@ -47,12 +47,12 @@ public class StatelessProcessingUnitRebalancer extends ProcessingUnitRebalancer{
                 }
             }
 
-            if (!unbalanced && highinstances.size() == unbalancedNodes){
+            if (!unbalanced && highInstances.size() == unbalancedNodes){
                 logger.info(puName + " is balanced");
                 return;
             }
 
-            boolean moved = quickSwapRestart(lowInstances, highinstances, emptyContainersMap);
+            boolean moved = quickSwapRestart(lowInstances, highInstances, emptyContainersMap);
 
             if (!moved){
                 logger.info("rebalance failed for PU " + puName);

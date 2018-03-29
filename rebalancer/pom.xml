@@ -12,6 +12,7 @@
         <module>common</module>
         <module>grid-rebalancing</module>
         <module>plugin</module>
+        <module>api</module>
     </modules>
 
 

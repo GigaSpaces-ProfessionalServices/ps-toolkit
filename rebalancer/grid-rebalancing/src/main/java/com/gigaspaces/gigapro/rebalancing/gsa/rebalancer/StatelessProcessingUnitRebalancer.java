@@ -1,4 +1,4 @@
-package com.gigaspaces.gigapro.rebalancing;
+package com.gigaspaces.gigapro.rebalancing.gsa.rebalancer;
 
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
@@ -103,5 +103,7 @@ public class StatelessProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         return primaries;
 
     }
+
+
 
 }

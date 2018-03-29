@@ -40,6 +40,9 @@ public class GridRebalancer {
 
         admin.getGridServiceAgents().getGridServiceAgentAdded().add(gridServiceEventListener);
         admin.getGridServiceAgents().getGridServiceAgentRemoved().add(gridServiceEventListener);
+
+        admin.getGridServiceContainers().getGridServiceContainerAdded().add(gridServiceEventListener);
+        admin.getGridServiceContainers().getGridServiceContainerRemoved().add(gridServiceEventListener);
     }
 
 

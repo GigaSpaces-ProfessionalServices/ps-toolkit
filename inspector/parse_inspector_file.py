@@ -6,12 +6,14 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import matplotlib.cm as cmx
 import matplotlib.colors as colors
+import matplotlib.dates as matdates
 import numpy as np
 import re
 from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.backends.backend_pdf import PdfPages
 from cProfile import label
 from collections import OrderedDict
+from datetime import datetime
 
 headers = ['EMA', 'MIN', 'MAX', 'MEDIAN', 'P90th', 'P95th', 'P99th', 'P99.9th']
     
@@ -54,20 +56,29 @@ def graphs_to_pdf_file(oper_stat_map):
         x = None
         line = None
         j = 0
+        xAxis = []
     
-        plt.subplot(stat_count, 1, i) 
+        ax = plt.subplot(stat_count, 1, i)
+        xfmt = matdates.DateFormatter('%Y.%m.%d %H:%M:%S')
+        ax.xaxis.set_major_formatter(xfmt)
+
         plt.grid(True)
         plt.title(oper)
         
         i = i + 1
         for stat_key, values in statistics.iteritems():
             if stat_key in 'current time':
+
+                for time in values:
+                    datetime_object = datetime.strptime(time, '%Y.%m.%d %H:%M:%S')
+                    xAxis.append(datetime_object)
+
                 continue
             if x is None:
                 x = np.arange(0, len(values), 1.0)
                 
             yValues = values + ['0']*(len(x) - len(values))
-            line, = plt.plot(x, yValues, color=colorMap(j), label=stat_key)
+            line, = plt.plot(xAxis, yValues, color=colorMap(j), label=stat_key)
             plt.legend(handler_map={line: HandlerLine2D(numpoints=4)})
             plt.yscale('log')
             j = j + 1
@@ -100,7 +111,7 @@ if __name__ == '__main__':
             break
 
         if line.find('XAP IO Statistics') != -1:
-            cur_time = line[0:12].replace(",", ".")
+            cur_time = line[0:19].replace(",", ".")
             continue
 
         if line.find('piecewise constant approximation') != -1:

@@ -1,6 +1,5 @@
-package com.gigaspaces.gigapro.rebalancing;
+package com.gigaspaces.gigapro.rebalancing.gsa.rebalancer;
 
-import com.gigaspaces.cluster.activeelection.SpaceMode;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.gsc.GridServiceContainer;
@@ -112,6 +111,8 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         }
     }
 
+
+
     private boolean moveBackupToLowPrimaryGSARestart(Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap, int instancesPerAgent, Map<GridServiceAgent, Integer> highPrimaries, Map<GridServiceAgent, Integer> lowPrimaries) {
         boolean moved = false;
         for (GridServiceAgent gsa : highPrimaries.keySet()){
@@ -179,6 +180,7 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         return true;
     }
 
+
     private Map<GridServiceAgent, GridServiceContainer> findAvailableContainersOnLowPrimaries(Map<GridServiceAgent, Integer> lowPrimaries, ProcessingUnitInstance primary, int instancesPerAgent) {
         Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
 
@@ -238,14 +240,9 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         List<ProcessingUnitInstance> primaries = new ArrayList<>();
         GridServiceContainers gscs = gsa.getMachine().getGridServiceContainers();
         gscs.waitFor(1, 2, TimeUnit.SECONDS);
-        for (GridServiceContainer gsc : gscs.getContainers()){
-            for (ProcessingUnitInstance pui : gsc.getProcessingUnitInstances(puName)){
-                waitForInstanceInit(pui);
-                if (pui.getSpaceInstance().getMode() == SpaceMode.PRIMARY){
-                    primaries.add(pui);
-                }
-            }
-        }
+
+        Arrays.stream(gscs.getContainers()).forEach(gsc -> primaries.addAll(listPrimariesOnGSC(gsc, puName)));
+
         return primaries;
     }
 
@@ -253,20 +250,10 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         List<ProcessingUnitInstance> backups = new ArrayList<>();
         GridServiceContainers gscs = gsa.getMachine().getGridServiceContainers();
         gscs.waitFor(1, 2, TimeUnit.SECONDS);
-        for (GridServiceContainer gsc : gscs.getContainers()){
-            for (ProcessingUnitInstance pui : gsc.getProcessingUnitInstances(puName)){
-                waitForInstanceInit(pui);
-                if (pui.getSpaceInstance().getMode() == SpaceMode.BACKUP){
-                    backups.add(pui);
-                }
-            }
-        }
-        return backups;
-    }
 
-    // after instance relocated it should be initialized before starting next iteration
-    private void waitForInstanceInit(ProcessingUnitInstance pui) {
-        while (pui.getSpaceInstance().getMode() == SpaceMode.NONE){}
+        Arrays.stream(gscs.getContainers()).forEach(gsc -> backups.addAll(listBackupsOnGSC(gsc, puName)));
+
+        return backups;
     }
 
     private Map<GridServiceAgent, GridServiceContainer> findEmptyContainersOnLowPrimaries(
@@ -295,7 +282,6 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         return result;
     }
 
-
     private ProcessingUnitInstance findBackupInstanceForPrimary(ProcessingUnitInstance primary){
         return primary.getPartition().getBackup();
     }
@@ -312,10 +298,6 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         return !primary.getSpaceInstance().getPartition().getBackup().getMachine().getHostAddress().equals(gsc.getMachine().getHostAddress());
     }
 
-//    private boolean noMaxInstanceRestriction(GridServiceContainer gsc, ProcessingUnitInstance instance) {
-//        instance.
-//    }
-
     private boolean notTheSameAgentAsPrimary(GridServiceContainer gsc, ProcessingUnitInstance backup) {
         return !backup.getSpaceInstance().getPartition().getPrimary().getMachine().getHostAddress().equals(gsc.getMachine().getHostAddress());
     }
@@ -326,10 +308,6 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 
     private boolean lowBackupAgent(GridServiceContainer gsc, int instancesPerAgent) {
         return listBackupsOnGSA(gsc.getGridServiceAgent()).size() < getBackupPerAgentCount(instancesPerAgent);
-    }
-
-    private int getBackupPerAgentCount(int instancesPerAgent) {
-        return instancesPerAgent + 1;
     }
 
 }

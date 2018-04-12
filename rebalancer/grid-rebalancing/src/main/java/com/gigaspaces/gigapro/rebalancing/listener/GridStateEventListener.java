@@ -1,12 +1,7 @@
 package com.gigaspaces.gigapro.rebalancing.listener;
 
 import com.gigaspaces.gigapro.GridStateEvent;
-import com.gigaspaces.gigapro.rebalancing.DryRunRebalancer;
-import com.gigaspaces.gigapro.rebalancing.ZoneUtils;
 import com.j_spaces.core.IJSpace;
-import org.openspaces.admin.Admin;
-import org.openspaces.admin.AdminFactory;
-import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.core.GigaSpace;
 import org.openspaces.core.GigaSpaceConfigurer;
 import org.openspaces.core.space.UrlSpaceConfigurer;
@@ -39,15 +34,7 @@ public class GridStateEventListener {
         IJSpace space = new UrlSpaceConfigurer("jini://*/*/controllerSpace").space();
         GigaSpace gigaSpace = new GigaSpaceConfigurer(space).gigaSpace();
 
-        Admin admin = new AdminFactory().createAdmin();
-
-        boolean balanced = true;
-        for (ProcessingUnit pu : admin.getProcessingUnits()) {
-            balanced = new DryRunRebalancer(pu.getName()).doDryRunRebalancing(pu,
-                    ZoneUtils.sortGridServiceAgentsByZones(admin, pu.getRequiredContainerZones().getZones()));
-
-            if (!balanced) break;
-        }
+        boolean balanced = GridServiceEventListener.isGridBalanced();
 
         logger.info("Grid state balanced = " + balanced);
         event.setProcessed(true);

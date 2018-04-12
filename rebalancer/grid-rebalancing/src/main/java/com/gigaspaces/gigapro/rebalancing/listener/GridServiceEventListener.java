@@ -1,5 +1,7 @@
 package com.gigaspaces.gigapro.rebalancing.listener;
 
+import com.gigaspaces.gigapro.rebalancing.DryRunRebalancer;
+import com.gigaspaces.gigapro.rebalancing.ZoneUtils;
 import com.gigaspaces.gigapro.rebalancing.gsa.rebalancer.RebalancingTask;
 import com.gigaspaces.gigapro.rebalancing.gsc.rebalancer.RebalancingWithinAgentTask;
 import org.openspaces.admin.Admin;
@@ -9,6 +11,7 @@ import org.openspaces.admin.gsa.events.GridServiceAgentRemovedEventListener;
 import org.openspaces.admin.gsc.GridServiceContainer;
 import org.openspaces.admin.gsc.events.GridServiceContainerAddedEventListener;
 import org.openspaces.admin.gsc.events.GridServiceContainerRemovedEventListener;
+import org.openspaces.admin.pu.ProcessingUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +47,17 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
     public static void rebalance() {
         waitForPU();
         executor.execute(new RebalancingTask(admin));
+    }
+
+    public static boolean isGridBalanced() {
+        boolean balanced = true;
+        for (ProcessingUnit pu : admin.getProcessingUnits()) {
+            balanced = new DryRunRebalancer(pu.getName()).doDryRunRebalancing(pu,
+                    ZoneUtils.sortGridServiceAgentsByZones(admin, pu.getRequiredContainerZones().getZones()));
+
+            if (!balanced) break;
+        }
+        return balanced;
     }
 
     private static void waitForPU() {

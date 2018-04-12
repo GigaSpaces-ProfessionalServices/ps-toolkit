@@ -24,12 +24,19 @@ public class Controller {
 
     private static Admin admin;
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         if (invalidInputParams(args)) return;
 
         int port = Integer.parseInt(args[0]);
-        HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
+        HttpServer server;
+        try {
+            server = HttpServer.create(new InetSocketAddress(port), 0);
+        } catch (IOException e) {
+            System.out.println("Failed to create httpServer, " + e.getMessage());
+            System.out.println("Check that port available and restart the app.");
+            return;
+        }
         server.createContext("/v1/controller/start", new StartRebalancerHandler());
         server.createContext("/v1/controller/stop", new StopRebalancerHandler());
         server.createContext("/v1/controller/rebalance", new SingleRebalanceHandler());

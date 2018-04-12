@@ -3,6 +3,7 @@ package com.gigaspaces.gigapro.rebalancing;
 import com.gigaspaces.gigapro.rebalancing.listener.GridServiceEventListener;
 import com.gigaspaces.gigapro.rebalancing.listener.RebalancerState;
 import com.gigaspaces.gigapro.rebalancing.listener.ZooKeeperUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.AdminFactory;
 import org.slf4j.Logger;
@@ -15,9 +16,19 @@ public class GridRebalancer {
 
     private static Logger logger = LoggerFactory.getLogger(GridRebalancer.class);
 
+    private String username;
+    private String password;
+
     public void init() throws Exception {
         logger.info("Rebalancing: creating admin");
-        Admin admin = new AdminFactory().createAdmin();
+
+        AdminFactory factory = new AdminFactory();
+        if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
+            factory.userDetails(username, password);
+        }
+
+        Admin admin = factory.createAdmin();
+
         logger.info("Rebalancing: admin created");
         admin.getMachines().waitFor(1);
         logger.info("Rebalancing: one machine appeared");
@@ -45,5 +56,20 @@ public class GridRebalancer {
         admin.getGridServiceContainers().getGridServiceContainerRemoved().add(gridServiceEventListener);
     }
 
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
 }

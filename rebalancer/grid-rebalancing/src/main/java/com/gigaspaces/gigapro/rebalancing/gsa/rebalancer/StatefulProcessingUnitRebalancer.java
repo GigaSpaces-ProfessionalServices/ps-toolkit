@@ -182,7 +182,7 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 
 
     private Map<GridServiceAgent, GridServiceContainer> findAvailableContainersOnLowPrimaries(Map<GridServiceAgent, Integer> lowPrimaries, ProcessingUnitInstance primary, int instancesPerAgent) {
-        Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
+        Map<GridServiceAgent, GridServiceContainer> result = getMapForPrimaries();
 
         for (Map.Entry<GridServiceAgent, Integer> gridServiceAgentToPrimaries : lowPrimaries.entrySet()) {
             for (GridServiceContainer gsc : gridServiceAgentToPrimaries.getKey().getMachine().getGridServiceContainers()) {
@@ -196,7 +196,7 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
     }
 
     private Map<GridServiceAgent, GridServiceContainer> findAvailableContainersOnLowBackups(Map<GridServiceAgent, Integer> lowBackups, ProcessingUnitInstance backup, int instancesPerAgent) {
-        Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
+        Map<GridServiceAgent, GridServiceContainer> result = getMapForBackups();
 
         for (Map.Entry<GridServiceAgent, Integer> gridServiceAgentToPrimaries : lowBackups.entrySet()) {
             for (GridServiceContainer gsc : gridServiceAgentToPrimaries.getKey().getMachine().getGridServiceContainers()) {
@@ -258,7 +258,8 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 
     private Map<GridServiceAgent, GridServiceContainer> findEmptyContainersOnLowPrimaries(
             Map<GridServiceAgent, List<GridServiceContainer>> emptyContainers, ProcessingUnitInstance primary, int instancesPerAgent){
-        Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
+        Map<GridServiceAgent, GridServiceContainer> result = getMapForPrimaries();
+
         for (Map.Entry<GridServiceAgent, List<GridServiceContainer>> gsaToGsc : emptyContainers.entrySet()){
             GridServiceContainer container = gsaToGsc.getValue().get(0);
             if (isContainerEligibleForPrimary(container, primary, instancesPerAgent)){
@@ -271,7 +272,8 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 
     private Map<GridServiceAgent, GridServiceContainer> findEmptyContainersOnLowBackup(
             Map<GridServiceAgent, List<GridServiceContainer>> emptyContainers, ProcessingUnitInstance backup, int instancesPerAgent){
-        Map<GridServiceAgent, GridServiceContainer> result = new HashMap<>();
+        Map<GridServiceAgent, GridServiceContainer> result = getMapForBackups();
+
         for (Map.Entry<GridServiceAgent, List<GridServiceContainer>> gsaToGsc : emptyContainers.entrySet()){
             GridServiceContainer container = gsaToGsc.getValue().get(0);
             if (isContainerEligibleForBackup(container, backup, instancesPerAgent)){
@@ -280,6 +282,18 @@ public class StatefulProcessingUnitRebalancer extends ProcessingUnitRebalancer{
             }
         }
         return result;
+    }
+
+    private Map<GridServiceAgent, GridServiceContainer> getMapForBackups() {
+        return new TreeMap<>((gsa1, gsa2) -> {
+            if (listBackupsOnGSA(gsa1).size() < listBackupsOnGSA(gsa2).size()) return -1; else return 1;
+        });
+    }
+
+    private Map<GridServiceAgent, GridServiceContainer> getMapForPrimaries() {
+        return new TreeMap<>((gsa1, gsa2) -> {
+            if (listPrimariesOnGSA(gsa1).size() < listPrimariesOnGSA(gsa2).size()) return -1; else return 1;
+        });
     }
 
     private ProcessingUnitInstance findBackupInstanceForPrimary(ProcessingUnitInstance primary){

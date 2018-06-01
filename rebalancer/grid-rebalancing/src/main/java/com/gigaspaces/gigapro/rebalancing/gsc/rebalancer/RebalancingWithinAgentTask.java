@@ -1,5 +1,6 @@
 package com.gigaspaces.gigapro.rebalancing.gsc.rebalancer;
 
+import com.gigaspaces.gigapro.rebalancing.AbstractRebalancingTask;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.pu.ProcessingUnit;
 import org.openspaces.admin.pu.ProcessingUnitType;
@@ -11,14 +12,12 @@ import org.slf4j.LoggerFactory;
  * @author Denys_Novikov
  * Date: 30.03.2018
  */
-public class RebalancingWithinAgentTask implements Runnable{
+public class RebalancingWithinAgentTask extends AbstractRebalancingTask {
 
     private static Logger logger = LoggerFactory.getLogger(RebalancingWithinAgentTask.class);
 
-    private Admin admin;
-
     public RebalancingWithinAgentTask(Admin admin) {
-        this.admin = admin;
+        super(admin);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.gigaspaces.gigapro.rebalancing.gsa.rebalancer;
 
+import com.gigaspaces.gigapro.rebalancing.AbstractRebalancingTask;
 import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.pu.ProcessingUnit;
@@ -8,14 +9,21 @@ import org.openspaces.admin.pu.ProcessingUnits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RebalancingTask implements Runnable{
+import java.util.Collection;
+
+public class RebalancingTask extends AbstractRebalancingTask {
 
     private static Logger logger = LoggerFactory.getLogger(RebalancingTask.class);
 
-    private Admin admin;
+    private Collection<String> agentsInRebalance;
+
+    public RebalancingTask(Admin admin, Collection<String> agentsInRebalance) {
+        super(admin);
+        this.agentsInRebalance = agentsInRebalance;
+    }
 
     public RebalancingTask(Admin admin) {
-        this.admin = admin;
+        super(admin);
     }
 
     @Override
@@ -28,9 +36,9 @@ public class RebalancingTask implements Runnable{
             ProcessingUnitType puType = processingUnit.getType();
             if (processingUnit.getInstances().length > 1){
                 if (puType == ProcessingUnitType.STATEFUL){
-                    new StatefulProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance();
+                    new StatefulProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance(agentsInRebalance);
                 } else {
-                    new StatelessProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance();
+                    new StatelessProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance(agentsInRebalance);
                 }
             } else {
                 logger.info(String.format("ProcessingUnit %s has one instance and can't be rebalanced", processingUnit.getName()));

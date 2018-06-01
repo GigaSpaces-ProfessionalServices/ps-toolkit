@@ -15,6 +15,7 @@ import org.openspaces.admin.pu.ProcessingUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,6 +24,7 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
 
     private static Logger logger = LoggerFactory.getLogger(GridServiceEventListener.class);
     private static AtomicBoolean ENABLE = new AtomicBoolean(true);
+    private static ConcurrentLinkedDeque<String> agentsToSkip = new ConcurrentLinkedDeque<>();
 
     private static Admin admin;
 
@@ -68,7 +70,9 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
     public void gridServiceAgentAdded(GridServiceAgent gridServiceAgent) {
         if (ENABLE.get()) {
             logger.info("GSA added, starting rebalancing...");
-            executor.execute(new RebalancingTask(admin));
+            agentsToSkip.add(gridServiceAgent.getUid());
+
+            executor.execute(new RebalancingTask(admin, agentsToSkip));
         }
     }
 
@@ -76,13 +80,15 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
     public void gridServiceAgentRemoved(GridServiceAgent gridServiceAgent) {
         if (ENABLE.get()) {
             logger.info("GSA removed, starting rebalancing...");
-            executor.execute(new RebalancingTask(admin));
+            agentsToSkip.add(gridServiceAgent.getUid());
+
+            executor.execute(new RebalancingTask(admin, agentsToSkip));
         }
     }
 
     @Override
     public void gridServiceContainerAdded(GridServiceContainer gridServiceContainer) {
-        if (ENABLE.get()) {
+        if (ENABLE.get() && !agentsToSkip.contains(gridServiceContainer.getGridServiceAgent().getUid())) {
             logger.info("GSC added, starting rebalancing...");
             executor.execute(new RebalancingWithinAgentTask(admin));
         }
@@ -90,7 +96,7 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
 
     @Override
     public void gridServiceContainerRemoved(GridServiceContainer gridServiceContainer) {
-        if (ENABLE.get()) {
+        if (ENABLE.get() && !agentsToSkip.contains(gridServiceContainer.getGridServiceAgent().getUid())) {
             logger.info("GSC removed, starting rebalancing...");
             executor.execute(new RebalancingWithinAgentTask(admin));
         }

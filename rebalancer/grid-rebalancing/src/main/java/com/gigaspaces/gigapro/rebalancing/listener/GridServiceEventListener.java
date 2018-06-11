@@ -1,5 +1,6 @@
 package com.gigaspaces.gigapro.rebalancing.listener;
 
+import com.gigaspaces.gigapro.rebalancing.AbstractRebalancingTask;
 import com.gigaspaces.gigapro.rebalancing.DryRunRebalancer;
 import com.gigaspaces.gigapro.rebalancing.ZoneUtils;
 import com.gigaspaces.gigapro.rebalancing.gsa.rebalancer.RebalancingTask;
@@ -15,7 +16,8 @@ import org.openspaces.admin.pu.ProcessingUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,7 +26,10 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
 
     private static Logger logger = LoggerFactory.getLogger(GridServiceEventListener.class);
     private static AtomicBoolean ENABLE = new AtomicBoolean(true);
-    private static ConcurrentLinkedDeque<String> agentsToSkip = new ConcurrentLinkedDeque<>();
+    private static AtomicBoolean IN_PROGRESS = new AtomicBoolean(false);
+
+    private static BlockingQueue<AbstractRebalancingTask> GSA_TASK_QUEUE = new ArrayBlockingQueue<>(10);
+    private static BlockingQueue<AbstractRebalancingTask> GSC_TASK_QUEUE = new ArrayBlockingQueue<>(10);
 
     private static Admin admin;
 
@@ -39,7 +44,14 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
         ENABLE.compareAndSet(false, true);
         // wait processing unit deployment
         waitForPU();
-        executor.execute(new RebalancingTask(admin));
+        if (!IN_PROGRESS.get()) {
+            markRebalanceInProgress();
+            executor.execute(new RebalancingTask(admin, IN_PROGRESS));
+        }
+    }
+
+    private static void markRebalanceInProgress() {
+        IN_PROGRESS.compareAndSet(false, true);
     }
 
     public static void disable() {
@@ -48,7 +60,10 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
 
     public static void rebalance() {
         waitForPU();
-        executor.execute(new RebalancingTask(admin));
+        if (!IN_PROGRESS.get()) {
+            markRebalanceInProgress();
+            executor.execute(new RebalancingTask(admin, IN_PROGRESS));
+        }
     }
 
     public static boolean isGridBalanced() {
@@ -68,37 +83,71 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
 
     @Override
     public void gridServiceAgentAdded(GridServiceAgent gridServiceAgent) {
-        if (ENABLE.get()) {
-            logger.info("GSA added, starting rebalancing...");
-            agentsToSkip.add(gridServiceAgent.getUid());
+        GSA_TASK_QUEUE.add(new RebalancingTask(admin, IN_PROGRESS));
+        if (ENABLE.get() && !IN_PROGRESS.get()) {
 
-            executor.execute(new RebalancingTask(admin, agentsToSkip));
+            if (gridBalanced()) return;
+
+            logger.info("GSA added, starting rebalancing...");
+            markRebalanceInProgress();
+            executor.execute(GSA_TASK_QUEUE.poll());
         }
     }
 
     @Override
     public void gridServiceAgentRemoved(GridServiceAgent gridServiceAgent) {
-        if (ENABLE.get()) {
-            logger.info("GSA removed, starting rebalancing...");
-            agentsToSkip.add(gridServiceAgent.getUid());
+        GSA_TASK_QUEUE.add(new RebalancingTask(admin, IN_PROGRESS));
+        if (ENABLE.get() && !IN_PROGRESS.get()) {
 
-            executor.execute(new RebalancingTask(admin, agentsToSkip));
+            if (gridBalanced()) return;
+
+            logger.info("GSA removed, starting rebalancing...");
+            markRebalanceInProgress();
+            executor.execute(GSA_TASK_QUEUE.poll());
         }
     }
 
     @Override
     public void gridServiceContainerAdded(GridServiceContainer gridServiceContainer) {
-        if (ENABLE.get() && !agentsToSkip.contains(gridServiceContainer.getGridServiceAgent().getUid())) {
+        GSC_TASK_QUEUE.add(new RebalancingWithinAgentTask(admin, IN_PROGRESS));
+        if (ENABLE.get() && !IN_PROGRESS.get()){
+
+            if (agentBalanced()) return;
+
             logger.info("GSC added, starting rebalancing...");
-            executor.execute(new RebalancingWithinAgentTask(admin));
+            markRebalanceInProgress();
+            executor.execute(GSC_TASK_QUEUE.poll());
         }
     }
 
     @Override
     public void gridServiceContainerRemoved(GridServiceContainer gridServiceContainer) {
-        if (ENABLE.get() && !agentsToSkip.contains(gridServiceContainer.getGridServiceAgent().getUid())) {
+        GSC_TASK_QUEUE.add(new RebalancingWithinAgentTask(admin, IN_PROGRESS));
+        if (ENABLE.get() && !IN_PROGRESS.get()){
+
+            if (agentBalanced()) return;
+
             logger.info("GSC removed, starting rebalancing...");
-            executor.execute(new RebalancingWithinAgentTask(admin));
+            markRebalanceInProgress();
+            executor.execute(GSC_TASK_QUEUE.poll());
         }
+    }
+
+    private boolean gridBalanced() {
+        if (isGridBalanced()) {
+            logger.info("Grid is balanced, queue will be cleared");
+            GSA_TASK_QUEUE.clear();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean agentBalanced() {
+        if (isGridBalanced()) {
+            logger.info("Agent is balanced, queue will be cleared");
+            GSC_TASK_QUEUE.clear();
+            return true;
+        }
+        return false;
     }
 }

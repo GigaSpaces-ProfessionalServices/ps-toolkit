@@ -6,9 +6,8 @@ import org.openspaces.admin.Admin;
 import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.pu.ProcessingUnit;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class ProcessingUnitRebalancer extends AbstractRebalancer {
 
@@ -19,7 +18,7 @@ public abstract class ProcessingUnitRebalancer extends AbstractRebalancer {
         this.puName = puName;
     }
 
-    public void rebalance(Collection<String> agentsInRebalance){
+    public void rebalance(AtomicBoolean inProgress){
         //get PU
         ProcessingUnit processingUnit = getProcessingUnit(puName);
 
@@ -28,9 +27,7 @@ public abstract class ProcessingUnitRebalancer extends AbstractRebalancer {
 
         doRebalancing(processingUnit, gsas);
 
-        // remove rebalanced agents
-        if (agentsInRebalance != null && !agentsInRebalance.isEmpty())
-            agentsInRebalance.removeAll(gsas.stream().map(gsa -> gsa.getUid()).collect(Collectors.toList()));
+        inProgress.compareAndSet(true, false);
     }
 
     protected abstract void doRebalancing(ProcessingUnit processingUnit, List<GridServiceAgent> gsas);

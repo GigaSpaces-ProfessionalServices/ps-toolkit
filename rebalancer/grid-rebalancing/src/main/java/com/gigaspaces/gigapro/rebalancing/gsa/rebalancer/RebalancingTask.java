@@ -9,21 +9,14 @@ import org.openspaces.admin.pu.ProcessingUnits;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RebalancingTask extends AbstractRebalancingTask {
 
     private static Logger logger = LoggerFactory.getLogger(RebalancingTask.class);
 
-    private Collection<String> agentsInRebalance;
-
-    public RebalancingTask(Admin admin, Collection<String> agentsInRebalance) {
-        super(admin);
-        this.agentsInRebalance = agentsInRebalance;
-    }
-
-    public RebalancingTask(Admin admin) {
-        super(admin);
+    public RebalancingTask(Admin admin, AtomicBoolean inProgress) {
+        super(admin, inProgress);
     }
 
     @Override
@@ -36,9 +29,9 @@ public class RebalancingTask extends AbstractRebalancingTask {
             ProcessingUnitType puType = processingUnit.getType();
             if (processingUnit.getInstances().length > 1){
                 if (puType == ProcessingUnitType.STATEFUL){
-                    new StatefulProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance(agentsInRebalance);
+                    new StatefulProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance(inProgress);
                 } else {
-                    new StatelessProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance(agentsInRebalance);
+                    new StatelessProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance(inProgress);
                 }
             } else {
                 logger.info(String.format("ProcessingUnit %s has one instance and can't be rebalanced", processingUnit.getName()));

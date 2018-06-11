@@ -7,6 +7,7 @@ import org.openspaces.admin.gsa.GridServiceAgent;
 import org.openspaces.admin.pu.ProcessingUnit;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * @author Denys_Novikov
@@ -22,7 +23,7 @@ public abstract class AgentProcessingUnitRebalancer extends AbstractRebalancer {
     }
 
 
-    public void rebalanceContainers() {
+    public void rebalanceContainers(AtomicBoolean inProgress) {
         //get PU
         ProcessingUnit processingUnit = getProcessingUnit(puName);
 
@@ -32,6 +33,8 @@ public abstract class AgentProcessingUnitRebalancer extends AbstractRebalancer {
         for (GridServiceAgent gsa : gsas) {
             doRebalancingBetweenContainers(gsa);
         }
+
+        inProgress.compareAndSet(true, false);
     }
 
     /**

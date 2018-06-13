@@ -83,53 +83,57 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
 
     @Override
     public void gridServiceAgentAdded(GridServiceAgent gridServiceAgent) {
-        GSA_TASK_QUEUE.add(new RebalancingTask(admin, IN_PROGRESS));
+        insertTaskToQueue(GSA_TASK_QUEUE, new RebalancingTask(admin, IN_PROGRESS));
         if (ENABLE.get() && !IN_PROGRESS.get()) {
 
             if (gridBalanced()) return;
 
             logger.info("GSA added, starting rebalancing...");
             markRebalanceInProgress();
-            executor.execute(GSA_TASK_QUEUE.poll());
+            if (!GSA_TASK_QUEUE.isEmpty())
+                executor.execute(GSA_TASK_QUEUE.poll());
         }
     }
 
     @Override
     public void gridServiceAgentRemoved(GridServiceAgent gridServiceAgent) {
-        GSA_TASK_QUEUE.add(new RebalancingTask(admin, IN_PROGRESS));
+        insertTaskToQueue(GSA_TASK_QUEUE, new RebalancingTask(admin, IN_PROGRESS));
         if (ENABLE.get() && !IN_PROGRESS.get()) {
 
             if (gridBalanced()) return;
 
             logger.info("GSA removed, starting rebalancing...");
             markRebalanceInProgress();
-            executor.execute(GSA_TASK_QUEUE.poll());
+            if (!GSA_TASK_QUEUE.isEmpty())
+                executor.execute(GSA_TASK_QUEUE.poll());
         }
     }
 
     @Override
     public void gridServiceContainerAdded(GridServiceContainer gridServiceContainer) {
-        GSC_TASK_QUEUE.add(new RebalancingWithinAgentTask(admin, IN_PROGRESS));
+        insertTaskToQueue(GSC_TASK_QUEUE, new RebalancingWithinAgentTask(admin, IN_PROGRESS));
         if (ENABLE.get() && !IN_PROGRESS.get()){
 
             if (agentBalanced()) return;
 
             logger.info("GSC added, starting rebalancing...");
             markRebalanceInProgress();
-            executor.execute(GSC_TASK_QUEUE.poll());
+            if (!GSC_TASK_QUEUE.isEmpty())
+                executor.execute(GSC_TASK_QUEUE.poll());
         }
     }
 
     @Override
     public void gridServiceContainerRemoved(GridServiceContainer gridServiceContainer) {
-        GSC_TASK_QUEUE.add(new RebalancingWithinAgentTask(admin, IN_PROGRESS));
+        insertTaskToQueue(GSC_TASK_QUEUE, new RebalancingWithinAgentTask(admin, IN_PROGRESS));
         if (ENABLE.get() && !IN_PROGRESS.get()){
 
             if (agentBalanced()) return;
 
             logger.info("GSC removed, starting rebalancing...");
             markRebalanceInProgress();
-            executor.execute(GSC_TASK_QUEUE.poll());
+            if (!GSC_TASK_QUEUE.isEmpty())
+                executor.execute(GSC_TASK_QUEUE.poll());
         }
     }
 
@@ -149,5 +153,16 @@ public class GridServiceEventListener implements GridServiceAgentAddedEventListe
             return true;
         }
         return false;
+    }
+
+    private void insertTaskToQueue(BlockingQueue<AbstractRebalancingTask>  queue, AbstractRebalancingTask task) {
+        try {
+            if (!queue.offer(task)) {
+                logger.info("No space in queue, waiting ");
+                queue.put(task);
+            }
+        } catch (Exception e) {
+            logger.error("Exception while inserting to queue: ", e);
+        }
     }
 }

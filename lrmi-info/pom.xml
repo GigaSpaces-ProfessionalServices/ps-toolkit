@@ -10,7 +10,7 @@
     </parent>
 
     <artifactId>lrmi-info</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.3</version>
     <name>lrmi-info</name>
 
     <properties>
@@ -32,6 +32,7 @@
         </dependency>
     </dependencies>
     <build>
+        <finalName>lrmi-info</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -45,7 +46,7 @@
                         </goals>
                         <configuration>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>with-dependencies</shadedClassifierName>
+                            <shadedClassifierName>exec</shadedClassifierName>
                             <transformers>
                                 <transformer
                                     implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">

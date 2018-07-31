@@ -24,9 +24,10 @@ public class RebalancingWithinAgentTask extends AbstractRebalancingTask {
 
     @Override
     public void run() {
-        logger.info("Rebalancing started");
+        logger.info("************************* Rebalancing started **********************************");
         ProcessingUnits processingUnits = admin.getProcessingUnits();
         logger.info("Rebalancing: " + processingUnits.getSize() + " PUs found");
+        
         for (ProcessingUnit processingUnit : processingUnits){
             ProcessingUnitType puType = processingUnit.getType();
             if (processingUnit.getInstances().length > 1){
@@ -39,6 +40,8 @@ public class RebalancingWithinAgentTask extends AbstractRebalancingTask {
                 logger.info(String.format("ProcessingUnit %s has one instance and can't be rebalanced", processingUnit.getName()));
             }
         }
+        logger.info("*********************************** Rebalancer is complete *******************************");
+        inProgress.compareAndSet(true, false);
     }
 
 }

@@ -25,11 +25,26 @@
         <skipTests>true</skipTests>
     </properties>
     <dependencies>
+	
+	
+	<dependency>
+			<groupId>org.gigaspaces</groupId>
+			<artifactId>xap-openspaces</artifactId>
+			<version>12.1.0</version>
+			<scope>provided</scope>
+	</dependency>
+	<dependency>
+            <groupId>com.gigaspaces</groupId>
+            <artifactId>xap-admin</artifactId>
+            <version>12.1.0</version>
+			<scope>provided</scope>
+        </dependency>
+	<!--
         <dependency>
             <groupId>com.gigaspaces</groupId>
             <artifactId>gs-openspaces</artifactId>
         </dependency>
-
+-->
         <!--LOGGING-->
         <dependency>
             <groupId>ch.qos.logback</groupId>

@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class StatelessProcessingUnitRebalancer extends ProcessingUnitRebalancer{
+public class StatelessProcessingUnitRebalancer extends ProcessingUnitRebalancer {
 
     private static Logger logger = LoggerFactory.getLogger(StatelessProcessingUnitRebalancer.class);
 
@@ -22,68 +22,76 @@ public class StatelessProcessingUnitRebalancer extends ProcessingUnitRebalancer{
 
     @Override
     protected void doRebalancing(ProcessingUnit processingUnit, List<GridServiceAgent> gsas) {
-        for (int i = 0; i < MAX_REBALANCING_COUNT; i++){
-            //get empty containers
-            Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap = buildEmptyContainersMap(gsas);
+        if (processingUnit.getInstances().length > 1) {
+            for (int i = 0; i < MAX_REBALANCING_COUNT; i++) {
+                // get empty containers
+                Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap = buildEmptyContainersMap(gsas);
 
-            //how many unbalanced nodes can be?
-            int instancesPerAgent = processingUnit.getInstances().length / gsas.size();
-            int unbalancedNodes = processingUnit.getInstances().length % gsas.size();
+                // how many unbalanced nodes can be?
+                int instancesPerAgent = processingUnit.getInstances().length / gsas.size();
+                int unbalancedNodes = processingUnit.getInstances().length % gsas.size();
 
-            //check primaries
-            Map<GridServiceAgent, Integer> lowInstances = new HashMap<>();
-            Map<GridServiceAgent, Integer> highInstances = new HashMap<>();
-            boolean unbalanced = false;
-            for (GridServiceAgent gsa : gsas){
-                int instances = listInstancesOnGSA(gsa).size();
-                if (instances > instancesPerAgent){
-                    highInstances.put(gsa, instances);
+                // check primaries
+                Map<GridServiceAgent, Integer> lowInstances = new HashMap<>();
+                Map<GridServiceAgent, Integer> highInstances = new HashMap<>();
+                boolean unbalanced = false;
+                for (GridServiceAgent gsa : gsas) {
+                    int instances = listInstancesOnGSA(gsa).size();
+                    if (instances > instancesPerAgent) {
+                        highInstances.put(gsa, instances);
+                    }
+                    if (instances > instancesPerAgent + 1) {
+                        unbalanced = true;
+                    }
+                    if (instances < instancesPerAgent) {
+                        lowInstances.put(gsa, instances);
+                    }
                 }
-                if (instances > instancesPerAgent + 1){
-                    unbalanced = true;
+
+                if (!unbalanced && highInstances.size() == unbalancedNodes) {
+                    logger.info(puName + " is balanced");
+                    return;
                 }
-                if (instances < instancesPerAgent){
-                    lowInstances.put(gsa, instances);
+
+                boolean moved = quickSwapRestart(lowInstances, highInstances, emptyContainersMap);
+
+                if (!moved) {
+                    logger.info("rebalance failed for PU " + puName);
                 }
             }
-
-            if (!unbalanced && highInstances.size() == unbalancedNodes){
-                logger.info(puName + " is balanced");
-                return;
-            }
-
-            boolean moved = quickSwapRestart(lowInstances, highInstances, emptyContainersMap);
-
-            if (!moved){
-                logger.info("rebalance failed for PU " + puName);
-            }
+        } else {
+            logger.info(String.format("ProcessingUnit %s has one instance and can't be rebalanced", processingUnit.getName()));
         }
     }
 
-    private boolean quickSwapRestart(Map<GridServiceAgent, Integer> lowInstances, Map<GridServiceAgent, Integer> highInstances, Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap) {
+    private boolean quickSwapRestart(Map<GridServiceAgent, Integer> lowInstances, Map<GridServiceAgent, Integer> highInstances,
+            Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap) {
         boolean moved = false;
-        for (GridServiceAgent gsa : highInstances.keySet()){
+        for (GridServiceAgent gsa : highInstances.keySet()) {
             List<ProcessingUnitInstance> processingUnitInstances = listInstancesOnGSA(gsa);
-            for (ProcessingUnitInstance pui : processingUnitInstances){
-                 for (GridServiceAgent lowPrimaryGSA : lowInstances.keySet()){
+            for (ProcessingUnitInstance pui : processingUnitInstances) {
+                for (GridServiceAgent lowPrimaryGSA : lowInstances.keySet()) {
                     GridServiceContainer targetGSC = getEmptyContainer(emptyContainersMap, lowPrimaryGSA);
-                    if (targetGSC != null){
+                    if (targetGSC != null) {
                         pui.relocateAndWait(targetGSC);
                         moved = true;
                         break;
                     }
                 }
-                if (moved) break;
+                if (moved)
+                    break;
             }
-            if (moved) break;
+            if (moved)
+                break;
         }
         return moved;
     }
 
-    private GridServiceContainer getEmptyContainer(Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap, GridServiceAgent lowPrimaryGSA) {
+    private GridServiceContainer getEmptyContainer(Map<GridServiceAgent, List<GridServiceContainer>> emptyContainersMap,
+            GridServiceAgent lowPrimaryGSA) {
         GridServiceContainer gsc = null;
         List<GridServiceContainer> emptyGscs = emptyContainersMap.get(lowPrimaryGSA);
-        if (emptyGscs != null && emptyGscs.size() != 0){
+        if (emptyGscs != null && emptyGscs.size() != 0) {
             gsc = emptyGscs.get(0);
         } else {
             GridServiceContainers availableContainers = lowPrimaryGSA.getMachine().getGridServiceContainers();
@@ -97,13 +105,11 @@ public class StatelessProcessingUnitRebalancer extends ProcessingUnitRebalancer{
         List<ProcessingUnitInstance> primaries = new ArrayList<>();
         GridServiceContainers gscs = gsa.getMachine().getGridServiceContainers();
         gscs.waitFor(1, 2, TimeUnit.SECONDS);
-        for (GridServiceContainer gsc : gscs.getContainers()){
+        for (GridServiceContainer gsc : gscs.getContainers()) {
             primaries.addAll(Arrays.asList(gsc.getProcessingUnitInstances(puName)));
         }
         return primaries;
 
     }
-
-
 
 }

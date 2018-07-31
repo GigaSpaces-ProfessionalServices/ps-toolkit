@@ -27,7 +27,7 @@
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <outputDirectory>lib</outputDirectory>
       <includes>
-        <include>com.gigaspaces</include>
+<!--         <include>com.gigaspaces</include>        -->
       </includes>
     </dependencySet>
   </dependencySets>

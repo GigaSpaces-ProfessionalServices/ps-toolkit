@@ -14,6 +14,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <log4j.version>2.8.2</log4j.version>
+        <slf4j.version>1.7.25</slf4j.version>
     </properties>
 
     <dependencies>
@@ -26,10 +28,12 @@
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
             <version>3.4.8</version>
+            <scope>provided</scope>
         </dependency>
+        
     </dependencies>
     <build>
-        <finalName>grid-rebalancing</finalName>
+        <!-- finalName>grid-rebalancing</finalName-->
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -52,5 +56,6 @@
                 </executions>
             </plugin>
         </plugins>
-    </build>
+    </build>     
+   
 </project>

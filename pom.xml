@@ -8,14 +8,14 @@
 
     <modules>
         <module>rebalancer</module>
-        <module>script-creator</module>
-        <module>rebalancer-od</module>
-        <module>load-simulator</module>
-        <module>grid-info-service</module>
+        <!--module>script-creator</module-->
+        <!--module>rebalancer-od</module -->
+        <!--module>load-simulator</module-->
+        <!--module>grid-info-service</module-->
         <module>xap_alternatives/xap-api-options</module>
         <module>zombie-finder</module>
         <module>xap-config-cli</module>
-        <module>inspector</module>
+        <!--module>inspector</module-->
         <module>lrmi-info</module>
   </modules>
 

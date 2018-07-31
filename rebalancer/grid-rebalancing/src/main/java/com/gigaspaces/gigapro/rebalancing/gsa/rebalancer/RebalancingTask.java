@@ -26,17 +26,16 @@ public class RebalancingTask extends AbstractRebalancingTask {
         checkGridState();
         logger.info("Rebalancing: " + processingUnits.getSize() + " PUs found");
         for (ProcessingUnit processingUnit : processingUnits){
-            ProcessingUnitType puType = processingUnit.getType();
-            if (processingUnit.getInstances().length > 1){
+            ProcessingUnitType puType = processingUnit.getType();           
                 if (puType == ProcessingUnitType.STATEFUL){
                     new StatefulProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance(inProgress);
                 } else {
                     new StatelessProcessingUnitRebalancer(admin, processingUnit.getName()).rebalance(inProgress);
-                }
-            } else {
-                logger.info(String.format("ProcessingUnit %s has one instance and can't be rebalanced", processingUnit.getName()));
-            }
+                }            
         }
+        logger.info("Marking Inprogress to false");
+        inProgress.compareAndSet(true, false);
+       
     }
 
     private void checkGridState() {

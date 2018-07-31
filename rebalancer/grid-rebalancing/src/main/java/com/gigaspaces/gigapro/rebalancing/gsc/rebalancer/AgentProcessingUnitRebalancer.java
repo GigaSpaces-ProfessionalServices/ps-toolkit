@@ -34,7 +34,7 @@ public abstract class AgentProcessingUnitRebalancer extends AbstractRebalancer {
             doRebalancingBetweenContainers(gsa);
         }
 
-        inProgress.compareAndSet(true, false);
+//        inProgress.compareAndSet(true, false);
     }
 
     /**

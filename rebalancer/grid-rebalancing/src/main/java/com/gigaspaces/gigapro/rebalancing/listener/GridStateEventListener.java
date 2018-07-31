@@ -29,6 +29,7 @@ public class GridStateEventListener {
 
     @SpaceDataEvent
     public void eventListener(GridStateEvent event) {
+        try {
         logger.info("Grid state event received. Checking state...");
 
         IJSpace space = new UrlSpaceConfigurer("jini://*/*/controllerSpace").space();
@@ -42,6 +43,9 @@ public class GridStateEventListener {
 
         gigaSpace.write(event);
         logger.info("Grid state returned");
+        }catch(Exception e) {
+            logger.error(e.toString());
+        }
     }
 
 }
